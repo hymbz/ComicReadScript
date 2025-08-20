@@ -45,6 +45,63 @@ const pcApi = new (class {
     );
 })();
 
+declare const contentKey: string;
+declare const cct: string;
+
+/** 通过解析网页变量获取图片列表 */
+const getImglistByHtml = async (comicName: string, id: string) => {
+  // by: https://github.com/MapoMagpie/comic-looms/blob/7799f87fdd5a8ac73c878f338b7ae6aa5c0b2d18/src/platform/matchers/mangacopy.ts#L96-L125
+  const decrypt = async (raw: string, key: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const bodyBytes = new Uint8Array(
+      raw
+        .slice(16)
+        .match(/.{1,2}/g)!
+        .map((byte) => parseInt(byte, 16)),
+    );
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(key),
+      { name: 'AES-CBC' },
+      false,
+      ['decrypt'],
+    );
+    const decryptedBytes = await crypto.subtle.decrypt(
+      { name: 'AES-CBC', iv: encoder.encode(raw.slice(0, 16)) },
+      cryptoKey,
+      bodyBytes,
+    );
+    return new TextDecoder().decode(decryptedBytes);
+  };
+
+  const getKeys = async (): Promise<[string, string]> => {
+    // 移动端没有 contentKey，就从 PC 端的网页获取
+    if (!unsafeWindow.contentKey) {
+      const html = await request(
+        `${location.origin}/comic/${comicName}/chapter/${id}`,
+        {
+          fetch: false,
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36',
+          },
+        },
+      );
+      const [script] = html.responseText.match(
+        /(?<=<script>\s+)(var .+?contentKey =.+?)(?=<\/script)/gs,
+      )!;
+      eval(script); // oxlint-disable-line no-eval
+    }
+
+    return [contentKey, cct];
+  };
+
+  const keys = await getKeys();
+  const decryption = await decrypt(...keys);
+  const res = JSON.parse(decryption) as { url: string }[];
+  return res.map(({ url }) => url.replace(/(?<=(\/|\.))c800x/, 'c1500x'));
+};
+
 // 在目录页显示上次阅读记录
 const handleLastChapter = (comicName: string) => {
   let a: HTMLAnchorElement;
@@ -382,77 +439,16 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
   if (comicName && id) {
     const { setState } = await useInit('copymanga');
 
-    /** 漫画不存在时才会出现的提示 */
-    const titleDom = querySelector('main .img+.title');
-    if (titleDom)
-      titleDom.textContent =
-        'ComicRead 提示您：你訪問的內容暫不存在，請點選右下角按鈕嘗試加載漫畫';
-
     setState('comicMap', '', {
       async getImgList() {
-        if (titleDom) titleDom.textContent = '漫畫加載中，請坐和放寬';
+        setState('manga', {
+          onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
+          onPrev: querySelectorClick(
+            '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
+          ),
+        });
 
-        type ResData = {
-          message: string;
-          results: {
-            chapter: {
-              contents: { url: string }[];
-              words: number[];
-              name: string;
-              next: string | null;
-              prev: string | null;
-            };
-            comic: { name: string };
-          };
-        };
-        const res = await pcApi.get<ResData>(
-          `/api/v3/comic/${comicName}/chapter2/${id}?platform=3`,
-          { noCheckCode: true },
-        );
-
-        if (res.status !== 200) {
-          const message = `漫畫加載失敗：${res.response.message || res.status}`;
-          if (titleDom) titleDom.textContent = message;
-          throw new Error(message);
-        }
-        if (titleDom) {
-          titleDom.textContent = '漫畫加載成功🥳';
-          const {
-            chapter: { name: chapterName },
-            comic: { name },
-          } = res.response.results;
-          document.title = `${name} - ${chapterName} - 拷貝漫畫 拷贝漫画`;
-        }
-
-        if (titleDom ?? !querySelector('.comicContent-next')) {
-          const {
-            chapter: { next, prev },
-          } = res.response.results;
-
-          setState('manga', {
-            onNext: next
-              ? () => location.assign(`/comic/${comicName}/chapter/${next}`)
-              : undefined,
-            onPrev: prev
-              ? () => location.assign(`/comic/${comicName}/chapter/${prev}`)
-              : undefined,
-          });
-        } else
-          setState('manga', {
-            onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
-            onPrev: querySelectorClick(
-              '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
-            ),
-          });
-
-        const imgList: string[] = [];
-        const { words, contents } = res.response.results.chapter;
-        for (let i = 0; i < contents.length; i++)
-          imgList[words[i]] = contents[i].url.replace(
-            /(?<=(\/|\.))c800x/,
-            'c1500x',
-          );
-        return imgList;
+        return getImglistByHtml(comicName, id);
       },
     });
 
