@@ -8,7 +8,7 @@ export const [defaultHotkeys, setDefaultHotkeys] = createSignal<
   Record<string, string[]>
 >({
   scroll_up: ['w', 'ArrowUp'],
-  scroll_down: ['s', 'ArrowDown', ' '],
+  scroll_down: ['s', 'ArrowDown'],
   scroll_left: ['a', 'Shift + a', ',', 'ArrowLeft'],
   scroll_right: ['d', 'Shift + d', '.', 'ArrowRight'],
   page_up: ['PageUp', 'Shift + w'],
