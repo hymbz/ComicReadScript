@@ -9,6 +9,8 @@ import { isAbreastMode, isScrollMode, scrollTop } from './memo';
 import { handleTrackpadWheel } from './pointer';
 import {
   constantScroll,
+  isBottom,
+  isTop,
   scrollLength,
   scrollProgress,
   scrollTo,
@@ -48,7 +50,6 @@ export const scrollModeScrollPage = (x: number) => {
     scrollTo(scrollTop() + x, true);
     setState('scrollLock', true);
   }
-  turnPage(x > 0 ? 'next' : 'prev');
   closeScrollLock();
 };
 
@@ -83,6 +84,13 @@ const handleHoldScroll = (code: string, speed: number) => {
     () => constantScroll.start(speed),
     () => constantScroll.cancel(),
   );
+};
+
+/** 判断当前是否处在卷轴模式的尽头，是的话进行翻页判断并返回 true */
+const isScrollModeEnd = (dir: Parameters<typeof turnPage>[0]) => {
+  if (!isTop() && !isBottom()) return false;
+  turnPage(dir);
+  return true;
 };
 
 export const handleKeyDown = (e: KeyboardEvent) => {
@@ -155,22 +163,30 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   if (isAbreastMode()) {
     switch (hotkey) {
       case 'scroll_up':
+        if (isScrollModeEnd('prev')) return;
         return setAbreastScrollFill(abreastScrollFill() - 40);
       case 'scroll_down':
+        if (isScrollModeEnd('next')) return;
         return setAbreastScrollFill(abreastScrollFill() + 40);
 
       case 'scroll_left':
+        if (isScrollModeEnd(store.option.dir === 'rtl' ? 'prev' : 'next'))
+          return;
         return scrollTo(
           scrollProgress() - (store.option.dir === 'rtl' ? 40 : -40),
         );
       case 'scroll_right':
+        if (isScrollModeEnd(store.option.dir === 'rtl' ? 'next' : 'prev'))
+          return;
         return scrollTo(
           scrollProgress() + (store.option.dir === 'rtl' ? 40 : -40),
         );
 
       case 'page_up':
+        if (isScrollModeEnd('prev')) return;
         return scrollTo(scrollProgress() - store.rootSize.width * 0.8);
       case 'page_down':
+        if (isScrollModeEnd('next')) return;
         return scrollTo(scrollProgress() + store.rootSize.width * 0.8);
 
       case 'jump_to_home':
