@@ -1,13 +1,15 @@
 import type { UseDrag } from 'helper';
 
-import { debounce } from 'helper';
+import { debounce, inRange } from 'helper';
 
 import type { Area } from '../components/TouchArea';
 
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import classes from '../index.module.css';
 import { refs, setState, store } from '../store';
-import { resetUI } from './helper';
+import { getImg, getImgEle, resetUI } from './helper';
+import { reloadImg } from './imageLoad';
+import { showImgList } from './renderPage';
 import { isBottom, isTop, jumpToImg } from './scroll';
 import { resetPage } from './show';
 import {
@@ -18,20 +20,29 @@ import {
 } from './turnPage';
 import { zoom } from './zoom';
 
-/** 根据坐标判断点击的元素 */
-const findClickEle = <T extends Element>(
-  eleList: HTMLCollectionOf<T>,
-  { x, y }: MouseEvent,
-) =>
-  [...eleList].find((e) => {
+/** 根据坐标找出被点击到的元素 */
+const findClickEle = (
+  eleList: Iterable<Element>,
+  { x, y }: { x: number; y: number },
+) => {
+  for (const e of eleList) {
     const rect = e.getBoundingClientRect();
-    return (
-      x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
-    );
-  });
+    if (inRange(rect.left, x, rect.right) && inRange(rect.top, y, rect.bottom))
+      return e;
+  }
+};
 
 /** 触发点击区域操作 */
 const handlePageClick = (e: MouseEvent) => {
+  // 点击出错的图片可以立刻重新加载
+  for (const i of showImgList()) {
+    const img = getImg(i);
+    if (img.loadType !== 'error') continue;
+    const imgEle = getImgEle(img.src);
+    if (!imgEle || !findClickEle([imgEle], e)) continue;
+    return reloadImg(img.src);
+  }
+
   const targetArea = findClickEle(refs.touchArea.children, e);
   if (!targetArea) return;
   const areaName = (targetArea as HTMLElement).dataset.area as Area | undefined;

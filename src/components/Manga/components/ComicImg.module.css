@@ -72,6 +72,10 @@
       animation: show 100ms forwards;
     }
   }
+
+  &[data-load-type='error'] > picture {
+    cursor: pointer;
+  }
 }
 
 .mangaFlow[dir='ltr'] .img[data-show='1'],
