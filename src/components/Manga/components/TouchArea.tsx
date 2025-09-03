@@ -54,9 +54,7 @@ export const TouchArea: Component = () => (
     dir={dir()}
     data-show={boolDataVal(store.show.touchArea)}
     data-area={areaType()}
-    data-turn-page={boolDataVal(
-      store.option.clickPageTurn.enabled && !store.option.scrollMode.enabled,
-    )}
+    data-turn-page={boolDataVal(store.option.clickPageTurn.enabled)}
   >
     <For each={areaArrayMap[areaType()]}>
       {(rows) => (

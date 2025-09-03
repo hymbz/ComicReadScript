@@ -107,31 +107,111 @@ const handleSwapPageTurnKey = (nextPage: boolean) => {
   return next ? 'next' : 'prev';
 };
 
-/** 处理快捷键长按的情况 */
-export const handleHoldKey = new (class {
-  holdKeys = new Map<string, () => void>();
+export const handleHotkey = (hotkey: string, e?: KeyboardEvent) => {
+  // 并排卷轴模式下的快捷键
+  if (isAbreastMode()) {
+    switch (hotkey) {
+      case 'scroll_up':
+        return setAbreastScrollFill(abreastScrollFill() - 40);
+      case 'scroll_down':
+        return setAbreastScrollFill(abreastScrollFill() + 40);
 
-  linsten(code: string, holdFn: () => void, upFn: () => void) {
-    if (this.holdKeys.has(code)) return;
-    holdFn();
-    this.holdKeys.set(code, upFn);
+      case 'scroll_left':
+        if (e?.repeat)
+          return constantScroll.start(store.option.dir === 'rtl' ? -1 : 1);
+        return scrollBy(store.option.dir === 'rtl' ? -40 : 40);
+      case 'scroll_right':
+        if (e?.repeat)
+          return constantScroll.start(store.option.dir === 'rtl' ? 1 : -1);
+        return scrollBy(store.option.dir === 'rtl' ? 40 : -40);
+
+      case 'page_up':
+        return scrollBy(-store.rootSize.width * 0.8);
+      case 'page_down':
+        return scrollBy(store.rootSize.width * 0.8);
+
+      case 'jump_to_home':
+        return scrollTo(0);
+      case 'jump_to_end':
+        return scrollTo(scrollLength());
+    }
   }
 
-  onKeyUp = (e: KeyboardEvent) => {
-    const code = getKeyboardCode(e);
-    if (!this.holdKeys.has(code)) return;
-    this.holdKeys.get(code)!();
-    this.holdKeys.delete(code);
-  };
-})();
+  // 普通卷轴模式下的快捷键
+  if (isScrollMode()) {
+    switch (hotkey) {
+      case 'page_up':
+        return scrollViewTurnPage(-store.rootSize.height * 0.8);
+      case 'page_down':
+        return scrollViewTurnPage(store.rootSize.height * 0.8);
 
-/** 处理长按滚动 */
-const handleHoldScroll = (code: string, speed: number) => {
-  handleHoldKey.linsten(
-    code,
-    () => constantScroll.start(speed),
-    () => constantScroll.cancel(),
-  );
+      case 'scroll_up':
+        if (e?.repeat) return constantScroll.start(-1);
+        return scrollBy(-40, true);
+      case 'scroll_down':
+        if (e?.repeat) return constantScroll.start(1);
+        return scrollBy(40, true);
+    }
+  }
+
+  switch (hotkey) {
+    case 'page_up':
+    case 'scroll_up':
+      return turnPage('prev');
+
+    case 'page_down':
+    case 'scroll_down':
+      return turnPage('next');
+
+    case 'scroll_left':
+      return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
+    case 'scroll_right':
+      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
+
+    case 'jump_to_home':
+      return setState('activePageIndex', 0);
+    case 'jump_to_end':
+      return setState(
+        'activePageIndex',
+        Math.max(0, store.pageList.length - 1),
+      );
+
+    case 'switch_page_fill':
+      return switchFillEffect();
+    case 'switch_scroll_mode':
+      return switchScrollMode();
+    case 'switch_single_double_page_mode':
+      return switchOnePageMode();
+    case 'switch_dir':
+      return switchDir();
+    case 'switch_grid_mode':
+      return switchGridMode();
+
+    case 'translate_current_page':
+      return translateCurrent();
+    case 'translate_all':
+      return translateAll();
+    case 'translate_to_end':
+      return translateToEnd();
+
+    case 'auto_scroll':
+      return switchAutoScroll();
+    case 'fullscreen':
+      return switchFullscreen();
+
+    case 'switch_auto_enlarge':
+      return setOption((draftOption) => {
+        draftOption.disableZoom = !draftOption.disableZoom;
+      });
+
+    case 'exit':
+      return store.prop.onExit?.();
+
+    // 阅读模式以外的快捷键转发到网页上去处理
+    default:
+      document.body.dispatchEvent(new KeyboardEvent('keydown', e));
+      document.body.dispatchEvent(new KeyboardEvent('keyup', e));
+  }
 };
 
 export const handleKeyDown = (e: KeyboardEvent) => {
@@ -199,107 +279,17 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     e.preventDefault();
   } else return;
 
-  const hotkey = hotkeysMap()[code];
+  handleHotkey(hotkeysMap()[code], e);
+};
 
-  // 并排卷轴模式下的快捷键
-  if (isAbreastMode()) {
-    switch (hotkey) {
-      case 'scroll_up':
-        return setAbreastScrollFill(abreastScrollFill() - 40);
-      case 'scroll_down':
-        return setAbreastScrollFill(abreastScrollFill() + 40);
-
-      case 'scroll_left':
-        return scrollBy(store.option.dir === 'rtl' ? -40 : 40);
-      case 'scroll_right':
-        return scrollBy(store.option.dir === 'rtl' ? 40 : -40);
-
-      case 'page_up':
-        return scrollBy(-store.rootSize.width * 0.8);
-      case 'page_down':
-        return scrollBy(store.rootSize.width * 0.8);
-
-      case 'jump_to_home':
-        return scrollTo(0);
-      case 'jump_to_end':
-        return scrollTo(scrollLength());
-    }
-  }
-
-  // 普通卷轴模式下的快捷键
-  if (isScrollMode()) {
-    switch (hotkey) {
-      case 'page_up':
-        return scrollViewTurnPage(-store.rootSize.height * 0.8);
-      case 'page_down':
-        return scrollViewTurnPage(store.rootSize.height * 0.8);
-
-      case 'scroll_up':
-        if (e.repeat) return handleHoldScroll(code, -1);
-        return scrollBy(-40, true);
-      case 'scroll_down':
-        if (e.repeat) return handleHoldScroll(code, 1);
-        return scrollBy(40, true);
-    }
-  }
-
-  switch (hotkey) {
-    case 'page_up':
-    case 'scroll_up':
-      return turnPage('prev');
-
-    case 'page_down':
-    case 'scroll_down':
-      return turnPage('next');
-
+export const handleKeyUp = (e: KeyboardEvent) => {
+  switch (hotkeysMap()[getKeyboardCode(e)]) {
+    // 停止长按滚动
     case 'scroll_left':
-      return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
     case 'scroll_right':
-      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
-
-    case 'jump_to_home':
-      return setState('activePageIndex', 0);
-    case 'jump_to_end':
-      return setState(
-        'activePageIndex',
-        Math.max(0, store.pageList.length - 1),
-      );
-
-    case 'switch_page_fill':
-      return switchFillEffect();
-    case 'switch_scroll_mode':
-      return switchScrollMode();
-    case 'switch_single_double_page_mode':
-      return switchOnePageMode();
-    case 'switch_dir':
-      return switchDir();
-    case 'switch_grid_mode':
-      return switchGridMode();
-
-    case 'translate_current_page':
-      return translateCurrent();
-    case 'translate_all':
-      return translateAll();
-    case 'translate_to_end':
-      return translateToEnd();
-
-    case 'auto_scroll':
-      return switchAutoScroll();
-    case 'fullscreen':
-      return switchFullscreen();
-
-    case 'switch_auto_enlarge':
-      return setOption((draftOption) => {
-        draftOption.disableZoom = !draftOption.disableZoom;
-      });
-
-    case 'exit':
-      return store.prop.onExit?.();
-
-    // 阅读模式以外的快捷键转发到网页上去处理
-    default:
-      document.body.dispatchEvent(new KeyboardEvent('keydown', e));
-      document.body.dispatchEvent(new KeyboardEvent('keyup', e));
+    case 'scroll_up':
+    case 'scroll_down':
+      return constantScroll.cancel();
   }
 };
 

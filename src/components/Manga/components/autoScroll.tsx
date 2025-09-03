@@ -7,12 +7,9 @@ import { AnimationFrame, createEffectOn, t } from 'helper';
 import { IconButton } from '../../IconButton';
 import {
   handleEndTurnPage,
-  isAbreastMode,
+  handleHotkey,
   isBottom,
-  isScrollMode,
-  scrollBy,
   switchAutoScroll,
-  turnPage,
 } from '../actions';
 import { setState, store } from '../store';
 
@@ -21,23 +18,16 @@ const autoScroll = new (class extends AnimationFrame {
   lastTime = 0;
 
   scroll = () => {
-    if (store.show.endPage === 'end') {
+    if (isBottom()) {
       this.stop();
-      return store.option.autoScroll.triggerEnd && handleEndTurnPage('next');
+      if (!store.prop.onExit) return;
+      setState('show', 'endPage', 'end');
+      if (store.option.autoScroll.triggerEnd)
+        setTimeout(handleEndTurnPage, 500, 'next');
+      return;
     }
 
-    if (!store.option.scrollMode.enabled) turnPage('next');
-    else if (isScrollMode()) scrollBy(store.option.autoScroll.distance, true);
-    else if (isAbreastMode())
-      scrollBy(
-        (store.option.dir === 'rtl' ? 1 : -1) *
-          store.option.autoScroll.distance,
-        true,
-      );
-
-    if (!isBottom()) return;
-    if (!store.prop.onExit) return this.stop();
-    return setState('show', 'endPage', 'end');
+    handleHotkey('page_down');
   };
 
   frame = (timestamp: DOMHighResTimeStamp) => {

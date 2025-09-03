@@ -70,8 +70,8 @@ export const useCssVar = () => {
   };
 
   const i18n = () => ({
-    '--i18n-touch-area-prev': `"${t('touch_area.prev')}"`,
-    '--i18n-touch-area-next': `"${t('touch_area.next')}"`,
+    '--i18n-touch-area-prev': `"${t('hotkeys.page_up')}"`,
+    '--i18n-touch-area-next': `"${t('hotkeys.page_down')}"`,
     '--i18n-touch-area-menu': `"${t('touch_area.menu')}"`,
   });
 

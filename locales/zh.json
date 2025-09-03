@@ -250,8 +250,6 @@
   },
   "touch_area": {
     "menu": "菜单",
-    "next": "下页",
-    "prev": "上页",
     "type": {
       "edge": "边缘",
       "l": "L",

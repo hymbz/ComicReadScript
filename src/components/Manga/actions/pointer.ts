@@ -9,15 +9,11 @@ import classes from '../index.module.css';
 import { refs, setState, store } from '../store';
 import { getImg, getImgEle, openScrollLock, resetUI } from './helper';
 import { reloadImg } from './imageLoad';
+import { handleHotkey } from './operate';
 import { showImgList } from './renderPage';
 import { jumpToImg } from './scroll';
 import { resetPage } from './show';
-import {
-  type Dir,
-  getTurnPageDir,
-  turnPage,
-  turnPageAnimation,
-} from './turnPage';
+import { getTurnPageDir, turnPage, turnPageAnimation } from './turnPage';
 import { zoom } from './zoom';
 
 /** 根据坐标找出被点击到的元素 */
@@ -58,7 +54,16 @@ const handlePageClick = (e: MouseEvent) => {
     return;
   setState((state) => {
     resetUI(state);
-    turnPage(areaName.toLowerCase() as Dir, state);
+
+    switch (areaName) {
+      case 'NEXT':
+      case 'next':
+        return handleHotkey('page_down');
+
+      case 'PREV':
+      case 'prev':
+        return handleHotkey('page_up');
+    }
   });
 };
 

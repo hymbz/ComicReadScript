@@ -250,8 +250,6 @@
   },
   "touch_area": {
     "menu": "Menu",
-    "next": "Next Page",
-    "prev": "Prev Page",
     "type": {
       "edge": "Edge",
       "l": "L",
