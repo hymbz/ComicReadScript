@@ -99,9 +99,9 @@
       "img_not_found_files": "请选择图片文件或含有图片文件的压缩包",
       "img_not_found_folder": "文件夹下没有图片文件或含有图片文件的压缩包",
       "not_valid_url": "不是有效的 URL",
+      "parse_error": "Elemzési hiba",
+      "password_error": "Hibás jelszó",
       "repeat_load": "正在加载其他文件中……",
-      "unzip_error": "解压出错",
-      "unzip_password_error": "解压密码错误",
       "userscript_not_installed": "未安装 ComicRead 脚本"
     },
     "button": {
@@ -115,7 +115,7 @@
     "install_md": "### inden alkalommal megnyitni ezt az oldalt fárasztó?\nHa szeretnéd, hogy:\n1. Különálló ablakban fusson, mintha egy helyi alkalmazás lenne.\n1. Hozzá lehessen adni a helyi tömörített fájlok megnyitási lehetőségeihez, így közvetlenül megnyitható legyen.\n1. Offline is használható legyen~~ (főleg arra az esetre, ha a hálózat instabil és nem éred el az oldalt)~~\n### Telepítsd ezt az oldalt PWA alkalmazásként a számítógépedre! 😃👍",
     "message": {
       "enter_password": "add meg a jelszavad",
-      "unzipping": "Kicsomagolás"
+      "parsing": "Elemzés"
     },
     "tip_enter_url": "请输入压缩包 URL",
     "tip_md": "# ComicRead PWA\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\n---\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\n*也可以选择**直接粘贴**或**输入**压缩包 URL 下载阅读*"

@@ -3,10 +3,11 @@ import { fileTypeFromBuffer } from 'file-type';
 import { plimit, t, wait } from 'helper';
 
 import type { ZipData } from '.';
-import type { ImgFile } from '../store';
+import type { ImgFile } from '../../store';
 
-import { toast } from '../../../components/Toast';
-import { createObjectURL, isSupportFile, loadScript } from '../helper';
+import { toast } from '../../../../components/Toast';
+import { createObjectURL, loadScript } from '../../helper';
+import { isSupportFile } from '../helper';
 
 loadScript('/libunrar/rpc.js');
 
@@ -93,7 +94,7 @@ export const libunrar = async (
       case 'Missing password':
       case 'Bad password': {
         if (password) {
-          toast.error(t('pwa.alert.unzip_password_error'), {
+          toast.error(t('pwa.alert.password_error'), {
             throw: new Error(error as string),
           });
         }

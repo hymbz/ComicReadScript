@@ -1,8 +1,8 @@
 import { toast } from 'components/Toast';
 import { log, t } from 'helper';
 
+import type { ImgFile } from '../../store';
 import type { ZipExtension } from '../helper';
-import type { ImgFile } from '../store';
 
 import { fflate } from './fflate';
 import { libarchive } from './libarchive';
@@ -27,7 +27,7 @@ export type ZipData = {
 
 /** 解压缩文件 */
 export const unzip = async (zipFile: File, extension: ZipExtension) => {
-  const tip = `「${zipFile.name}」${t('pwa.message.unzipping')}`;
+  const tip = `「${zipFile.name}」${t('pwa.message.parsing')}`;
   toast(tip, { duration: Number.POSITIVE_INFINITY });
 
   let imgDataList: (ImgFile | undefined)[] = [];
@@ -38,7 +38,7 @@ export const unzip = async (zipFile: File, extension: ZipExtension) => {
       imgDataList = await unzipFn({ zipFile, tip, extension });
     } catch (error) {
       toast.error(
-        `${name} ${t('pwa.alert.unzip_error')}：${(error as Error).message}`,
+        `${name} ${t('pwa.alert.parse_error')}：${(error as Error).message}`,
       );
     }
 

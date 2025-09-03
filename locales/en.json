@@ -99,9 +99,9 @@
       "img_not_found_files": "Please select an image file or a compressed file containing image files",
       "img_not_found_folder": "No image files or compressed files containing image files in the folder",
       "not_valid_url": "Not a valid URL",
+      "parse_error": "Parsing error",
+      "password_error": "Incorrect password",
       "repeat_load": "Loading other files…",
-      "unzip_error": "Decompression error",
-      "unzip_password_error": "Decompression password error",
       "userscript_not_installed": "ComicRead userscript not installed"
     },
     "button": {
@@ -115,7 +115,7 @@
     "install_md": "### Tired of opening this webpage every time?\nIf you wish to:\n1. Have an independent window, as if using local software\n1. Add to the local compressed file opening method for easy direct opening\n1. Use offline\n### Welcome to install this page as a PWA app on your computer😃👍",
     "message": {
       "enter_password": "Please enter your password",
-      "unzipping": "Unzipping"
+      "parsing": "Parsing"
     },
     "tip_enter_url": "Please enter the URL of the compressed file",
     "tip_md": "# ComicRead PWA\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\n---\n### Drag and drop image files, folders, or compressed files directly to start reading\n*You can also choose to **paste directly** or **enter** the URL of the compressed file for downloading and reading*"

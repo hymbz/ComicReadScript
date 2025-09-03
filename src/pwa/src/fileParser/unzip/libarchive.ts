@@ -5,9 +5,10 @@ import { toast } from 'components/Toast';
 import { plimit, t } from 'helper';
 
 import type { ZipData } from '.';
-import type { ImgFile } from '../store';
+import type { ImgFile } from '../../store';
 
-import { createObjectURL, isSupportFile } from '../helper';
+import { createObjectURL } from '../../helper';
+import { isSupportFile } from '../helper';
 
 const initLibarchive = false;
 /**
@@ -56,13 +57,13 @@ export const libarchive = async ({
           // 但也不能因为一个文件解压出错就直接中断所有文件的解压
           // 因为 libarchive 就是有可能出现其中几个文件解压不出来的情况
           if (password) {
-            toast.error(t('pwa.alert.unzip_password_error'));
+            toast.error(t('pwa.alert.password_error'));
             return undefined;
           }
 
           toast.error(
             `「${zipFile.name}」 - 「${file.name}」 ${t(
-              'pwa.alert.unzip_error',
+              'pwa.alert.parse_error',
             )}：${(error as Error).message}`,
             { duration: Number.POSITIVE_INFINITY },
           );

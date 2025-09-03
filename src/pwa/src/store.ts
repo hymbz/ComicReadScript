@@ -1,8 +1,7 @@
 import { toast } from 'components/Toast';
 import { createEffectOn, t, useStore } from 'helper';
 
-import { isSupportFile } from './helper';
-import { unzip } from './unzip';
+import { getImgData } from './fileParser';
 
 export type ImgFile = { name: string; src: string };
 export const { store, setState } = useStore({
@@ -21,19 +20,6 @@ export const { store, setState } = useStore({
     (localStorage.getItem('InstallTip') as '' | 'init' | 'TD') ?? 'init',
 });
 export type State = typeof store;
-
-/** 自动从句柄中找出并处理为图片数据 */
-const getImgData = (file: File): Promise<ImgFile[]> | ImgFile[] => {
-  const fileType = isSupportFile(file.name);
-  switch (fileType) {
-    case null:
-      return [];
-    case 'img':
-      return [{ name: file.name, src: URL.createObjectURL(file) }];
-    default:
-      return unzip(file, fileType);
-  }
-};
 
 export const handleExit = () => setState('show', false);
 

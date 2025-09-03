@@ -26,8 +26,8 @@
     { "rule": "import/*", "fixable": true, "severity": "warn" }
   ],
 
-  // "i18n-ally.localesPaths": ["locales"],
-  "i18n-ally.localesPaths": ["locales", "src/userscript/ehTagRules"],
+  "i18n-ally.localesPaths": ["locales"],
+  // "i18n-ally.localesPaths": ["locales", "src/userscript/ehTagRules"],
   "i18n-ally.pathMatcher": "{locale}.{ext}",
   "i18n-ally.keystyle": "nested",
   "i18n-ally.sortKeys": true,
@@ -95,6 +95,7 @@
     "site.add_feature.remember_current_site",
     "site.add_feature.tag_lint",
     "site.add_feature.expand_tag_list",
+    "site.add_feature.add_hotkeys_actions",
     "description",
     "img_status.error",
     "img_status.loading",

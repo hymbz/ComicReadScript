@@ -12,9 +12,10 @@ import { toast, Toaster } from 'components/Toast';
 import { createEffectOn, setInitLang, t } from 'helper';
 
 import { DownloadButton, loadUrl } from './DownloadButton';
+import { supportExtension } from './fileParser';
 import { editButtonList } from './handleButtonList';
 import { handleDrag } from './handleDrag';
-import { FileSystemToFile, imgExtension, setTitle } from './helper';
+import { FileSystemToFile, setTitle } from './helper';
 import classes from './index.module.css';
 import { getSaveOption } from './option';
 import { handleExit, loadNewImglist, setState, store } from './store';
@@ -23,20 +24,8 @@ setTimeout(setInitLang);
 
 /** 选择文件 */
 const handleSelectFiles = async () => {
-  const options = [
-    ['image/*', [...imgExtension.values()]],
-    ['application/zip', ['.zip', '.cbz']],
-    ['application/x-rar-compressed', ['.rar', '.cbr']],
-    ['application/x-7z-compressed', ['.7z', '.cb7']],
-  ] as [string, string[]][];
-
   const files: File[] = await fileOpen([
-    { multiple: true },
-    ...options.map(([mimeTypes, extensions]) => ({
-      mimeTypes: [mimeTypes],
-      extensions,
-      description: 'Image',
-    })),
+    { multiple: true, extensions: [...supportExtension] },
   ]);
   setTitle(files);
   return loadNewImglist(files, t('pwa.alert.img_not_found_files'));

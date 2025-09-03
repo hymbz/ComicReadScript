@@ -99,9 +99,9 @@
       "img_not_found_files": "请选择图片文件或含有图片文件的压缩包",
       "img_not_found_folder": "文件夹下没有图片文件或含有图片文件的压缩包",
       "not_valid_url": "不是有效的 URL",
+      "parse_error": "解析出错",
+      "password_error": "密码错误",
       "repeat_load": "正在加载其他文件中……",
-      "unzip_error": "解压出错",
-      "unzip_password_error": "解压密码错误",
       "userscript_not_installed": "未安装 ComicRead 脚本"
     },
     "button": {
@@ -115,7 +115,7 @@
     "install_md": "### 每次都要打开这个网页很麻烦？\n如果你希望\n1. 能有独立的窗口，像是在使用本地软件一样\n1. 加入本地压缩文件的打开方式之中，方便直接打开\n1. 离线使用~~（主要是担心国内网络抽风无法访问这个网页~~\n### 欢迎将本页面作为 PWA 应用安装到电脑上😃👍",
     "message": {
       "enter_password": "请输入密码",
-      "unzipping": "解压缩中"
+      "parsing": "解析中"
     },
     "tip_enter_url": "请输入压缩包 URL",
     "tip_md": "# ComicRead PWA\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\n---\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\n*也可以选择**直接粘贴**或**输入**压缩包 URL 下载阅读*"

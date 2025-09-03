@@ -2,35 +2,6 @@ import { testImgUrl } from 'helper';
 
 import { setState } from './store';
 
-export const imgExtension = new Set([
-  '.png',
-  '.gif',
-  '.jpeg',
-  '.jpg',
-  '.webp',
-  '.jfif',
-  '.apng',
-]);
-
-export type ZipExtension = '.zip' | '.rar' | '.7z' | '.cbz' | '.cbr' | '.cb7';
-export const zipExtension = new Set<ZipExtension>([
-  '.zip',
-  '.rar',
-  '.7z',
-  '.cbz',
-  '.cbr',
-  '.cb7',
-]);
-
-/** 根据文件名判断文件是否受支持 */
-export const isSupportFile = (name: string) => {
-  const extension = /\.[^.]+$/.exec(name)?.[0];
-  if (!extension) return null;
-  if (zipExtension.has(extension as any)) return extension as ZipExtension;
-  if (imgExtension.has(extension)) return 'img';
-  return null;
-};
-
 export const loadScript = (url: string) => {
   const script = document.createElement('script');
   script.setAttribute('src', url);

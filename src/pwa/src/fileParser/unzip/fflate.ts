@@ -8,7 +8,8 @@ import { t } from 'helper';
 
 import type { ZipData } from '.';
 
-import { createObjectURL, isSupportFile } from '../helper';
+import { createObjectURL } from '../../helper';
+import { isSupportFile } from '../helper';
 
 const fflateUnzip = (data: Uint8Array, opts: AsyncUnzipOptions) =>
   new Promise<Unzipped>((resolve, reject) => {
@@ -41,7 +42,7 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
       }),
     );
   } catch {
-    toast.error(`fflate ${t('pwa.alert.unzip_error')}`);
+    toast.error(`fflate ${t('pwa.alert.parse_error')}`);
     return [];
   }
 };
