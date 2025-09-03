@@ -1,5 +1,4 @@
 export * from '../handleComicData';
-export * from './abreastScroll';
 export * from './helper';
 export * from './hotkeys';
 export * from './image';

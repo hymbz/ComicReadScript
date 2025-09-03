@@ -6,12 +6,11 @@ import { AnimationFrame, createEffectOn, t } from 'helper';
 
 import { IconButton } from '../../IconButton';
 import {
+  handleEndTurnPage,
   isAbreastMode,
   isBottom,
   isScrollMode,
-  scrollProgress,
-  scrollTo,
-  scrollTop,
+  scrollBy,
   switchAutoScroll,
   turnPage,
 } from '../actions';
@@ -24,18 +23,15 @@ const autoScroll = new (class extends AnimationFrame {
   scroll = () => {
     if (store.show.endPage === 'end') {
       this.stop();
-      if (store.option.autoScroll.triggerEnd) turnPage('next');
-      return;
+      return store.option.autoScroll.triggerEnd && handleEndTurnPage('next');
     }
 
     if (!store.option.scrollMode.enabled) turnPage('next');
-    else if (isScrollMode())
-      scrollTo(scrollTop() + store.option.autoScroll.distance, true);
+    else if (isScrollMode()) scrollBy(store.option.autoScroll.distance, true);
     else if (isAbreastMode())
-      scrollTo(
-        scrollProgress() -
-          (store.option.dir === 'rtl' ? -1 : 1) *
-            store.option.autoScroll.distance,
+      scrollBy(
+        (store.option.dir === 'rtl' ? 1 : -1) *
+          store.option.autoScroll.distance,
         true,
       );
 

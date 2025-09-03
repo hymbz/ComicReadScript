@@ -12,7 +12,7 @@ import type { MangaProps } from '../components/Manga';
 import { Manga } from '../components/Manga';
 import { initStore, refs, setState } from '../components/Manga/store';
 import { defaultOption } from '../components/Manga/store/option';
-import { Toaster } from '../components/Toast';
+import { toast, Toaster } from '../components/Toast';
 import { imgList, waitImgLoaded } from './helper';
 
 const cloneArray = (arr: string[], count: number) =>
@@ -39,6 +39,9 @@ const meta = {
   args: {
     imgList: [],
     图源: '饮茶之时、女仆之梦（彩图）',
+    onExit: () => toast('退出'),
+    onNext: () => toast('触发下一话'),
+    onPrev: () => toast('触发上一话'),
   } satisfies Props,
   component: Manga,
   render(props: Props) {

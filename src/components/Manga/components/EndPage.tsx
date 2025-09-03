@@ -13,7 +13,7 @@ import type { UseDrag } from 'helper';
 
 import { boolDataVal, t, useDrag } from 'helper';
 
-import { bindRef, focus, getTurnPageDir, turnPage } from '../actions';
+import { bindRef, focus, getTurnPageDir, handleEndTurnPage } from '../actions';
 import { stopPropagation } from '../helper';
 import classes from '../index.module.css';
 import { setState, store } from '../store';
@@ -50,21 +50,12 @@ export const EndPage: Component = () => {
       store.rootSize.height / 2,
       startTime,
     );
-    if (pageDir) turnPage(pageDir);
+    if (pageDir) handleEndTurnPage(pageDir);
     setDragY(0);
     setIsDrag(false);
   };
 
   onMount(() => {
-    ref.addEventListener(
-      'wheel',
-      (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        turnPage(e.deltaY > 0 ? 'next' : 'prev');
-      },
-      { passive: false },
-    );
     useDrag({
       ref,
       handleDrag,

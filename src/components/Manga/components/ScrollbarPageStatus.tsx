@@ -1,12 +1,12 @@
 import type { Component } from 'solid-js';
 
-import { createMemo, For } from 'solid-js';
+import { For } from 'solid-js';
 
 import { boolDataVal, createThrottleMemo } from 'helper';
 
 import type { ComicImg } from '../store/image';
 
-import { contentHeight, getImg, isOnePageMode, isUpscale } from '../actions';
+import { getImg, isOnePageMode, isUpscale, scrollLength } from '../actions';
 import classes from '../index.module.css';
 import { store } from '../store';
 
@@ -41,26 +41,16 @@ const getScrollbarPage = (
   };
 };
 
-const ScrollbarPage: Component<ScrollbarPageItem> = (props) => {
-  const flexBasis = createMemo(
-    () =>
-      props.num /
-      (store.option.scrollMode.enabled
-        ? contentHeight()
-        : store.imgList.length),
-  );
-
-  return (
-    <div
-      class={classes.scrollbarPage}
-      style={{ 'flex-basis': `${flexBasis() * 100}%` }}
-      data-type={props.loadType}
-      data-null={boolDataVal(props.isNull)}
-      data-translation-type={props.translationType}
-      data-upscale={props.upscale}
-    />
-  );
-};
+const ScrollbarPage: Component<ScrollbarPageItem> = (props) => (
+  <div
+    class={classes.scrollbarPage}
+    style={{ 'flex-basis': `${(props.num / scrollLength()) * 100}%` }}
+    data-type={props.loadType}
+    data-null={boolDataVal(props.isNull)}
+    data-translation-type={props.translationType}
+    data-upscale={props.upscale}
+  />
+);
 
 const isSameItem = (a: ScrollbarPageItem, b: ScrollbarPageItem) =>
   a.loadType === b.loadType &&

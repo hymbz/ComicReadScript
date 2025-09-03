@@ -5,7 +5,7 @@ import type { PageList } from '../store/image';
 
 import { handleComicData } from '../handleComicData';
 import { setState } from '../store';
-import { activeImgIndex, isOnePageMode, pageNum } from './memo/common';
+import { activeImgIndex, isOnePageMode, pageNum } from './memo';
 
 /** 重新计算图片排列 */
 export const updatePageData = (state: State) => {

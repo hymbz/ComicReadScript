@@ -2,48 +2,12 @@ import { createSignal } from 'solid-js';
 
 import type { PointerState, UseDrag } from 'helper';
 
-import { clamp, createRootMemo, debounce } from 'helper';
-
-import type { State } from '../store';
+import { clamp, debounce } from 'helper';
 
 import { refs, setState, store } from '../store';
-import { isAbreastMode } from './memo';
+import { scrollLength, scrollPosition, sliderHeight } from './memo';
 import { saveReadProgress } from './readProgress';
-import {
-  scrollLength,
-  scrollPercentage,
-  scrollTo,
-  sliderHeight,
-} from './scroll';
-
-/** 滚动条元素的长度 */
-export const scrollDomLength = createRootMemo(() =>
-  Math.max(store.scrollbarSize.width, store.scrollbarSize.height),
-);
-
-/** 滚动条滑块的中心点高度 */
-export const sliderMidpoint = createRootMemo(
-  () => scrollDomLength() * (scrollPercentage() + sliderHeight() / 2),
-);
-
-/** 滚动条滑块的位置 */
-export const sliderTop = createRootMemo(
-  () => `${scrollPercentage() * scrollDomLength()}px`,
-);
-
-/** 滚动条位置 */
-export const scrollPosition = createRootMemo(
-  (): State['option']['scrollbar']['position'] => {
-    if (store.option.scrollbar.position === 'auto') {
-      if (store.isMobile) return 'top';
-      if (isAbreastMode()) return 'bottom';
-      // 大部分图片都是宽图时，将滚动条移至底部
-      return store.defaultImgType === 'long' ? 'bottom' : 'right';
-    }
-
-    return store.option.scrollbar.position;
-  },
-);
+import { scrollTo } from './scroll';
 
 /** 判断点击位置在滚动条上的位置比率 */
 const getClickTop = (x: number, y: number, e: HTMLElement): number => {

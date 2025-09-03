@@ -14,7 +14,7 @@ import { setState, store } from '../store';
 import { getImg, getImgEle, getImgIndexs } from './helper';
 import { handleImgRecognition } from './imageRecognition';
 import { updateImgSize } from './imageSize';
-import { imgList, preloadNum } from './memo/common';
+import { imgList, preloadNum } from './memo';
 import { renderImgList, showImgList } from './renderPage';
 import { translationAll } from './translation';
 

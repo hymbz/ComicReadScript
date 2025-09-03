@@ -2,9 +2,10 @@ import { createSignal } from 'solid-js';
 
 import { clamp, createRootMemo, createThrottleMemo } from 'helper';
 
-import { store } from '../store';
-import { getImg } from './helper';
-import { abreastColumnWidth, isAbreastMode } from './memo/common';
+import { placeholderSize } from '.';
+import { store } from '../../store';
+import { getImg } from '../helper';
+import { isAbreastMode } from './options';
 
 /** 并排卷轴模式下的全局滚动填充 */
 export const [abreastScrollFill, _setAbreastScrollFill] = createSignal(0);
@@ -101,6 +102,13 @@ const scrollFillLimit = createRootMemo(
 );
 export const setAbreastScrollFill = (val: number) =>
   _setAbreastScrollFill(clamp(-scrollFillLimit(), val, scrollFillLimit()));
+
+/** 并排卷轴模式下的列宽度 */
+export const abreastColumnWidth = createRootMemo(() =>
+  isAbreastMode()
+    ? placeholderSize().width * store.option.scrollMode.imgScale
+    : 0,
+);
 
 /** 并排卷轴模式下当前要显示的列 */
 export const abreastShowColumn = createThrottleMemo(() => {

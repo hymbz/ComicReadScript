@@ -37,7 +37,7 @@ export const inRange = (min: number, val: number, max: number) =>
 export const getFileName = (url: string) => url.match(/.+\/([^?]+)/)?.[1];
 
 /** 判断两个数是否在指定误差范围内相等 */
-export const approx = (val: number, target: number, range: number) =>
+export const approx = (val: number, target: number, range = 1) =>
   Math.abs(target - val) <= range;
 
 /** 创建一个只会执行一次的函数 */

@@ -1,8 +1,7 @@
 import type { UseDrag } from 'helper';
 
 import { refs, store } from '../store';
-import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
-import { scrollTop } from './memo';
+import { abreastScrollFill, scrollTop, setAbreastScrollFill } from './memo';
 import { saveReadProgress } from './readProgress';
 import { scrollTo } from './scroll';
 
@@ -55,7 +54,7 @@ let initLeft = 0;
 let initAbreastScrollFill = 0;
 
 export const handleScrollModeDrag: UseDrag = (
-  { type, xy: [x, y], initial: [ix, iy] },
+  { type, xy: [x, y], initial: [ix, iy], startTime },
   e,
 ) => {
   if (!store.option.scrollMode.abreastMode && e.pointerType !== 'mouse') return;
@@ -82,6 +81,7 @@ export const handleScrollModeDrag: UseDrag = (
 
     case 'up': {
       if (animationId) cancelAnimationFrame(animationId);
+      if (performance.now() - startTime < 50) return;
       animationId = requestAnimationFrame(handleSlide);
       saveReadProgress();
     }

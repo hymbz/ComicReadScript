@@ -13,6 +13,9 @@ export const otherState = {
   rootSize: { width: 0, height: 0 },
   scrollbarSize: { width: 0, height: 0 },
 
+  /** 卷轴模式下的滚动距离 */
+  scrollTop: 0,
+
   autoScroll: { play: false, progress: 0 },
 
   supportWorker: false,

@@ -13,7 +13,6 @@ import {
   bindRef,
   bindScrollTop,
   bound,
-  doubleScrollLineHeight,
   focus,
   getImg,
   handleClick,
@@ -23,11 +22,11 @@ import {
   handleZoomDrag,
   imgAreaStyle,
   imgList,
-  imgTopList,
-  isDoubleMode,
   isEnableBg,
   isOnePageMode,
   isScrollMode,
+  pageHeightList,
+  pageTopList,
   resetPage,
   scrollTo,
   scrollTop,
@@ -68,8 +67,8 @@ export const ComicImgFlow: Component = () => {
   createEffectOn(
     [
       () => store.showRange[0],
-      () => imgTopList()[store.showRange[0]],
-      imgTopList,
+      () => pageTopList()[store.showRange[0]],
+      pageTopList,
     ],
     ([showImg, height, topList], prev) => {
       if (!prev || !height || !isScrollMode()) return;
@@ -176,13 +175,9 @@ export const ComicImgFlow: Component = () => {
     },
     'grid-template-rows': function () {
       if (store.gridMode) return undefined;
-      if (isDoubleMode())
-        return doubleScrollLineHeight()
-          .map((num) => `${num}px`)
-          .join(' ');
       if (isScrollMode())
-        return imgList()
-          .map(({ size: { height } }) => `${height}px`)
+        return pageHeightList()
+          .map((num) => `${num}px`)
           .join(' ');
     },
     'background-color': () =>

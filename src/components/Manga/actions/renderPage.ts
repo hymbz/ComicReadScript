@@ -3,22 +3,14 @@ import { clamp, createEffectOn, createRootMemo, throttle } from 'helper';
 import type { State } from '../store';
 
 import { setState, store } from '../store';
-import { abreastArea, abreastShowColumn } from './abreastScroll';
-import { contentHeight, doubleScrollLineHeight, imgTopList } from './imageSize';
-import { imgList } from './memo';
-import { scrollTop } from './memo/observer';
-import { scrollLength } from './scroll';
-
-/** 找到普通卷轴模式下指定高度上的图片 */
-const findTopImg = (top: number, initIndex = 0) => {
-  if (top > contentHeight()) return imgTopList().length - 1;
-
-  let i = initIndex;
-  for (; i < imgTopList().length; i++)
-    if (imgTopList()[i] > top) return i === 0 ? 0 : i - 1;
-
-  return imgTopList().length - 1;
-};
+import {
+  abreastArea,
+  abreastShowColumn,
+  findTopPage,
+  imgList,
+  scrollLength,
+  scrollTop,
+} from './memo';
 
 /** 获取并排卷轴模式下指定列的指定图片 */
 const getAbreastColumnImg = (column: number, img: number) => {
@@ -51,41 +43,6 @@ export const updateShowRange = (state: State) => {
       getAbreastColumnImg(start - 2, 0),
       getAbreastColumnImg(end + 2, -1),
     ];
-  } else if (state.option.scrollMode.doubleMode) {
-    // 双页卷轴模式
-    const top = scrollTop();
-    const bottom = scrollTop() + state.rootSize.height;
-    const renderTop = top - state.rootSize.height;
-    const rednerBottom = bottom + state.rootSize.height;
-
-    state.showRange = [-1, -1];
-    state.renderRange = [-1, -1];
-
-    let height = 0;
-    for (const [pageIndex, lineHeight] of doubleScrollLineHeight().entries()) {
-      height += lineHeight;
-      if (state.renderRange[0] === -1) {
-        if (height >= renderTop) state.renderRange[0] = pageIndex;
-        else continue;
-      }
-      if (state.showRange[0] === -1) {
-        if (height >= top) state.showRange[0] = pageIndex;
-        else continue;
-      }
-      if (state.showRange[1] === -1) {
-        if (height >= bottom) state.showRange[1] = pageIndex;
-        else continue;
-      }
-      if (state.renderRange[1] === -1) {
-        if (height >= rednerBottom) state.renderRange[1] = pageIndex;
-        else continue;
-      }
-      break;
-    }
-    if (state.renderRange[1] === -1)
-      state.renderRange[1] = state.pageList.length - 1;
-    if (state.showRange[1] === -1)
-      state.showRange[1] = state.pageList.length - 1;
   } else {
     // 普通卷轴模式
     const top = scrollTop();
@@ -93,10 +50,10 @@ export const updateShowRange = (state: State) => {
     const renderTop = top - state.rootSize.height;
     const rednerBottom = bottom + state.rootSize.height;
 
-    const renderTopImg = findTopImg(renderTop);
-    const topImg = findTopImg(top, renderTopImg);
-    const bottomImg = findTopImg(bottom, topImg);
-    const renderBottomImg = findTopImg(rednerBottom, bottomImg);
+    const renderTopImg = findTopPage(renderTop);
+    const topImg = findTopPage(top, renderTopImg);
+    const bottomImg = findTopPage(bottom, topImg);
+    const renderBottomImg = findTopPage(rednerBottom, bottomImg);
 
     state.showRange = [topImg, bottomImg];
     state.renderRange = [renderTopImg, renderBottomImg];

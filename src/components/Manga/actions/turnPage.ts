@@ -1,90 +1,86 @@
-import { debounce } from 'helper';
-
 import type { State } from '../store';
 
 import { setState, store } from '../store';
+import { withOptionalState } from './helper';
+import { isBottom, isTop } from './memo';
 import { saveReadProgress } from './readProgress';
-import { isBottom, isTop } from './scroll';
 import { resetPage } from './show';
 
-export const closeScrollLock = debounce(
-  () => setState('scrollLock', false),
-  100,
+export type Dir = 'next' | 'prev';
+
+/** 处理尽头翻页。返回当前是否已抵达尽头 */
+export const handleEndTurnPage = withOptionalState(
+  (dir: Dir, state: State): boolean => {
+    if (dir === 'prev') {
+      switch (state.show.endPage) {
+        case 'start':
+          if (state.scrollLock || store.option.scroolEnd !== 'auto')
+            return true;
+          state.prop.onPrev?.();
+          return true;
+        case 'end':
+          state.show.endPage = undefined;
+          return true;
+
+        default:
+          // 弹出卷首结束页
+          if (isTop()) {
+            if (state.scrollLock) return true;
+            if (
+              !state.prop.onExit ||
+              !state.prop.onPrev ||
+              store.option.scroolEnd !== 'auto'
+            )
+              return true;
+
+            state.show.endPage = 'start';
+            return true;
+          }
+      }
+    } else {
+      switch (state.show.endPage) {
+        case 'end':
+          if (state.scrollLock || store.option.scroolEnd === 'none')
+            return true;
+          if (store.option.scroolEnd === 'auto' && state.prop.onNext)
+            state.prop.onNext();
+          else state.prop.onExit?.(true);
+          return true;
+        case 'start':
+          state.show.endPage = undefined;
+          return true;
+
+        default:
+          // 弹出卷尾结束页
+          if (isBottom()) {
+            if (state.scrollLock) return true;
+            if (!state.prop.onExit) return true;
+
+            state.show.endPage = 'end';
+            return true;
+          }
+      }
+    }
+
+    return false;
+  },
 );
 
 /** 翻页。返回是否成功改变了当前页数 */
-export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
-  if (state.gridMode) return false;
+export const turnPage = withOptionalState((dir: Dir, state: State) => {
+  if (state.gridMode || state.option.scrollMode.enabled) return false;
 
-  if (dir === 'prev') {
-    switch (state.show.endPage) {
-      case 'start':
-        if (!state.scrollLock && store.option.scroolEnd === 'auto')
-          state.prop.onPrev?.();
-        return false;
-      case 'end':
-        state.show.endPage = undefined;
-        return false;
+  if (handleEndTurnPage(dir, state)) return false;
 
-      default:
-        // 弹出卷首结束页
-        if (isTop()) {
-          if (!state.prop.onExit) return false;
-          // 没有 onPrev 时不弹出
-          if (!state.prop.onPrev || store.option.scroolEnd !== 'auto')
-            return false;
+  saveReadProgress();
+  state.activePageIndex += dir === 'next' ? 1 : -1;
+  return true;
+});
 
-          state.show.endPage = 'start';
-          state.scrollLock = true;
-          closeScrollLock();
-          return false;
-        }
-
-        saveReadProgress();
-        if (state.option.scrollMode.enabled) return false;
-        state.activePageIndex -= 1;
-        return true;
-    }
-  } else {
-    switch (state.show.endPage) {
-      case 'end':
-        if (state.scrollLock) return false;
-        if (state.prop.onNext && store.option.scroolEnd === 'auto') {
-          state.prop.onNext();
-          return false;
-        }
-
-        if (store.option.scroolEnd !== 'none') state.prop.onExit?.(true);
-        return false;
-      case 'start':
-        state.show.endPage = undefined;
-        return false;
-
-      default:
-        // 弹出卷尾结束页
-        if (isBottom()) {
-          if (!state.prop.onExit) return false;
-          state.show.endPage = 'end';
-          state.scrollLock = true;
-          closeScrollLock();
-          return false;
-        }
-
-        saveReadProgress();
-        if (state.option.scrollMode.enabled) return false;
-        state.activePageIndex += 1;
-        return true;
-    }
-  }
-};
-
-export const turnPage = (dir: 'next' | 'prev') =>
-  setState((state) => turnPageFn(state, dir));
-
-export const turnPageAnimation = (dir: 'next' | 'prev') => {
+export const turnPageAnimation = (dir: Dir) => {
   setState((state) => {
     // 无法翻页就恢复原位
-    if (!turnPageFn(state, dir)) {
+    if (!turnPage(dir, state)) {
       state.page.offset.x.px = 0;
       state.page.offset.y.px = 0;
       resetPage(state, true);
@@ -113,8 +109,8 @@ export const getTurnPageDir = (
   move: number,
   total: number,
   startTime?: number,
-): undefined | 'prev' | 'next' => {
-  let dir: undefined | 'prev' | 'next';
+): Dir | undefined => {
+  let dir: Dir | undefined;
 
   // 处理无关速度不考虑时间单纯根据当前滚动距离来判断的情况
   if (!startTime) {

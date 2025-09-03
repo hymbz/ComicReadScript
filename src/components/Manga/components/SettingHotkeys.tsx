@@ -72,8 +72,6 @@ const KeyItem: Component<{
         return;
     }
 
-    unsafeWindow.toast = toast;
-
     const newCode = getKeyboardCode(e);
     if (Reflect.has(hotkeysMap(), newCode))
       toast.error(

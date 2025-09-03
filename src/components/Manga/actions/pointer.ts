@@ -7,16 +7,16 @@ import type { Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import classes from '../index.module.css';
 import { refs, setState, store } from '../store';
-import { getImg, getImgEle, resetUI } from './helper';
+import { getImg, getImgEle, openScrollLock, resetUI } from './helper';
 import { reloadImg } from './imageLoad';
 import { showImgList } from './renderPage';
-import { isBottom, isTop, jumpToImg } from './scroll';
+import { jumpToImg } from './scroll';
 import { resetPage } from './show';
 import {
+  type Dir,
   getTurnPageDir,
   turnPage,
   turnPageAnimation,
-  turnPageFn,
 } from './turnPage';
 import { zoom } from './zoom';
 
@@ -58,7 +58,7 @@ const handlePageClick = (e: MouseEvent) => {
     return;
   setState((state) => {
     resetUI(state);
-    turnPageFn(state, areaName.toLowerCase() as 'prev' | 'next');
+    turnPage(areaName.toLowerCase() as Dir, state);
   });
 };
 
@@ -160,30 +160,12 @@ export const handleMangaFlowDrag: UseDrag = ({
 let lastDeltaY = 0;
 let retardStartTime = 0;
 
-let lastWheel = 0;
-
 export const handleTrackpadWheel = (e: WheelEvent) => {
+  if (store.option.scrollMode.enabled) return;
+
+  openScrollLock();
   let deltaY = Math.floor(-e.deltaY);
   let absDeltaY = Math.abs(deltaY);
-  if (absDeltaY < 2) return;
-
-  let time = 0;
-  let now = 0;
-  // 为了避免被触摸板的滚动惯性触发，限定一下滚动距离
-  if (absDeltaY > 50) {
-    now = performance.now();
-    time = now - lastWheel;
-    lastWheel = now;
-  }
-
-  if (store.option.scrollMode.enabled) {
-    if (
-      time > 200 &&
-      ((isTop() && e.deltaY < 0) || (isBottom() && e.deltaY > 0))
-    )
-      turnPage(e.deltaY > 0 ? 'next' : 'prev');
-    return;
-  }
 
   // 加速度小于指定值后逐渐缩小滚动距离，实现减速效果
   if (Math.abs(absDeltaY - lastDeltaY) <= 6) {
@@ -197,16 +179,10 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
   dy += deltaY;
 
   setState((state) => {
-    // 滚动至漫画头尾尽头时
-    if ((isTop() && dy > 0) || (isBottom() && dy < 0)) {
-      if (time > 200) turnPageFn(state, dy < 0 ? 'next' : 'prev');
-      dy = 0;
-    }
-
     // 滚动过一页时
     if (dy <= -state.rootSize.height) {
-      if (turnPageFn(state, 'next')) dy += state.rootSize.height;
-    } else if (dy >= state.rootSize.height && turnPageFn(state, 'prev'))
+      if (turnPage('next', state)) dy += state.rootSize.height;
+    } else if (dy >= state.rootSize.height && turnPage('prev', state))
       dy -= state.rootSize.height;
 
     state.page.vertical = true;

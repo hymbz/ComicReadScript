@@ -1,57 +1,31 @@
-import { AnimationFrame, clamp, createRootMemo } from 'helper';
+import { AnimationFrame, clamp, inRange } from 'helper';
 
 import { refs, setState, store } from '../store';
+import { openScrollLock, setOption } from './helper';
 import {
   abreastArea,
-  abreastContentWidth,
+  abreastColumnWidth,
   abreastScrollWidth,
-} from './abreastScroll';
-import { setOption } from './helper';
-import { contentHeight, doubleScrollLineHeight, imgTopList } from './imageSize';
-import { abreastColumnWidth, isAbreastMode, isScrollMode } from './memo/common';
-import { imgPageMap, scrollTop } from './memo/observer';
+  contentHeight,
+  imgPageMap,
+  pageTopList,
+  scrollLength,
+  scrollPercentage,
+  scrollTop,
+} from './memo';
+import { handleEndTurnPage } from './turnPage';
 
-/** 滚动内容的总长度 */
-export const scrollLength = createRootMemo(() => {
-  if (store.option.scrollMode.enabled) {
-    if (store.option.scrollMode.abreastMode) return abreastContentWidth();
-    if (store.option.scrollMode.doubleMode)
-      return doubleScrollLineHeight().reduce((sum, height) => sum + height, 0);
-    return contentHeight();
-  }
-  return store.pageList.length;
-});
-
-/** 滚动内容的滚动进度 */
-export const scrollProgress = createRootMemo(() => {
-  if (isScrollMode()) return scrollTop();
-  if (isAbreastMode()) return store.page.offset.x.px;
-  return store.activePageIndex;
-});
-
-/** 滚动内容的滚动进度百分比 */
-export const scrollPercentage = createRootMemo(
-  () => scrollProgress() / scrollLength(),
-);
-
-/** 滚动条滑块长度 */
-export const sliderHeight = createRootMemo(() => {
-  let itemLength = 1;
-  if (isScrollMode()) itemLength = store.rootSize.height;
-  if (isAbreastMode()) itemLength = store.rootSize.width;
-  return itemLength / scrollLength();
-});
-
-/** 当前是否已经滚动到底部 */
-export const isBottom = createRootMemo(
-  () => scrollPercentage() + sliderHeight() >= 0.9999,
-);
-
-/** 当前是否已经滚动到顶部 */
-export const isTop = createRootMemo(() => scrollPercentage() === 0);
-
-const _scrollTo = (x: number) =>
-  refs.mangaBox.scrollTo({ top: x, behavior: 'instant' });
+const _scrollTo = (top: number) => {
+  const val = clamp(0, top, contentHeight() - store.rootSize.height);
+  refs.mangaBox.scrollTo({
+    top: val,
+    behavior: 'instant',
+  });
+  setState((state) => {
+    state.scrollTop = val;
+    openScrollLock(state);
+  });
+};
 
 /** 实现卷轴模式下的平滑滚动 */
 const scrollStep = new (class extends AnimationFrame {
@@ -64,14 +38,19 @@ const scrollStep = new (class extends AnimationFrame {
   /** 滚动开始位置 */
   startTop = 0;
 
+  scrollTo = (top: number) => {
+    if (inRange(0, top, scrollLength())) _scrollTo(top);
+    else this.cancel();
+  };
+
   frame = (timestamp: number) => {
     this.cancel();
     this.startTime ||= timestamp;
     /** 已滚动时间 */
     const elapsed = timestamp - this.startTime;
     if (elapsed >= this.duration)
-      return _scrollTo(this.startTop + this.distance);
-    _scrollTo(this.startTop + (elapsed / this.duration) * this.distance);
+      return this.scrollTo(this.startTop + this.distance);
+    this.scrollTo(this.startTop + (elapsed / this.duration) * this.distance);
     this.call();
   };
 
@@ -88,12 +67,17 @@ export const constantScroll = new (class extends AnimationFrame {
   speed = 0;
   lastTime = 0;
 
+  scrollTo = (top: number) => {
+    if (inRange(0, top, scrollLength())) _scrollTo(top);
+    else this.cancel();
+  };
+
   frame = (timestamp: DOMHighResTimeStamp) => {
     if (!this.animationId) return;
 
     if (this.lastTime) {
       const scrollDelta = this.speed * (timestamp - this.lastTime);
-      _scrollTo(scrollTop() + scrollDelta);
+      this.scrollTo(scrollTop() + scrollDelta);
     }
     this.lastTime = timestamp;
     this.call();
@@ -121,8 +105,7 @@ export const scrollTo = (x: number, smooth = false) => {
 
   if (!smooth) {
     scrollStep.cancel();
-    _scrollTo(x);
-    return;
+    return _scrollTo(x);
   }
 
   if (scrollStep.animationId) {
@@ -131,6 +114,13 @@ export const scrollTo = (x: number, smooth = false) => {
   }
 
   scrollStep.start(x);
+};
+
+/** 在卷轴模式下滚动指定进度 */
+export const scrollBy = (offset: number, smooth = false) => {
+  if (!store.option.scrollMode.enabled) return;
+  if (handleEndTurnPage(offset > 0 ? 'next' : 'prev')) return;
+  return scrollTo(scrollTop() + offset, smooth);
 };
 
 /** 保存当前滚动进度，并在之后恢复 */
@@ -148,12 +138,7 @@ export const scrollViewImg = (i: number) => {
       column.includes(i),
     );
     top = columnNum * abreastColumnWidth() + 1;
-  } else if (store.option.scrollMode.doubleMode) {
-    const pageNum = imgPageMap()[i];
-    top = doubleScrollLineHeight()
-      .slice(0, pageNum)
-      .reduce((sum, height) => sum + height, 0);
-  } else top = imgTopList()[i] + 1;
+  } else top = pageTopList()[i] + 1;
   scrollTo(top);
 };
 

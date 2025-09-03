@@ -1,6 +1,6 @@
 import { onCleanup } from 'solid-js';
 
-import { byPath, difference, throttle } from 'helper';
+import { byPath, debounce, difference, throttle } from 'helper';
 
 import type { State } from '../store';
 import type { FillEffect } from '../store/image';
@@ -73,6 +73,37 @@ export const resetUI = (state: State) => {
   state.show.scrollbar = false;
   state.show.touchArea = false;
 };
+
+// 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
+// （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
+export const focus = () =>
+  requestAnimationFrame(() => {
+    refs.mangaBox?.click();
+    refs.mangaBox?.focus();
+  });
+
+/** 将函数的 state 参数变为可选 */
+export const withOptionalState =
+  <T, Args extends unknown[] = []>(fn: (...args: [...Args, State]) => T) =>
+  (...args: [...Args, State?]) => {
+    // 检查是否传入了 state 参数，没有的话自动调用 setState
+    if (args.length < fn.length) {
+      let result: T;
+      setState((state: State) => {
+        result = fn(...([...(args as [...Args]), state] as [...Args, State]));
+      });
+      return result!;
+    }
+    // 如果传入了 state，直接调用原函数
+    return fn(...(args as [...Args, State]));
+  };
+
+const closeScrollLock = debounce(() => setState('scrollLock', false), 100);
+/** 打开滚动锁，并在之后自动关闭 */
+export const openScrollLock = withOptionalState((state: State) => {
+  state.scrollLock = true;
+  closeScrollLock();
+});
 
 type SetOptionsFunctionReturn<T> = {
   value: T;

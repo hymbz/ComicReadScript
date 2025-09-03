@@ -10,3 +10,4 @@ storybook-static
 test/__snapshots__
 test/xpi
 test/cookie.ts
+.excalidraw

@@ -1,18 +1,24 @@
-import { getKeyboardCode } from 'helper';
+import { approx, getKeyboardCode } from 'helper';
 
 import classes from '../index.module.css';
-import { refs, setState, store } from '../store';
-import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
-import { setOption } from './helper';
+import { setState, store } from '../store';
+import { openScrollLock, setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
-import { isAbreastMode, isScrollMode, scrollTop } from './memo';
+import {
+  abreastScrollFill,
+  findTopPage,
+  getPageTop,
+  isAbreastMode,
+  isScrollMode,
+  pageHeightList,
+  scrollLength,
+  scrollTop,
+  setAbreastScrollFill,
+} from './memo';
 import { handleTrackpadWheel } from './pointer';
 import {
   constantScroll,
-  isBottom,
-  isTop,
-  scrollLength,
-  scrollProgress,
+  scrollBy,
   scrollTo,
   zoomScrollModeImg,
 } from './scroll';
@@ -26,16 +32,8 @@ import {
   switchScrollMode,
 } from './switch';
 import { translateAll, translateCurrent, translateToEnd } from './translation';
-import { closeScrollLock, turnPage } from './turnPage';
+import { handleEndTurnPage, turnPage } from './turnPage';
 import { zoom } from './zoom';
-
-// 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
-// （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
-export const focus = () =>
-  requestAnimationFrame(() => {
-    refs.mangaBox?.click();
-    refs.mangaBox?.focus();
-  });
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   if (e.button !== 1 || store.option.scrollMode.enabled) return;
@@ -44,13 +42,63 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   switchFillEffect();
 };
 
-/** 卷轴模式下的页面滚动 */
-export const scrollModeScrollPage = (x: number) => {
-  if (!store.show.endPage) {
-    scrollTo(scrollTop() + x, true);
-    setState('scrollLock', true);
+/** 卷轴模式下滚动至指定页数 */
+const scrollIntoView = (index: number, position: 'start' | 'end' = 'start') =>
+  scrollTo(
+    position === 'start'
+      ? getPageTop(index)
+      : getPageTop(index + 1) - store.rootSize.height,
+    true,
+  );
+
+/** 在卷轴模式下，智能滚动至图片的头尾 */
+const scrollViewTurnPage = (offset: number) => {
+  if (!store.option.scrollMode.enabled) return;
+
+  if (handleEndTurnPage(offset > 0 ? 'next' : 'prev')) return;
+
+  if (offset > 0) {
+    const viewBottom = scrollTop() + store.rootSize.height;
+    let viewBottomPage = findTopPage(viewBottom);
+    // 如果底页只露出了一点点，就当它没显示出来，避免小数滚动的误差
+    if (approx(getPageTop(viewBottomPage), viewBottom)) viewBottomPage -= 1;
+    const pageBottom = getPageTop(viewBottomPage + 1);
+
+    // 如果滚动了指定距离后显示的还是这个图片，就直接滚动完事
+    const targetScrollTop = viewBottom + offset;
+    if (targetScrollTop <= pageBottom) return scrollBy(offset, true);
+
+    // 如果底页没显示出结尾，则滚动到视窗底部对齐底页结尾
+    if (!approx(viewBottom, pageBottom))
+      return scrollIntoView(viewBottomPage, 'end');
+    // 否则就该显示下一页了
+    // 如果下一页可以整页显示，则滚动到视窗底部对齐下一页结尾
+    const nextPage = viewBottomPage + 1;
+    if (pageHeightList()[nextPage] < store.rootSize.height)
+      return scrollIntoView(nextPage, 'end');
+    // 否则滚动到视窗顶部对齐下一页开头
+    scrollIntoView(nextPage, 'start');
+  } else {
+    const viewTop = scrollTop();
+    let viewTopPage = findTopPage(viewTop);
+    // 如果顶页只露出了一点点，就当它没显示出来，避免小数滚动的误差
+    if (approx(getPageTop(viewTopPage + 1), viewTop)) viewTopPage += 1;
+    const pageTop = getPageTop(viewTopPage);
+
+    // 如果滚动了指定距离后显示的还是这个图片，就直接滚动完事
+    const targetScrollTop = viewTop + offset;
+    if (targetScrollTop >= pageTop) return scrollBy(offset, true);
+
+    // 如果顶页没显示出开头，则滚动到视窗顶部对齐顶页开头
+    if (!approx(viewTop, pageTop)) return scrollIntoView(viewTopPage, 'start');
+    // 否则就该显示上一页了
+    // 如果上一页可以整页显示，则滚动到视窗顶部对齐上一页开头
+    const prevPage = viewTopPage - 1;
+    if (pageHeightList()[prevPage] < store.rootSize.height)
+      return scrollIntoView(prevPage, 'start');
+    // 否则滚动到视窗底部对齐上一页结尾
+    scrollIntoView(prevPage, 'end');
   }
-  closeScrollLock();
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
@@ -84,13 +132,6 @@ const handleHoldScroll = (code: string, speed: number) => {
     () => constantScroll.start(speed),
     () => constantScroll.cancel(),
   );
-};
-
-/** 判断当前是否处在卷轴模式的尽头，是的话进行翻页判断并返回 true */
-const isScrollModeEnd = (dir: Parameters<typeof turnPage>[0]) => {
-  if (!isTop() && !isBottom()) return false;
-  turnPage(dir);
-  return true;
 };
 
 export const handleKeyDown = (e: KeyboardEvent) => {
@@ -128,26 +169,27 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     return;
   }
 
-  // 卷轴、网格模式下跳过用于移动的按键
+  // 卷轴、网格模式下跳过用于移动的原生按键
   if ((isScrollMode() || store.gridMode) && !store.show.endPage) {
     switch (e.key) {
       case 'Home':
       case 'End':
       case 'ArrowRight':
       case 'ArrowLeft':
-        e.stopPropagation();
-        return;
+        return e.stopPropagation();
 
       case 'ArrowUp':
       case 'PageUp':
         e.stopPropagation();
-        return store.gridMode || turnPage('prev');
+        if (isScrollMode()) return handleEndTurnPage('prev');
+        return;
 
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
         e.stopPropagation();
-        return store.gridMode || turnPage('next');
+        if (isScrollMode()) return handleEndTurnPage('next');
+        return;
     }
   }
 
@@ -163,31 +205,19 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   if (isAbreastMode()) {
     switch (hotkey) {
       case 'scroll_up':
-        if (isScrollModeEnd('prev')) return;
         return setAbreastScrollFill(abreastScrollFill() - 40);
       case 'scroll_down':
-        if (isScrollModeEnd('next')) return;
         return setAbreastScrollFill(abreastScrollFill() + 40);
 
       case 'scroll_left':
-        if (isScrollModeEnd(store.option.dir === 'rtl' ? 'prev' : 'next'))
-          return;
-        return scrollTo(
-          scrollProgress() - (store.option.dir === 'rtl' ? 40 : -40),
-        );
+        return scrollBy(store.option.dir === 'rtl' ? -40 : 40);
       case 'scroll_right':
-        if (isScrollModeEnd(store.option.dir === 'rtl' ? 'next' : 'prev'))
-          return;
-        return scrollTo(
-          scrollProgress() + (store.option.dir === 'rtl' ? 40 : -40),
-        );
+        return scrollBy(store.option.dir === 'rtl' ? 40 : -40);
 
       case 'page_up':
-        if (isScrollModeEnd('prev')) return;
-        return scrollTo(scrollProgress() - store.rootSize.width * 0.8);
+        return scrollBy(-store.rootSize.width * 0.8);
       case 'page_down':
-        if (isScrollModeEnd('next')) return;
-        return scrollTo(scrollProgress() + store.rootSize.width * 0.8);
+        return scrollBy(store.rootSize.width * 0.8);
 
       case 'jump_to_home':
         return scrollTo(0);
@@ -200,16 +230,16 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   if (isScrollMode()) {
     switch (hotkey) {
       case 'page_up':
-        return scrollModeScrollPage(-store.rootSize.height * 0.8);
+        return scrollViewTurnPage(-store.rootSize.height * 0.8);
       case 'page_down':
-        return scrollModeScrollPage(store.rootSize.height * 0.8);
+        return scrollViewTurnPage(store.rootSize.height * 0.8);
 
       case 'scroll_up':
         if (e.repeat) return handleHoldScroll(code, -1);
-        return scrollModeScrollPage(-40);
+        return scrollBy(-40, true);
       case 'scroll_down':
         if (e.repeat) return handleHoldScroll(code, 1);
-        return scrollModeScrollPage(40);
+        return scrollBy(40, true);
     }
   }
 
@@ -290,14 +320,30 @@ export const handleWheel = (e: WheelEvent) => {
   if (store.gridMode) return;
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  const isWheelDown = e.deltaY > 0;
 
-  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
+  const isWheelDown = e.deltaY > 0;
+  const dir = isWheelDown ? 'next' : 'prev';
+  const absDeltaY = Math.abs(e.deltaY);
+
+  // 通过`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
+  if (
+    wheelType !== 'trackpad' &&
+    (absDeltaY < 5 ||
+      (!Number.isInteger(lastDeltaY) &&
+        !Number.isInteger(absDeltaY) &&
+        !isMultipleOf(lastDeltaY, absDeltaY)))
+  ) {
+    wheelType = 'trackpad';
+    if (timeoutId) clearTimeout(timeoutId);
+    // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
+    if (lastPageNum !== -1) setState('activePageIndex', lastPageNum);
+  }
+  if (absDeltaY < 5) return;
 
   // 卷轴模式下的图片缩放
   if (
     (e.ctrlKey || e.altKey) &&
-    store.option.scrollMode.enabled &&
+    isScrollMode() &&
     store.option.zoom.ratio === 100
   ) {
     e.preventDefault();
@@ -310,37 +356,24 @@ export const handleWheel = (e: WheelEvent) => {
     return zoom(store.option.zoom.ratio + (isWheelDown ? -25 : 25), e);
   }
 
-  const nowDeltaY = Math.abs(e.deltaY);
+  if (handleEndTurnPage(dir)) {
+    openScrollLock();
+    return e.preventDefault();
+  }
 
   // 并排卷轴模式下
   if (isAbreastMode() && store.option.zoom.ratio === 100) {
     e.preventDefault();
-    // 先触发翻页判断再滚动，防止在滚动到底时立刻触发结束页
-    turnPage(isWheelDown ? 'next' : 'prev');
-    scrollTo(scrollTop() + e.deltaY);
+    scrollBy(e.deltaY, true);
   }
 
   // 防止滚动到网页
   if (!isScrollMode()) e.preventDefault();
 
-  // 通过`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
-  if (
-    wheelType !== 'trackpad' &&
-    (nowDeltaY < 2 ||
-      (!Number.isInteger(lastDeltaY) &&
-        !Number.isInteger(nowDeltaY) &&
-        !isMultipleOf(lastDeltaY, nowDeltaY)))
-  ) {
-    wheelType = 'trackpad';
-    if (timeoutId) clearTimeout(timeoutId);
-    // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
-    if (lastPageNum !== -1) setState('activePageIndex', lastPageNum);
-  }
-
   // 为了避免因临时卡顿而误判为触摸板
   // 在连续几次滚动量均相同的情况下，将 wheelType 相关变量重置回初始状态
   if (diffNum < 10) {
-    if (lastDeltaY === nowDeltaY && nowDeltaY > 5) equalNum += 1;
+    if (lastDeltaY === absDeltaY && absDeltaY > 5) equalNum += 1;
     else {
       diffNum += 1;
       equalNum = 0;
@@ -352,7 +385,7 @@ export const handleWheel = (e: WheelEvent) => {
     }
   }
 
-  lastDeltaY = nowDeltaY;
+  lastDeltaY = absDeltaY;
 
   switch (wheelType) {
     case undefined: {
@@ -360,10 +393,7 @@ export const handleWheel = (e: WheelEvent) => {
         // 第一次触发滚动没法判断类型，就当作滚轮来处理
         // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
         lastPageNum = store.activePageIndex;
-        timeoutId = window.setTimeout(
-          () => turnPage(isWheelDown ? 'next' : 'prev'),
-          16,
-        );
+        timeoutId = window.setTimeout(turnPage, 16, dir);
         return;
       }
       wheelType = 'mouse';
@@ -371,7 +401,7 @@ export const handleWheel = (e: WheelEvent) => {
     // falls through
 
     case 'mouse':
-      return turnPage(isWheelDown ? 'next' : 'prev');
+      return turnPage(dir);
 
     case 'trackpad':
       return handleTrackpadWheel(e);

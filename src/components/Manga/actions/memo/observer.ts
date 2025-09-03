@@ -1,10 +1,8 @@
-import { createSignal } from 'solid-js';
-
-import { createEffectOn, createRootMemo, inRange } from 'helper';
+import { approx, createEffectOn, createRootMemo, inRange } from 'helper';
 
 import { setState, store } from '../../store';
 import { resetImgState, updatePageData } from '../image';
-import { isAbreastMode } from './common';
+import { isAbreastMode } from './options';
 
 /** 记录每张图片所在的页面 */
 export const imgPageMap = createRootMemo(() => {
@@ -16,17 +14,20 @@ export const imgPageMap = createRootMemo(() => {
   return map;
 });
 
-const [_scrollTop, setScrollTop] = createSignal(0);
-/** 卷轴模式下的滚动距离 */
-export const scrollModTop = _scrollTop;
 /** 滚动距离 */
 export const scrollTop = createRootMemo(() =>
-  isAbreastMode() ? store.page.offset.x.px : scrollModTop(),
+  isAbreastMode() ? store.page.offset.x.px : store.scrollTop,
 );
 export const bindScrollTop = (dom: HTMLElement) => {
-  dom.addEventListener('scroll', () => setScrollTop(dom.scrollTop), {
-    passive: true,
-  });
+  dom.addEventListener(
+    'scroll',
+    () => {
+      // 跳过小于1像素的滚动事件，避免因小数问题引发的误差
+      if (approx(dom.scrollTop, store.scrollTop)) return;
+      setState('scrollTop', dom.scrollTop);
+    },
+    { passive: true },
+  );
 };
 
 // 自动切换黑暗模式
