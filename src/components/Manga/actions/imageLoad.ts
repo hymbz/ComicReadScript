@@ -23,7 +23,7 @@ const imgErrorMap = new Map<string, number>();
 
 /** 重新加载错误图片 */
 export const reloadImg = (url: string) => {
-  if (store.imgMap[url].loadType !== 'error') return;
+  if (store.imgMap[url]?.loadType !== 'error') return;
   setState('imgMap', url, 'loadType', 'wait');
   updateImgLoadType();
 };

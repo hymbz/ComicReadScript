@@ -35,9 +35,9 @@ const resourceList: Record<string, [string, string] | [string]> = {
   '@tensorflow/tfjs-backend-webgpu': [
     'https://registry.npmmirror.com/@tensorflow/tfjs-backend-webgpu/4.22.0/files/dist/tf-backend-webgpu.js',
   ],
-  dmzjDecrypt: [
-    'https://update.sleazyfork.org/scripts/467177/1207199/dmzjDecrypt.js',
-  ],
+  // dmzjDecrypt: [
+  //   'https://update.sleazyfork.org/scripts/467177/1207199/dmzjDecrypt.js',
+  // ],
 };
 
 export const resource = {
