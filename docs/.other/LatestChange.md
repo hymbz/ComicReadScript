@@ -1,8 +1,8 @@
-## [12.1.2](https://github.com/hymbz/ComicReadScript/compare/v12.1.1...v12.1.2) (2025-08-20)
+## [12.2.0](https://github.com/hymbz/ComicReadScript/compare/v12.1.2...v12.2.0) (2025-09-04)
 
-### Bug Fixes
+### Features
 
-* :bug: 修复拷贝漫画的失效 ([1f39793](https://github.com/hymbz/ComicReadScript/commit/1f397935d992e7b96f74de1b7a2d54217bd1a46f))
-* :bug: 修复卷轴模式下滚动至尽头后无法触发结束页的 bug ([721102e](https://github.com/hymbz/ComicReadScript/commit/721102e72e6a575953019adb0052c2bbd0723205)), closes [#276](https://github.com/hymbz/ComicReadScript/issues/276)
-* :bug: 增加并排卷轴模式下，向上/下翻页快捷键的滚动距离 ([3f993da](https://github.com/hymbz/ComicReadScript/commit/3f993da4c7d1944114c16020e4433ea7303d51a3))
-* :bug: 修复 AdGuard 版在部分网站上未生效的 bug ([4028b1c](https://github.com/hymbz/ComicReadScript/commit/4028b1c81417f39122e3381722aa92ac1cf8beb1))
+* :sparkles: 点击出错图片立刻重新加载 ([497c8e4](https://github.com/hymbz/ComicReadScript/commit/497c8e4d9dff259a3e2490b4f3c3112034a505eb)), closes [#281](https://github.com/hymbz/ComicReadScript/issues/281)
+* :sparkles: 修改卷轴模式下「向上/下翻页」快捷键的效果，优先滚动至图片的头/尾 ([86fd63c](https://github.com/hymbz/ComicReadScript/commit/86fd63ca11b0685b337dc2bef2e6d6574e8b6dfd)), closes [#277](https://github.com/hymbz/ComicReadScript/issues/277)
+* :sparkles: 在卷轴模式下点击翻页 ([442cb3c](https://github.com/hymbz/ComicReadScript/commit/442cb3cf6ee14a01ff76cfc2b9f7e15433d80b5f)), closes [#277](https://github.com/hymbz/ComicReadScript/issues/277)
+* :sparkles: PWA 版支持读取 PDF 文件 ([b370a12](https://github.com/hymbz/ComicReadScript/commit/b370a1211bf43b7d70bff04c1d0435b6809f7eb9)), closes [#283](https://github.com/hymbz/ComicReadScript/issues/283)
