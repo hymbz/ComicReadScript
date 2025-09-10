@@ -85,6 +85,7 @@ const enSupportSite = [
   'hitomi',
   'Anchira',
   'kemono',
+  'nude-moon',
   'nekohouse',
   'welovemanga',
 ];

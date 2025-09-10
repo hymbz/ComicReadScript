@@ -819,6 +819,13 @@ try {
       break;
     }
 
+    // #[nude-moon](https://nude-moon.org)
+    // test: https://nude-moon.org/22729--zone-himitsu-no-tomodachi--tayney-drug.html
+    case 'nude-moon.org': {
+      inject('site/nude-moon');
+      break;
+    }
+
     // #[kemono](https://kemono.su)
     // test: https://kemono.cr/fanbox/user/41106591/post/6813818
     case 'kemono.cr':
