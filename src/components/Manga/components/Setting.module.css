@@ -98,6 +98,7 @@
 }
 
 .SettingsItem {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -168,13 +169,13 @@
 .SettingsItemIconButton {
   cursor: pointer;
 
+  position: absolute;
+  right: 0;
+
   height: 1em;
-  margin: 0;
-  margin-right: 0.2em;
-  padding: 0;
   border: none;
 
-  font-size: 1.7em;
+  font-size: 1.5em;
   color: var(--text);
 
   background-color: transparent;

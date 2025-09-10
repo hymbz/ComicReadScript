@@ -173,6 +173,7 @@
       "swap_page_turn_key": "Swap LR page-turning keys",
       "zoom": "Image zoom ratio"
     },
+    "sync_options_other_site": "Sync read options to other sites",
     "translation": {
       "cotrans_tip": "<p>Using the interface provided by <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\n<p>So please <b>mind the frequency of use</b>.</p>\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
       "options": {

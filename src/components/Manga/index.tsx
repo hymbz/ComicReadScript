@@ -101,6 +101,7 @@ export * from './actions';
 export { SettingHotkeys } from './components/SettingHotkeys';
 export { SettingBlockSubtitle } from './components/SettingPanel';
 export { SettingsItem } from './components/SettingsItem';
+export { SettingsItemButton } from './components/SettingsItemButton';
 export { SettingsItemNumber } from './components/SettingsItemNumber';
 export { SettingsItemSwitch } from './components/SettingsItemSwitch';
 export { downloadImg, downloadImgHeaders } from './helper';

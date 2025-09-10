@@ -21,13 +21,13 @@ import {
 } from './actions';
 import { SettingHotkeysBlock } from './components/SettingHotkeys';
 import { SettingsItem } from './components/SettingsItem';
+import { SettingsItemButton } from './components/SettingsItemButton';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
 import { SettingsItemSelect } from './components/SettingsItemSelect';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 import { SettingsShowItem } from './components/SettingsShowItem';
 import { SettingTranslation } from './components/SettingTranslation';
 import { areaArrayMap } from './components/TouchArea';
-import classes from './index.module.css';
 import { setState, store } from './store';
 
 export type SettingList = (
@@ -40,25 +40,20 @@ export const defaultSettingList: () => SettingList = () => [
   [
     t('setting.option.paragraph_dir'),
     () => (
-      <SettingsItem
+      <SettingsItemButton
         name={
           store.option.dir === 'rtl'
             ? t('setting.option.dir_rtl')
             : t('setting.option.dir_ltr')
         }
+        onClick={switchDir}
       >
-        <button
-          class={classes.SettingsItemIconButton}
-          type="button"
-          on:click={switchDir}
-        >
-          {store.option.dir === 'rtl' ? (
-            <MdOutlineFormatTextdirectionRToL />
-          ) : (
-            <MdOutlineFormatTextdirectionLToR />
-          )}
-        </button>
-      </SettingsItem>
+        {store.option.dir === 'rtl' ? (
+          <MdOutlineFormatTextdirectionRToL />
+        ) : (
+          <MdOutlineFormatTextdirectionLToR />
+        )}
+      </SettingsItemButton>
     ),
     true,
   ],

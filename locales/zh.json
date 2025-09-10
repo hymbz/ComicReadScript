@@ -133,7 +133,7 @@
       "autoFullscreen": "自动全屏",
       "autoHiddenMouse": "自动隐藏鼠标",
       "auto_scroll_trigger_end": "在结束页上继续滚动",
-      "auto_switch_page_mode": "根据屏幕比例切换单双页",
+      "auto_switch_page_mode": "按屏幕比例切换单双页",
       "background_color": "背景颜色",
       "click_page_turn_area": "点击区域",
       "click_page_turn_enabled": "点击翻页",
@@ -173,6 +173,7 @@
       "swap_page_turn_key": "左右翻页键交换",
       "zoom": "图片缩放"
     },
+    "sync_options_other_site": "同步阅读配置至其他站点",
     "translation": {
       "cotrans_tip": "<p>将使用 <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\n<p>所以还请 <b>注意用量</b></p>\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",
       "options": {

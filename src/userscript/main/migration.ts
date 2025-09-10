@@ -12,14 +12,15 @@ export const versionLt = (version1: string, version2: string) => {
   return false;
 };
 
-const migrationOption = async (
+export const migrationOption = async (
   name: string,
-  editFn: (option: Record<any, any>, save: () => Promise<void>) => unknown,
+  editFn: (option: Record<any, any>) => unknown,
 ) => {
   try {
     const option = await GM.getValue<object>(name);
     if (!option) throw new Error(`GM.getValue Error: not found ${name}`);
-    await editFn(option, () => GM.setValue(name, option));
+    if (await editFn(option)) return;
+    GM.setValue(name, option);
   } catch (error) {
     log.error(`migration ${name} option error:`, error);
   }
@@ -27,7 +28,7 @@ const migrationOption = async (
 
 /** 重命名配置项 */
 const renameOption = (name: string, list: string[]) =>
-  migrationOption(name, (option, save) => {
+  migrationOption(name, (option) => {
     for (const itemText of list) {
       const [path, newName] = itemText.split(' => ');
       byPath(option, path, (parent, key) => {
@@ -36,7 +37,6 @@ const renameOption = (name: string, list: string[]) =>
         Reflect.deleteProperty(parent, key);
       });
     }
-    return save();
   });
 
 /** 旧版本配置迁移 */
@@ -113,37 +113,34 @@ export const migration = async (version: string) => {
         }
 
         default:
-          await migrationOption(key, (option, save) => {
-            if (typeof option.option?.scrollMode !== 'boolean') return;
+          await migrationOption(key, (option) => {
+            if (typeof option.option?.scrollMode !== 'boolean') return true;
             option.option.scrollMode = {
               enabled: option.option.scrollMode,
               spacing: option.option.scrollModeSpacing,
               imgScale: option.option.scrollModeImgScale,
               fitToWidth: option.option.scrollModeFitToWidth,
             };
-            return save();
           });
       }
     }
 
   // 9.3 => 9.4
   if (versionLt(version, '9.4'))
-    await migrationOption('ehentai', (option, save) => {
-      if (!Reflect.has(option, 'hotkeys_page_turn')) return;
+    await migrationOption('ehentai', (option) => {
+      if (!Reflect.has(option, 'hotkeys_page_turn')) return true;
       option.hotkeys = option.hotkeys_page_turn;
       Reflect.deleteProperty(option, 'hotkeys_page_turn');
-      return save();
     });
 
   // 11.4.2 => 11.5
   if (versionLt(version, '11.5'))
-    await migrationOption('Hotkeys', (option, save) => {
+    await migrationOption('Hotkeys', (option) => {
       for (const [name, hotkeys] of Object.entries(option)) {
         option[name] = hotkeys.map((key: string) =>
           key.replaceAll(/\b[A-Z]\b/g, (match) => match.toLowerCase()),
         );
       }
-      return save();
     });
 
   if (versionLt(version, '11.9.1'))

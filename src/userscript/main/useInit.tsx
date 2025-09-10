@@ -76,10 +76,9 @@ export const useInit = async <T extends Record<string, any>>(
 
   const { options } = store;
   const setOptions: MainContext<T>['setOptions'] = function (newOptions) {
-    const { lockOption } = options;
     if (newOptions)
       setState((state) => Object.assign(state.options, newOptions));
-    if (lockOption && newOptions?.lockOption !== false) return;
+    if (options.lockOption && newOptions?.lockOption !== false) return;
     // 只保存和默认设置不同的部分
     return GM.setValue(
       store.name,

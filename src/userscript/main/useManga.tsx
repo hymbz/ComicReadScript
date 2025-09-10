@@ -1,10 +1,18 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
+import MdAutoSync from '@material-design-icons/svg/round/sync.svg';
 
 import { IconButton } from 'components/IconButton';
-import { Manga, store as mangaStore, refs } from 'components/Manga';
+import {
+  Manga,
+  store as mangaStore,
+  refs,
+  SettingsItemButton,
+} from 'components/Manga';
+import { toast } from 'components/Toast';
 import {
   createEffectOn,
   createRootMemo,
+  difference,
   mountComponents,
   querySelector,
   t,
@@ -15,6 +23,8 @@ import {
 import type { MainContext } from '.';
 
 import { DownloadButton } from '../../components/DownloadButton';
+import { migrationOption } from './migration';
+import type { Component } from 'solid-js';
 
 let dom: HTMLDivElement;
 
@@ -130,6 +140,44 @@ export const useManga = <T extends Record<string, any>>({
         () => <hr />,
         ExitButton,
       ];
+    },
+    editSettingList(list) {
+      const SyncOptions: Component = () => {
+        const sync = async () => {
+          const currentReadOption = difference(
+            mangaStore.option,
+            mangaStore.defaultOption,
+          );
+          for (const key of await GM.listValues()) {
+            if (key.startsWith('@')) continue;
+            await migrationOption(key, (option) => {
+              option.option = currentReadOption;
+            });
+          }
+          toast.success(t('setting.sync_options_other_site'));
+        };
+
+        return (
+          <SettingsItemButton
+            name={t('setting.sync_options_other_site')}
+            onClick={sync}
+            children={<MdAutoSync />}
+          />
+        );
+      };
+
+      // 在其他设置里增加同步配置的按钮
+      const otherSetting = list.find(([title]) => title === t('other.other'));
+      if (otherSetting) {
+        const [, FC] = otherSetting;
+        otherSetting[1] = () => (
+          <>
+            <FC />
+            <SyncOptions />
+          </>
+        );
+      }
+      return list;
     },
   });
 };
