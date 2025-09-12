@@ -8,7 +8,7 @@ import {
 import { useInit } from 'main';
 
 (async () => {
-  const isMangaPage = () => location.pathname.match(/^\/[0-9]+-/) !== null;
+  const isMangaPage = () => location.pathname.match(/^\/\d+-/) !== null;
 
   const original = async () => {
     const url = new URL(location.href);
@@ -16,18 +16,19 @@ import { useInit } from 'main';
     parts.splice(1, 0, 'online');
     url.pathname = parts.join('-');
 
-    const html = await fetch(url).then(e => e.text());
+    const html = await fetch(url).then((e) => e.text());
     const doc = domParse(html);
 
-    const script = Array.from(doc.querySelectorAll("script"))
-      .filter(e => e.textContent.includes("/manga/"))?.[0];
+    const script = [...doc.querySelectorAll('script')].find((e) =>
+      e.textContent.includes('/manga/'),
+    );
     if (!script) return [];
 
     return Array.from(
       script.textContent.matchAll(/\/manga\/[^']+/g),
-      (e) => `https://nude-moon.org${e[0]}`
+      (e) => `https://nude-moon.org${e[0]}`,
     );
-  }
+  };
 
   const { setState } = await useInit('nude-moon', {
     autoShow: false,
@@ -36,10 +37,9 @@ import { useInit } from 'main';
 
   setState((state) => {
     if (isMangaPage()) state.comicMap[''].getImgList = original;
-  })
+  });
 
   linstenKeydown((e) => {
-    console.log(hotkeysMap(), getKeyboardCode(e));
     switch (hotkeysMap()[getKeyboardCode(e)]) {
       case 'scroll_right':
         e.preventDefault();
