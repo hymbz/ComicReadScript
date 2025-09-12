@@ -1,18 +1,14 @@
+import { hotkeysMap } from 'components/Manga';
 import {
   domParse,
-  onUrlChange,
-  waitUrlChange,
+  getKeyboardCode,
+  linstenKeydown,
+  querySelectorClick,
 } from 'helper';
 import { useInit } from 'main';
 
 (async () => {
-  const isMangaPage = () => location.pathname.match(/^\/[0-9]+--/);
-  await waitUrlChange(isMangaPage);
-
-  const { store, setState, showComic, init } = await useInit('nude-moon', {
-    autoShow: false,
-    defaultOption: { pageNum: 1 },
-  });
+  const isMangaPage = () => location.pathname.match(/^\/[0-9]+--/) !== null;
 
   const original = async () => {
     const url = new URL(location.href);
@@ -32,24 +28,25 @@ import { useInit } from 'main';
       (e) => `https://nude-moon.org${e[0]}`
     );
   }
-  setState('comicMap', '', { getImgList: original })
 
-  onUrlChange(async (lastUrl) => {
-    if (!lastUrl) return;
-
-    if (!isMangaPage())
-      return setState((state) => {
-        state.fab.show = false;
-        state.manga.show = false;
-      });
-
-    setState((state) => {
-      state.fab.show = undefined;
-      state.manga.show = false;
-    });
-
-    if (store.options.autoShow) await showComic();
+  const { setState } = await useInit('nude-moon', {
+    autoShow: false,
+    defaultOption: { pageNum: 1 },
   });
 
-  init();
+  setState((state) => {
+    if (isMangaPage()) state.comicMap[''].getImgList = original;
+  })
+
+  linstenKeydown((e) => {
+    console.log(hotkeysMap(), getKeyboardCode(e));
+    switch (hotkeysMap()[getKeyboardCode(e)]) {
+      case 'scroll_right':
+        e.preventDefault();
+        return querySelectorClick('a.small', 'Следующая')?.();
+      case 'scroll_left':
+        e.preventDefault();
+        return querySelectorClick('a.small', 'Предыдущая')?.();
+    }
+  });
 })();
