@@ -8,7 +8,7 @@ import {
 import { useInit } from 'main';
 
 (async () => {
-  const isMangaPage = () => location.pathname.match(/^\/[0-9]+--/) !== null;
+  const isMangaPage = () => location.pathname.match(/^\/[0-9]+-/) !== null;
 
   const original = async () => {
     const url = new URL(location.href);
