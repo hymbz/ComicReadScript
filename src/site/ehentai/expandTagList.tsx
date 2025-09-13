@@ -1,14 +1,7 @@
 import { createSignal } from 'solid-js';
 
-import { hotkeysMap, setDefaultHotkeys } from 'components/Manga';
-import {
-  domParse,
-  getKeyboardCode,
-  linstenKeydown,
-  querySelector,
-  querySelectorAll,
-  useStyle,
-} from 'helper';
+import { listenHotkey, setDefaultHotkeys } from 'components/Manga';
+import { domParse, querySelector, querySelectorAll, useStyle } from 'helper';
 import { request } from 'main';
 
 import type { EhContext } from './helper/context';
@@ -105,15 +98,12 @@ export const expandTagList = (context: EhContext) => {
     setMouseXY([e.clientX, e.clientY]),
   );
 
-  linstenKeydown((e) => {
-    const code = getKeyboardCode(e);
-    if (hotkeysMap()[code] !== 'float_tag_list') return;
-    e.stopPropagation();
-    e.preventDefault();
-    const elements = document.elementsFromPoint(...mouseXY());
-    for (const item of elements)
-      if (item.matches('.gl1t')) return handleShow(item as HTMLElement);
-  }, true);
+  listenHotkey({
+    float_tag_list: () => {
+      for (const item of document.elementsFromPoint(...mouseXY()))
+        if (item.matches('.gl1t')) return handleShow(item as HTMLElement);
+    },
+  });
 
   // 为标签染色
   colorizeTag('gallery');

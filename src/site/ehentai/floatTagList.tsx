@@ -2,14 +2,12 @@ import type { Writable } from 'type-fest';
 
 import MdPictureInPicture from '@material-design-icons/svg/round/picture_in_picture.svg?raw';
 
-import { focus, hotkeysMap, setDefaultHotkeys } from 'components/Manga';
+import { focus, listenHotkey, setDefaultHotkeys } from 'components/Manga';
 import {
   approx,
   clamp,
   createEffectOn,
-  getKeyboardCode,
   hijackFn,
-  linstenKeydown,
   querySelector,
   useDrag,
   useStore,
@@ -281,21 +279,18 @@ export const floatTagList = ({
     store.open ? setState('open', false) : true,
   );
 
-  linstenKeydown((e) => {
-    const code = getKeyboardCode(e);
-    if (hotkeysMap()[code] !== 'float_tag_list') return;
-
-    e.stopPropagation();
-    e.preventDefault();
-    setState((state) => {
-      state.open = !state.open;
-      if (!state.open) return;
-      setPos(
-        state,
-        state.mouse.y - gd4.clientHeight / 2,
-        state.mouse.x - gd4.clientWidth / 2,
-      );
-    });
+  listenHotkey({
+    float_tag_list: () => {
+      setState((state) => {
+        state.open = !state.open;
+        if (!state.open) return;
+        setPos(
+          state,
+          state.mouse.y - gd4.clientHeight / 2,
+          state.mouse.x - gd4.clientWidth / 2,
+        );
+      });
+    },
   });
 
   // 在悬浮状态下打完标签后移开焦点，以便能快速用快捷键关掉悬浮界面

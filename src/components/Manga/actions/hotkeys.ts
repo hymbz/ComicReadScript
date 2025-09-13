@@ -1,6 +1,6 @@
 import { createSignal } from 'solid-js';
 
-import { createRootMemo } from 'helper';
+import { createRootMemo, getKeyboardCode } from 'helper';
 
 import { store } from '../store';
 
@@ -37,3 +37,35 @@ export const hotkeysMap = createRootMemo(() =>
     ),
   ),
 );
+
+/** 监听快捷键 */
+export const listenHotkey = (
+  actions: Record<string, (e: KeyboardEvent) => unknown>,
+  capture?: boolean,
+) => {
+  window.addEventListener(
+    'keydown',
+    (e) => {
+      // 跳过输入框的键盘事件
+      switch ((e.target as HTMLElement).tagName) {
+        case 'INPUT':
+        case 'TEXTAREA':
+          return;
+      }
+
+      if (Reflect.has(actions, e.key) && actions[e.key](e) !== 1) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+
+      const hotkeyName = hotkeysMap()[getKeyboardCode(e)];
+      if (Reflect.has(actions, hotkeyName) && actions[hotkeyName](e) !== 1) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    },
+    { capture },
+  );
+};

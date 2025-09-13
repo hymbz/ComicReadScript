@@ -2,14 +2,12 @@ import type { Accessor } from 'solid-js';
 
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 
-import { hotkeysMap, imgList, setDefaultHotkeys } from 'components/Manga';
+import { imgList, listenHotkey, setDefaultHotkeys } from 'components/Manga';
 import { toast } from 'components/Toast';
 import {
   createEffectOn,
   createRootMemo,
   difference,
-  getKeyboardCode,
-  linstenKeydown,
   log,
   setInitLang,
   t,
@@ -141,13 +139,7 @@ export const useInit = async <T extends Record<string, any>>(
       await updateHideFabMenu();
     })();
 
-    linstenKeydown((e) => {
-      const code = getKeyboardCode(e);
-      if (hotkeysMap()[code] !== 'enter_read_mode') return;
-      e.stopPropagation();
-      e.preventDefault();
-      store.fab.onClick?.();
-    }, true);
+    listenHotkey({ enter_read_mode: () => store.fab.onClick?.() }, true);
   };
 
   // 首次设置默认漫画的加载函数时，进行初始化

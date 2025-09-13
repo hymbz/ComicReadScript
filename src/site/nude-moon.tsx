@@ -1,5 +1,5 @@
-import { hotkeysMap } from 'components/Manga';
-import { domParse, getKeyboardCode, linstenKeydown } from 'helper';
+import { listenHotkey } from 'components/Manga';
+import { domParse } from 'helper';
 import { useInit } from 'main';
 
 (async () => {
@@ -34,14 +34,8 @@ import { useInit } from 'main';
     if (isMangaPage()) state.comicMap[''].getImgList = original;
   });
 
-  linstenKeydown((e) => {
-    switch (hotkeysMap()[getKeyboardCode(e)]) {
-      case 'scroll_right':
-        e.preventDefault();
-        return unsafeWindow.nextImg();
-      case 'scroll_left':
-        e.preventDefault();
-        return unsafeWindow.backImg();
-    }
+  listenHotkey({
+    scroll_right: () => unsafeWindow.nextImg(),
+    scroll_left: () => unsafeWindow.backImg(),
   });
 })();

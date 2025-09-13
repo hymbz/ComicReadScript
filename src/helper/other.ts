@@ -476,25 +476,6 @@ export const keyboardCodeToText = (code: string) =>
 export const domParse = (html: string) =>
   new DOMParser().parseFromString(html, 'text/html');
 
-/** 监听键盘事件 */
-export const linstenKeydown = (
-  handler: (e: KeyboardEvent) => unknown,
-  capture?: boolean,
-) =>
-  window.addEventListener(
-    'keydown',
-    (e) => {
-      // 跳过输入框的键盘事件
-      switch ((e.target as HTMLElement).tagName) {
-        case 'INPUT':
-        case 'TEXTAREA':
-          return;
-      }
-      return handler(e);
-    },
-    { capture },
-  );
-
 /**
  * 劫持修改原网页上的函数
  *

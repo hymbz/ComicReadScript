@@ -1,5 +1,5 @@
-import { hotkeysMap } from 'components/Manga';
-import { getKeyboardCode, linstenKeydown, querySelector } from 'helper';
+import { listenHotkey } from 'components/Manga';
+import { querySelector } from 'helper';
 
 import type { EhContext } from './helper';
 
@@ -13,38 +13,21 @@ export const addHotkeysActions = (context: EhContext) => {
       unsafeWindow.selected_tagname ? unsafeWindow.toggle_tagmenu() : true,
     );
 
-    linstenKeydown((e) => {
+    listenHotkey({
       // 使用上下方向键进行投票
-      if (unsafeWindow.selected_tagid) {
-        switch (e.key) {
-          case 'ArrowUp':
-            e.preventDefault();
-            return unsafeWindow?.tag_vote_up();
-          case 'ArrowDown':
-            e.preventDefault();
-            return unsafeWindow?.tag_vote_down();
-        }
-      }
+      ArrowUp: () => unsafeWindow.selected_tagid && unsafeWindow?.tag_vote_up(),
+      ArrowDown: () =>
+        unsafeWindow.selected_tagid && unsafeWindow?.tag_vote_down(),
 
-      switch (hotkeysMap()[getKeyboardCode(e)]) {
-        case 'scroll_right':
-          e.preventDefault();
-          return querySelector('.ptt td:last-child:not(.ptdd)')?.click();
-        case 'scroll_left':
-          e.preventDefault();
-          return querySelector('.ptt td:first-child:not(.ptdd)')?.click();
-      }
+      scroll_right: () =>
+        querySelector('.ptt td:last-child:not(.ptdd)')?.click(),
+      scroll_left: () =>
+        querySelector('.ptt td:first-child:not(.ptdd)')?.click(),
     });
   } else {
-    linstenKeydown((e) => {
-      switch (hotkeysMap()[getKeyboardCode(e)]) {
-        case 'scroll_right':
-          e.preventDefault();
-          return querySelector('#unext')?.click();
-        case 'scroll_left':
-          e.preventDefault();
-          return querySelector('#uprev')?.click();
-      }
+    listenHotkey({
+      scroll_right: () => querySelector('#unext')?.click(),
+      scroll_left: () => querySelector('#uprev')?.click(),
     });
   }
 };

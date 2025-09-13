@@ -7,6 +7,7 @@ import type { MangaProps } from 'components/Manga';
 import type { LoadImgFn } from 'main';
 
 import {
+  listenHotkey,
   imgList as MangaImgList,
   SettingBlockSubtitle,
   SettingHotkeys,
@@ -16,7 +17,6 @@ import {
   assign,
   createRootMemo,
   extractRange,
-  linstenKeydown,
   log,
   plimit,
   querySelector,
@@ -134,10 +134,11 @@ import { tagLint } from './tagLint';
   }
 
   // 按顺序处理 esc 按键
-  linstenKeydown((e) => {
-    if (e.key !== 'Escape') return;
-    for (const handler of escHandler.values())
-      if (handler() !== true) return e.stopImmediatePropagation();
+  listenHotkey({
+    Escape: (e) => {
+      for (const handler of escHandler.values())
+        if (handler() !== true) return e.stopImmediatePropagation();
+    },
   });
 
   // 标签染色
