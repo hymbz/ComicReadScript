@@ -28,7 +28,7 @@ export type RequestDetails<T> = Partial<Tampermonkey.Request<T>> & {
   errorText?: string;
   noTip?: boolean;
   noCheckCode?: boolean;
-  retryFetch?: boolean | ((details: RequestDetails<T>) => void);
+  retryFetch?: boolean;
   onload?: (response: Response<T>) => void;
 };
 
@@ -133,7 +133,6 @@ export const request = async <T = any>(
     if (details && details.retryFetch && retryNum === 0) {
       console.warn('retryFetch', url);
       details.fetch = !details.fetch;
-      if (typeof details.retryFetch === 'function') details.retryFetch(details);
       return request(url, details, retryNum + 1, errorNum);
     }
     if (errorNum >= retryNum) {

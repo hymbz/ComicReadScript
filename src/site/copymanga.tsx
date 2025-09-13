@@ -506,15 +506,16 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
       },
     });
 
-    const getCommentList = async () => {
+    const getCommentList = async (commentList: string[] = []) => {
       const chapter_id = location.pathname.split('/').at(-1);
-      const res = await pcApi.get(
-        `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
-        { errorText: '获取漫画评论失败' },
+      const res = await pcApi.get<Blob>(
+        `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=${commentList.length}&_update=true`,
+        { errorText: '获取漫画评论失败', responseType: 'blob' },
       );
-      return res.response.results.list.map(
-        ({ comment }) => comment as string,
-      ) as string[];
+      const { list, total } = JSON.parse(await res.response.text()).results;
+      for (const { comment } of list) commentList.push(comment);
+      if (commentList.length < total) return getCommentList(commentList);
+      return commentList;
     };
     setState('manga', 'commentList', await getCommentList());
 
