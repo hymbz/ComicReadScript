@@ -1043,7 +1043,7 @@ try {
 
           await GM.registerMenuCommand(
             extractI18n('site.simple.simple_read_mode')(await getInitLang()),
-            otherSite,
+            () => otherSite(),
           );
         })();
       }

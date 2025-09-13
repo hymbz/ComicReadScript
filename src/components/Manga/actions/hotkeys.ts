@@ -52,6 +52,7 @@ export const listenHotkey = (
         case 'TEXTAREA':
           return;
       }
+      if ((e.target as HTMLElement).isContentEditable) return;
 
       if (Reflect.has(actions, e.key) && actions[e.key](e) !== 1) {
         e.stopPropagation();

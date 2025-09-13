@@ -1,4 +1,4 @@
-import { splitProps, type Component } from 'solid-js';
+import { type Component, splitProps } from 'solid-js';
 
 import type { SettingsItemProps } from './SettingsItem';
 

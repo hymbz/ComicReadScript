@@ -1,3 +1,5 @@
+import type { Component } from 'solid-js';
+
 import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdAutoSync from '@material-design-icons/svg/round/sync.svg';
 
@@ -24,7 +26,6 @@ import type { MainContext } from '.';
 
 import { DownloadButton } from '../../components/DownloadButton';
 import { migrationOption } from './migration';
-import type { Component } from 'solid-js';
 
 let dom: HTMLDivElement;
 
