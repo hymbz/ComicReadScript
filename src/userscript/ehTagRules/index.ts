@@ -111,8 +111,21 @@ const rules = {
     'm:footjob': ['m:multiple_footjob'],
     'f:paizuri': ['f:focus_paizuri'],
     'm:paizuri': ['m:focus_paizuri'],
-    'f:anal': ['f:focus_anal', 'f:anal_intercourse', 'f:tail_plug'],
-    'm:anal': ['m:focus_anal', 'm:anal_intercourse', 'm:tail_plug'],
+    'f:rimjob': ['f:focus_rimjob'],
+    'm:rimjob': ['m:focus_rimjob'],
+    'f:cunnilingus': ['f:focus_cunnilingus'], // 不知道为啥没有 m:focus_cunnilingus 标签
+    'f:anal': [
+      'f:focus_anal',
+      'f:anal_intercourse',
+      'f:tail_plug',
+      'f:butt_plug',
+    ],
+    'm:anal': [
+      'm:focus_anal',
+      'm:anal_intercourse',
+      'm:tail_plug',
+      'm:butt_plug',
+    ],
     'f:rape': ['f:gang_rape'],
     'm:rape': ['m:gang_rape'],
 
@@ -128,8 +141,8 @@ const rules = {
     'f:big_breasts': ['f:huge_breasts', 'f:gigantic_breasts'],
     'f:huge_breasts': ['f:gigantic_breasts'],
 
-    'f:sex_toys': ['f:tail_plug'],
-    'm:sex_toys': ['m:tail_plug'],
+    'f:sex_toys': ['f:tail_plug', 'f:butt_plug'],
+    'm:sex_toys': ['m:tail_plug', 'm:butt_plug'],
 
     'f:swimsuit': ['f:bikini'],
     'm:swimsuit': ['m:bikini'],
@@ -137,6 +150,7 @@ const rules = {
     'f:crossdressing': ['f:schoolboy_uniform'],
 
     'f:monster_girl': ['f:zombie'],
+    'f:tail': ['f:multiple_tails'],
   },
 
   // 存在第一个标签时，就不应该存在其他标签
@@ -243,7 +257,7 @@ const rules = {
     // 方舟
     'c:amiya': ['f:kemonomimi'],
     'c:rosmontis': ['f:kemonomimi'],
-    'c:suzuran': ['f:lolicon', 'f:kemonomimi', 'f:tail'],
+    'c:suzuran': ['f:lolicon', 'f:kemonomimi', 'f:tail', 'f:multiple_tails'],
     'c:shamare': ['f:lolicon', 'f:kemonomimi'],
     'c:schwarz': ['f:kemonomimi', 'f:ponytail', 'f:tail'],
     'c:ceylon': ['f:hair_buns'],
@@ -259,6 +273,8 @@ const rules = {
     'c:misuzu_hataya': ['f:beauty_mark'],
     'c:kotone_fujita': ['f:twintails'],
     'c:mizuki_akiyama': ['m:crossdressing'],
+    'c:nagisa_kirifuji': ['f:angel', 'f:halo', 'f:very_long_hair', 'f:wings'],
+    'c:mika_misono': ['f:angel', 'f:halo', 'f:very_long_hair', 'f:wings'],
   },
 };
 
