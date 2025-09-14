@@ -107,9 +107,12 @@
     margin-top: 1em;
   }
 
-  button[disabled] {
-    cursor: not-allowed;
+  &[data-disabled] {
     opacity: 0.5;
+
+    button {
+      cursor: not-allowed;
+    }
   }
 }
 

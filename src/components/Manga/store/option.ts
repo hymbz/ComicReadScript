@@ -77,6 +77,8 @@ export type Option = {
     abreastDuplicate: number;
     /** 双页模式 */
     doubleMode: boolean;
+    /** 滚动翻页时对齐边缘 */
+    alignEdge: boolean;
   };
 
   /** 图像识别 */
@@ -165,6 +167,7 @@ const _defaultOption: Readonly<Option> = {
     abreastMode: false,
     abreastDuplicate: 0.1,
     doubleMode: false,
+    alignEdge: false,
   },
 
   imgRecognition: {

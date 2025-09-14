@@ -129,6 +129,7 @@
     "option": {
       "abreast_duplicate": "每列重复比例",
       "abreast_mode": "并排卷轴模式",
+      "align_edge": "Lapozáskor élhez igazítás",
       "always_load_all_img": "始终加载所有图片",
       "autoFullscreen": "Automatikus teljes képernyő",
       "autoHiddenMouse": "自动隐藏鼠标",

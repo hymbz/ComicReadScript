@@ -32,7 +32,14 @@ import { setState, store } from './store';
 
 export type SettingList = (
   | [string, Component]
-  | [string, Component, boolean | (() => boolean)]
+  | [
+      string,
+      Component,
+      {
+        initShow?: boolean | (() => boolean);
+        hidden?: () => boolean;
+      },
+    ]
 )[];
 
 /** 默认菜单项 */
@@ -55,7 +62,7 @@ export const defaultSettingList: () => SettingList = () => [
         )}
       </SettingsItemButton>
     ),
-    true,
+    { initShow: true },
   ],
   [
     t('setting.option.paragraph_display'),
@@ -65,6 +72,14 @@ export const defaultSettingList: () => SettingList = () => [
           <SettingsItemSwitch
             name={t('setting.option.disable_auto_enlarge')}
             {...bindOption('disableZoom')}
+          />
+          <SettingsItemNumber
+            name={t('setting.option.zoom')}
+            maxLength={3}
+            suffix="%"
+            step={5}
+            onChange={(val) => Number.isNaN(val) || zoom(val)}
+            value={Math.round(store.option.zoom.ratio)}
           />
         </Show>
 
@@ -80,28 +95,6 @@ export const defaultSettingList: () => SettingList = () => [
               });
               jump();
             }}
-          />
-          <SettingsItemNumber
-            name={t('setting.option.scroll_mode_img_scale')}
-            maxLength={3}
-            suffix="%"
-            step={5}
-            onChange={(val) => {
-              if (!Number.isNaN(val)) zoomScrollModeImg(val / 100, true);
-            }}
-            value={Math.round(store.option.scrollMode.imgScale * 100)}
-          />
-          <SettingsItemNumber
-            name={t('setting.option.scroll_mode_img_spacing')}
-            maxLength={5}
-            onChange={(val) => {
-              if (Number.isNaN(val)) return;
-              const newVal = clamp(0, val, Number.POSITIVE_INFINITY);
-              setOption((draftOption) => {
-                draftOption.scrollMode.spacing = newVal;
-              });
-            }}
-            value={Math.round(store.option.scrollMode.spacing)}
           />
           <Show when={store.option.scrollMode.abreastMode}>
             <SettingsItemNumber
@@ -126,21 +119,52 @@ export const defaultSettingList: () => SettingList = () => [
               onChange={switchFitToWidth}
             />
           </Show>
-        </Show>
 
-        <Show when={!store.option.scrollMode.enabled}>
           <SettingsItemNumber
-            name={t('setting.option.zoom')}
+            name={t('setting.option.scroll_mode_img_scale')}
             maxLength={3}
             suffix="%"
             step={5}
-            onChange={(val) => Number.isNaN(val) || zoom(val)}
-            value={Math.round(store.option.zoom.ratio)}
+            onChange={(val) =>
+              Number.isNaN(val) || zoomScrollModeImg(val / 100, true)
+            }
+            value={Math.round(store.option.scrollMode.imgScale * 100)}
+          />
+          <SettingsItemNumber
+            name={t('setting.option.scroll_mode_img_spacing')}
+            maxLength={5}
+            onChange={(val) => {
+              if (Number.isNaN(val)) return;
+              const newVal = clamp(0, val, Number.POSITIVE_INFINITY);
+              setOption((draftOption) => {
+                draftOption.scrollMode.spacing = newVal;
+              });
+            }}
+            value={Math.round(store.option.scrollMode.spacing)}
           />
         </Show>
       </>
     ),
-    true,
+    { initShow: true },
+  ],
+  [
+    t('button.scroll_mode'),
+    () => (
+      <>
+        <SettingsItemSwitch
+          name={t('setting.option.align_edge')}
+          {...bindOption('scrollMode', 'alignEdge')}
+        />
+        <SettingsItemSwitch
+          name={t('setting.option.scrollbar_easy_scroll')}
+          {...bindOption('scrollbar', 'easyScroll')}
+        />
+      </>
+    ),
+    {
+      initShow: () => store.option.scrollMode.enabled,
+      hidden: () => !store.option.scrollMode.enabled,
+    },
   ],
   [
     t('setting.option.paragraph_appearance'),
@@ -227,12 +251,6 @@ export const defaultSettingList: () => SettingList = () => [
             name={t('setting.option.scrollbar_show_img_status')}
             {...bindOption('scrollbar', 'showImgStatus')}
           />
-          <Show when={store.option.scrollMode.enabled}>
-            <SettingsItemSwitch
-              name={t('setting.option.scrollbar_easy_scroll')}
-              {...bindOption('scrollbar', 'easyScroll')}
-            />
-          </Show>
         </SettingsShowItem>
       </>
     ),
@@ -330,34 +348,36 @@ export const defaultSettingList: () => SettingList = () => [
           </blockquote>
         </Show>
 
-        <SettingsShowItem when={store.option.imgRecognition.enabled}>
-          <SettingsItemSwitch
-            name={t('setting.option.img_recognition_background')}
-            value={store.option.imgRecognition.background}
-            onChange={() => switchImgRecognition('background')}
-          />
-          <SettingsItemSwitch
-            name={t('setting.option.img_recognition_pageFill')}
-            value={store.option.imgRecognition.pageFill}
-            onChange={() => switchImgRecognition('pageFill')}
-          />
+        <SettingsItemSwitch
+          name={t('setting.option.img_recognition_background')}
+          disabled={!store.option.imgRecognition.enabled}
+          value={store.option.imgRecognition.background}
+          onChange={() => switchImgRecognition('background')}
+        />
+        <SettingsItemSwitch
+          name={t('setting.option.img_recognition_pageFill')}
+          disabled={!store.option.imgRecognition.enabled}
+          value={store.option.imgRecognition.pageFill}
+          onChange={() => switchImgRecognition('pageFill')}
+        />
 
-          <Show when={!store.isMobile}>
-            <SettingsItemSwitch
-              name={t('upscale.title')}
-              value={store.option.imgRecognition.upscale}
-              disabled={!store.supportUpscaleImage}
-              onChange={() => switchImgRecognition('upscale')}
-            />
-          </Show>
-        </SettingsShowItem>
+        <Show when={!store.isMobile}>
+          <SettingsItemSwitch
+            name={t('upscale.title')}
+            disabled={
+              !store.option.imgRecognition.enabled || !store.supportUpscaleImage
+            }
+            value={store.option.imgRecognition.upscale}
+            onChange={() => switchImgRecognition('upscale')}
+          />
+        </Show>
       </>
     ),
   ],
   [
     t('setting.option.paragraph_translation'),
     SettingTranslation,
-    () => store.option.translation.server !== 'disable',
+    { initShow: () => store.option.translation.server !== 'disable' },
   ],
   [t('other.hotkeys'), SettingHotkeysBlock],
   [

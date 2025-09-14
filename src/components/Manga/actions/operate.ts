@@ -61,6 +61,8 @@ const scrollViewTurnPage = (offset: number) => {
   const dir = offset > 0 ? 'next' : 'prev';
   if (handleEndTurnPage(dir)) return;
 
+  if (!store.option.scrollMode.alignEdge) return scrollBy(offset, true);
+
   const viewBottom = scrollTop() + store.rootSize.height;
   let viewBottomPage = findTopPage(viewBottom);
   // 如果底页只露出了一点点，就当它没显示出来，避免小数滚动的误差

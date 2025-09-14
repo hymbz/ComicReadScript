@@ -67,8 +67,7 @@ img {
 }
 
 blockquote {
-  margin: 0;
-  margin-top: 0.5em;
+  margin: 0.5em 0;
   padding: 0;
   padding-left: 1em;
   border-left: 0.25em solid var(--text-secondary, #607d8b);

@@ -22,13 +22,13 @@ export const SettingsItemSwitch: Component<SettingsItemSwitchProps> = (
       name={props.name}
       class={props.class}
       classList={props.classList}
+      disabled={props.disabled}
     >
       <button
         class={classes.SettingsItemSwitch}
         type="button"
         on:click={handleClick}
         data-checked={props.value}
-        disabled={props.disabled}
       >
         <div class={classes.SettingsItemSwitchRound} />
       </button>

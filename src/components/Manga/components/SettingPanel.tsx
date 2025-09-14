@@ -1,6 +1,6 @@
 import type { Component, ParentComponent } from 'solid-js';
 
-import { createSignal, For } from 'solid-js';
+import { createSignal, For, Show } from 'solid-js';
 
 import { createEffectOn, lang } from 'helper';
 
@@ -34,14 +34,15 @@ export const SettingPanel: Component = () => (
     on:click={stopPropagation}
   >
     <For each={store.prop.editSettingList(defaultSettingList())}>
-      {([name, SettingItem, initShow], i) => {
+      {([name, SettingItem, options], i) => {
+        const initShow = options?.initShow;
         const [show, setShwo] = createSignal(Boolean(initShow));
 
         if (typeof initShow === 'function')
           createEffectOn(initShow, (val) => setShwo(Boolean(val)));
 
         return (
-          <>
+          <Show when={options?.hidden ? !options.hidden() : true}>
             {i() ? <hr /> : null}
             <div class={classes.SettingBlock} data-show={show()}>
               <SettingBlockSubtitle onClick={() => setShwo((prev) => !prev)}>
@@ -52,7 +53,7 @@ export const SettingPanel: Component = () => (
                 <SettingItem />
               </div>
             </div>
-          </>
+          </Show>
         );
       }}
     </For>

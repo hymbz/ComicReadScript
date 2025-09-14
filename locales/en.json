@@ -129,6 +129,7 @@
     "option": {
       "abreast_duplicate": "Column duplicates ratio",
       "abreast_mode": "Abreast scroll mode",
+      "align_edge": "Align to edge when turning page",
       "always_load_all_img": "Always load all images",
       "autoFullscreen": "Auto fullscreen",
       "autoHiddenMouse": "Auto hide mouse",

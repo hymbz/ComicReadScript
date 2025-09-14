@@ -1,11 +1,14 @@
 import type { Component, JSX } from 'solid-js';
 
+import { boolDataVal } from 'helper';
+
 import classes from '../index.module.css';
 
 export type SettingsItemProps = {
   name: string;
-  children?: JSX.Element | JSX.Element[];
+  disabled?: boolean;
 
+  children?: JSX.Element | JSX.Element[];
   class?: string;
   classList?: ClassList;
   style?: JSX.CSSProperties;
@@ -24,6 +27,7 @@ export const SettingsItem: Component<SettingsItemProps> = (props) => (
       ...props.classList,
     }}
     style={props.style}
+    data-disabled={boolDataVal(props.disabled)}
   >
     <div class={classes.SettingsItemName}> {props.name} </div>
     {props.children}

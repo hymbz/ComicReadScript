@@ -322,7 +322,7 @@ export const waitImgLoad = (
   });
 
 /** 将指定的布尔值转换为字符串或未定义 */
-export const boolDataVal = (val: boolean) => (val ? '' : undefined);
+export const boolDataVal = (val: boolean | undefined) => (val ? '' : undefined);
 
 /** 测试图片 url 能否正确加载 */
 export const testImgUrl = (url: string) =>
