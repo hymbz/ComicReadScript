@@ -1036,7 +1036,34 @@ try {
             });
           }, 500),
         };
-      } else {
+      }
+
+      // #[LANraragi](https://github.com/Difegue/LANraragi)
+      const LANraragiNode = document.querySelector(
+        '.ip > a[href="https://github.com/Difegue/LANraragi"]',
+      );
+      if (LANraragiNode && LANraragiNode.textContent.trim() === 'LANraragi.') {
+        if (location.pathname !== '/reader') break;
+
+        const id = new URLSearchParams(location.search).get('id');
+        if (!id) {
+          toast.error(t('site.changed_load_failed'));
+          break;
+        }
+
+        options = {
+          name: 'LANraragi',
+          async getImgList() {
+            const res = await request<{ pages: string[] }>(
+              `/api/archives/${id}/files`,
+              { responseType: 'json' },
+            );
+            return res.response.pages;
+          },
+        };
+      }
+
+      if (!options) {
         (async () => {
           if ((await GM.getValue(location.hostname)) !== undefined)
             return requestIdleCallback(otherSite);
