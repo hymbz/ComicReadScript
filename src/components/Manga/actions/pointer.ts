@@ -24,7 +24,7 @@ const findClickEle = (
   for (const e of eleList) {
     const rect = e.getBoundingClientRect();
     if (inRange(rect.left, x, rect.right) && inRange(rect.top, y, rect.bottom))
-      return e;
+      return e as HTMLElement;
   }
 };
 
@@ -40,7 +40,7 @@ const handlePageClick = (e: MouseEvent) => {
   }
 
   const targetArea = findClickEle(refs.touchArea.children, e);
-  if (!targetArea) return;
+  if (!targetArea || targetArea.style.visibility === 'hidden') return;
   const areaName = (targetArea as HTMLElement).dataset.area as Area | undefined;
   if (!areaName) return;
 
@@ -50,8 +50,6 @@ const handlePageClick = (e: MouseEvent) => {
       state.show.toolbar = !state.show.toolbar;
     });
 
-  if (!store.option.clickPageTurn.enabled || store.option.zoom.ratio !== 100)
-    return;
   setState((state) => {
     resetUI(state);
 

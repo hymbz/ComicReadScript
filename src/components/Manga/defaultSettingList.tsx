@@ -263,6 +263,18 @@ export const defaultSettingList: () => SettingList = () => [
           name={t('other.enabled')}
           {...bindOption('clickPageTurn', 'enabled')}
         />
+
+        <SettingsItemSwitch
+          name={t('setting.option.show_clickable_area')}
+          value={store.show.touchArea}
+          onChange={() => setState('show', 'touchArea', !store.show.touchArea)}
+        />
+
+        <SettingsItemSwitch
+          name={t('setting.option.enable_menu')}
+          {...bindOption('clickPageTurn', 'enableMenu')}
+        />
+
         <SettingsShowItem when={store.option.clickPageTurn.enabled}>
           <SettingsItemSelect
             name={t('setting.option.click_page_turn_area')}
@@ -276,12 +288,6 @@ export const defaultSettingList: () => SettingList = () => [
             {...bindOption('clickPageTurn', 'reverse')}
           />
         </SettingsShowItem>
-
-        <SettingsItemSwitch
-          name={t('setting.option.show_clickable_area')}
-          value={store.show.touchArea}
-          onChange={() => setState('show', 'touchArea', !store.show.touchArea)}
-        />
       </>
     ),
   ],
