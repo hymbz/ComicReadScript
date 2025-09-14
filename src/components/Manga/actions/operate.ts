@@ -51,53 +51,68 @@ const scrollIntoView = (index: number, position: 'start' | 'end' = 'start') =>
     true,
   );
 
+/** 判断指定页能否被完全显示出来 */
+const isFullView = (i: number) => pageHeightList()[i] < store.rootSize.height;
+
 /** 在卷轴模式下，智能滚动至图片的头尾 */
 const scrollViewTurnPage = (offset: number) => {
   if (!store.option.scrollMode.enabled) return;
 
-  if (handleEndTurnPage(offset > 0 ? 'next' : 'prev')) return;
+  const dir = offset > 0 ? 'next' : 'prev';
+  if (handleEndTurnPage(dir)) return;
 
-  if (offset > 0) {
-    const viewBottom = scrollTop() + store.rootSize.height;
-    let viewBottomPage = findTopPage(viewBottom);
-    // 如果底页只露出了一点点，就当它没显示出来，避免小数滚动的误差
-    if (approx(getPageTop(viewBottomPage), viewBottom)) viewBottomPage -= 1;
+  const viewBottom = scrollTop() + store.rootSize.height;
+  let viewBottomPage = findTopPage(viewBottom);
+  // 如果底页只露出了一点点，就当它没显示出来，避免小数滚动的误差
+  if (approx(getPageTop(viewBottomPage), viewBottom)) viewBottomPage -= 1;
+
+  const viewTop = scrollTop();
+  let viewTopPage = findTopPage(viewTop);
+  // 如果顶页只露出了一点点，就当它没显示出来，避免小数滚动的误差
+  if (approx(getPageTop(viewTopPage + 1), viewTop)) viewTopPage += 1;
+
+  if (dir === 'next') {
     const pageBottom = getPageTop(viewBottomPage + 1);
 
-    // 如果滚动了指定距离后显示的还是这个图片，就直接滚动完事
-    const targetScrollTop = viewBottom + offset;
-    if (targetScrollTop <= pageBottom) return scrollBy(offset, true);
+    // 如果底页没显示出结尾，就跳转显示底页
+    if (!approx(viewBottom, pageBottom)) {
+      // 如果当前显示的图片占满了屏幕
+      if (viewBottomPage === viewTopPage) {
+        // 并且在滚动了指定距离后显示的还是这个图片，就直接滚动完事
+        if (viewBottom + offset <= pageBottom) return scrollBy(offset, true);
+        // 否则跳至底页结尾
+        return scrollIntoView(viewBottomPage, 'end');
+      }
 
-    // 如果底页没显示出结尾，则滚动到视窗底部对齐底页结尾
-    if (!approx(viewBottom, pageBottom))
-      return scrollIntoView(viewBottomPage, 'end');
-    // 否则就该显示下一页了
-    // 如果下一页可以整页显示，则滚动到视窗底部对齐下一页结尾
+      return scrollIntoView(
+        viewBottomPage,
+        isFullView(viewBottomPage) ? 'end' : 'start',
+      );
+    }
+    // 否则下一页
     const nextPage = viewBottomPage + 1;
-    if (pageHeightList()[nextPage] < store.rootSize.height)
-      return scrollIntoView(nextPage, 'end');
-    // 否则滚动到视窗顶部对齐下一页开头
-    scrollIntoView(nextPage, 'start');
+    scrollIntoView(nextPage, isFullView(nextPage) ? 'end' : 'start');
   } else {
-    const viewTop = scrollTop();
-    let viewTopPage = findTopPage(viewTop);
-    // 如果顶页只露出了一点点，就当它没显示出来，避免小数滚动的误差
-    if (approx(getPageTop(viewTopPage + 1), viewTop)) viewTopPage += 1;
     const pageTop = getPageTop(viewTopPage);
 
-    // 如果滚动了指定距离后显示的还是这个图片，就直接滚动完事
-    const targetScrollTop = viewTop + offset;
-    if (targetScrollTop >= pageTop) return scrollBy(offset, true);
+    // 如果顶页没显示出开头，就跳转显示顶页
+    if (!approx(viewTop, pageTop)) {
+      // 如果当前显示的图片占满了屏幕
+      if (viewBottomPage === viewTopPage) {
+        // 并且在滚动了指定距离后显示的还是这个图片，就直接滚动完事
+        if (viewTop + offset >= pageTop) return scrollBy(offset, true);
+        // 否则跳至顶页开头
+        return scrollIntoView(viewTopPage, 'start');
+      }
 
-    // 如果顶页没显示出开头，则滚动到视窗顶部对齐顶页开头
-    if (!approx(viewTop, pageTop)) return scrollIntoView(viewTopPage, 'start');
-    // 否则就该显示上一页了
-    // 如果上一页可以整页显示，则滚动到视窗顶部对齐上一页开头
+      return scrollIntoView(
+        viewTopPage,
+        isFullView(viewTopPage) ? 'start' : 'end',
+      );
+    }
+    // 否则上一页
     const prevPage = viewTopPage - 1;
-    if (pageHeightList()[prevPage] < store.rootSize.height)
-      return scrollIntoView(prevPage, 'start');
-    // 否则滚动到视窗底部对齐上一页结尾
-    scrollIntoView(prevPage, 'end');
+    scrollIntoView(prevPage, isFullView(prevPage) ? 'start' : 'end');
   }
 };
 
