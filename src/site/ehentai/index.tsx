@@ -188,7 +188,9 @@ import { tagLint } from './tagLint';
   const resizeObserver = new ResizeObserver(() => {
     // 只在超出正常高度时才使用 css 限制，避免和其他脚本（如：EhAria2下载助手）冲突
     Reflect.deleteProperty(sidebarDom.dataset, 'long');
-    if (sidebarDom.scrollHeight > 352) sidebarDom.dataset.long = '';
+    const lastNode = querySelector('#gd5 p:last-child')!;
+    if (lastNode.offsetTop + lastNode.offsetHeight > 352)
+      sidebarDom.dataset.long = '';
   });
   resizeObserver.observe(sidebarDom);
   useStyle(`
