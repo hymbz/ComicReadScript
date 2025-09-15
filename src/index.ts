@@ -21,6 +21,7 @@ import {
 } from 'helper';
 import { getInitLang } from 'helper/languages';
 import { request, toast, universal } from 'main';
+import { getImglistByHtml } from 'userscript/copyApi';
 import { otherSite } from 'userscript/otherSite';
 
 /** 站点配置 */
@@ -702,26 +703,16 @@ try {
     case 'www.relamanhua.org':
     case 'www.manga2024.com':
     case 'www.2024manga.com': {
-      if (
-        !location.pathname.includes('/chapter/') &&
-        !document.querySelector('.disData[contentkey]')
-      )
+      if (!location.pathname.includes('/chapter/')) break;
+
+      if (!document.querySelector('.disData[contentkey]')) {
+        toast.error(t('site.changed_load_failed'));
         break;
-      const getImgList = async () => {
-        const [, , comicName, , id] = location.pathname.split('/');
-        const res = await request<{
-          results: { chapter: { contents: { url: string }[] } };
-        }>(
-          `https://api.manga2025.com/api/v3/comic/${comicName}/chapter/${id}`,
-          { responseType: 'json' },
-        );
-        return res.response.results.chapter.contents.map(({ url }) =>
-          url.replace('.h800x.', '.h1500x.'),
-        );
-      };
+      }
+
       options = {
         name: 'relamanhua',
-        getImgList,
+        getImgList: () => getImglistByHtml(),
         onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
         onPrev: querySelectorClick(
           '.comicContent-prev:not(.index,.list) a:not(.prev-null)',

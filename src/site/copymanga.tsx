@@ -13,6 +13,7 @@ import {
   wait,
 } from 'helper';
 import { request, toast, useInit } from 'main';
+import { decryptData, getImglistByHtml } from 'userscript/copyApi';
 
 // API 参考：https://github.com/fumiama/copymanga/blob/279e08b06a70307bf20162900103ec1fdcb97751/app/src/main/res/values/strings.xml
 
@@ -50,62 +51,6 @@ const pcApi = new (class {
       ...args,
     );
 })();
-
-// by: https://github.com/MapoMagpie/comic-looms/blob/7799f87fdd5a8ac73c878f338b7ae6aa5c0b2d18/src/platform/matchers/mangacopy.ts#L96-L125
-const decryptData = async (
-  raw: string,
-  key: string = unsafeWindow.cct || 'oppzzivv.nzm.oip',
-) => {
-  const cipher = raw.slice(16);
-  const iv = raw.slice(0, 16);
-
-  const decryptedBuffer = await crypto.subtle.decrypt(
-    { name: 'AES-CBC', iv: new TextEncoder().encode(iv) },
-    await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(key),
-      { name: 'AES-CBC' },
-      false,
-      ['decrypt'],
-    ),
-    new Uint8Array(
-      cipher.match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16)),
-    ).buffer,
-  );
-  return JSON.parse(new TextDecoder().decode(decryptedBuffer));
-};
-
-declare const contentKey: string;
-declare const cct: string;
-
-/** 通过解析网页变量获取图片列表 */
-const getImglistByHtml = async (comicName: string, id: string) => {
-  const getKeys = async (): Promise<[string, string]> => {
-    // 移动端没有 contentKey，就从 PC 端的网页获取
-    if (!unsafeWindow.contentKey) {
-      const html = await request(
-        `${location.origin}/comic/${comicName}/chapter/${id}`,
-        {
-          fetch: false,
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36',
-          },
-        },
-      );
-      const [script] = html.responseText.match(
-        /(?<=<script>\s+)(var .+?contentKey =.+?)(?=<\/script)/gs,
-      )!;
-      eval(script); // oxlint-disable-line no-eval
-    }
-
-    return [contentKey, cct];
-  };
-
-  const keys = await getKeys();
-  const res: { url: string }[] = await decryptData(...keys);
-  return res.map(({ url }) => url.replace(/(?<=(\/|\.))c800x/, 'c1500x'));
-};
 
 // 在目录页显示上次阅读记录
 const handleLastChapter = (comicName: string) => {
@@ -496,7 +441,9 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
         if (titleDom) return getImglistByApi();
         // 其他普通漫画优先通过解析网页变量加载，避免触发 api 的限制
         try {
-          const imgList = await getImglistByHtml(comicName, id);
+          const imgList = await getImglistByHtml(
+            `${location.origin}/comic/${comicName}/chapter/${id}`,
+          );
           if (imgList.length === 0) throw new Error('解析网页变量失败');
           return imgList;
         } catch (error) {

@@ -67,6 +67,7 @@ const packlist = [
   'components/Fab',
   'components/Toast',
   'userscript/dmzjApi',
+  'userscript/copyApi',
   'userscript/detectAd',
   'userscript/main',
   'worker/detectAd',
