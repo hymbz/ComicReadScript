@@ -33,6 +33,7 @@ type History = {
     修正点击页数时的跳转判定: true,
     固定导航条: true,
     自动签到: true,
+    移动端显示帖子权限: true,
   });
 
   useStyle(
@@ -429,6 +430,38 @@ type History = {
       document.addEventListener('visibilitychange', updateHistoryTag);
       // 点击下一页后更新提示
       querySelector('#autopbn')?.addEventListener('click', updateHistoryTag);
+    }
+
+    if (options.移动端显示帖子权限 && /mod=forumdisplay/.test(document.URL)) {
+      const apiUrl = new URL(location.href);
+      apiUrl.pathname = '/api/mobile/index.php';
+      apiUrl.searchParams.set('module', apiUrl.searchParams.get('mod')!);
+      apiUrl.searchParams.delete('mod');
+
+      const res = await request<{
+        Variables: {
+          forum_threadlist: { tid: string; readperm: string }[];
+        };
+      }>(`${apiUrl}`, {
+        responseType: 'json',
+        errorText: '获取帖子权限时出错',
+      });
+
+      const readpermMap = new Map<number, number>();
+      for (const { tid, readperm } of res.response.Variables.forum_threadlist)
+        if (readperm !== '0') readpermMap.set(Number(tid), Number(readperm));
+
+      for (const item of querySelectorAll('.threadlist li.list')) {
+        const a = item.querySelector<HTMLAnchorElement>('a[href*="&tid="]')!;
+        const tid = Number(new URLSearchParams(a.href).get('tid')!);
+        if (!readpermMap.has(tid)) continue;
+        item
+          .querySelector('.threadlist_foot li.mr')!
+          .insertAdjacentHTML(
+            'beforeend',
+            `<span style="margin-right: .5em; color: #EE1B2E">#权限${readpermMap.get(tid)}</span>`,
+          );
+      }
     }
   }
 })().catch((error) => log.error(error));
