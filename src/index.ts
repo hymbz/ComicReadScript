@@ -2,7 +2,6 @@ import type { InitOptions, LoadImgFn } from 'main';
 
 import { downloadImgHeaders } from 'components/Manga';
 import {
-  debounce,
   fileType,
   isUrl,
   log,
@@ -951,108 +950,8 @@ try {
 
     default: {
       // #[Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
-      if (
-        document.querySelector(
-          `head > meta[content="A manga reader that runs tachiyomi's extensions"]`,
-        )
-      ) {
-        const jump = (mangaId: number, chapterId: number) => {
-          location.pathname = `/manga/${mangaId}/chapter/${chapterId}`;
-        };
-
-        const getChapters = async (mangaId: number, chapterId: number) => {
-          type ChapterDataRes = {
-            data: {
-              chapters: { nodes: { pageCount: number }[] };
-              manga: { chapters: { totalCount: number } };
-            };
-          };
-          const res = await request<ChapterDataRes>('/api/graphql', {
-            method: 'POST',
-            data: JSON.stringify({
-              operationName: 'GET_CHAPTERS',
-              query: `query GET_CHAPTERS($mangaId: Int!, $chapterId: Int!) {
-                chapters(condition: {
-                  mangaId: $mangaId, sourceOrder: $chapterId}
-                ) { nodes { pageCount } }
-                manga(id: $mangaId) { chapters { totalCount } }
-              }`,
-              variables: { mangaId, chapterId },
-            }),
-            responseType: 'json',
-          });
-          // 可能因为 Tachidesk 是在点开指定话数后才去获取数据的
-          // 所以如果有时候会拿不到数据需要等一下
-          if (res.response.data.chapters.nodes[0].pageCount <= 0) {
-            await sleep(200);
-            return getChapters(mangaId, chapterId);
-          }
-          return res.response.data;
-        };
-
-        options = {
-          name: 'Tachidesk',
-          SPA: {
-            isMangaPage: () =>
-              /\/manga\/\d+\/chapter\/\d+/.test(location.pathname),
-          },
-          async getImgList({ setState }) {
-            const [, , mangaId, , chapterId] = location.pathname
-              .split('/')
-              .map(Number);
-            const data = await getChapters(mangaId, chapterId);
-            const [{ pageCount }] = data.chapters.nodes;
-            const chapterCount = data.manga.chapters.totalCount;
-
-            setState('manga', {
-              onPrev:
-                chapterId > 0 ? () => jump(mangaId, chapterId - 1) : undefined,
-              onNext:
-                chapterId < chapterCount
-                  ? () => jump(mangaId, chapterId + 1)
-                  : undefined,
-            });
-
-            return range(
-              pageCount,
-              (i) => `/api/v1/manga/${mangaId}/chapter/${chapterId}/page/${i}`,
-            );
-          },
-          // 跟随阅读进度滚动页面，避免确保能触发 Tachidesk 的进度记录
-          onShowImgsChange: debounce((showImgs, imgList) => {
-            const lastImgUrl = imgList[[...showImgs].at(-1)!].src;
-            querySelector(`img[src$="${lastImgUrl}"]`)?.scrollIntoView({
-              behavior: 'instant',
-              block: 'end',
-            });
-          }, 500),
-        };
-      }
-
       // #[LANraragi](https://github.com/Difegue/LANraragi)
-      const LANraragiNode = document.querySelector(
-        '.ip > a[href="https://github.com/Difegue/LANraragi"]',
-      );
-      if (LANraragiNode && LANraragiNode.textContent.trim() === 'LANraragi.') {
-        if (location.pathname !== '/reader') break;
-
-        const id = new URLSearchParams(location.search).get('id');
-        if (!id) {
-          toast.error(t('site.changed_load_failed'));
-          break;
-        }
-
-        options = {
-          name: 'LANraragi',
-          async getImgList() {
-            const res = await request<{ pages: string[] }>(
-              `/api/archives/${id}/files`,
-              { responseType: 'json' },
-            );
-            return res.response.pages;
-          },
-        };
-      }
+      inject('site/selfhosted');
 
       if (!options) {
         (async () => {

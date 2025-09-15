@@ -57,7 +57,7 @@ export const universal = async ({
 
   setState('comicMap', '', { getImgList: () => getImgList(mainContext) });
 
-  setState('manga', 'onShowImgsChange', onShowImgsChange);
+  setState('manga', { onShowImgsChange });
   if (onExit)
     setState('manga', {
       onExit: (isEnd?: boolean) => {
