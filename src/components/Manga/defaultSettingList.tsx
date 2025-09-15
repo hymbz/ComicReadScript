@@ -271,8 +271,8 @@ export const defaultSettingList: () => SettingList = () => [
         />
 
         <SettingsItemSwitch
-          name={t('setting.option.enable_menu')}
-          {...bindOption('clickPageTurn', 'enableMenu')}
+          name={t('setting.option.shrink_menu')}
+          {...bindOption('clickPageTurn', 'shrinkMenu')}
         />
 
         <SettingsShowItem when={store.option.clickPageTurn.enabled}>

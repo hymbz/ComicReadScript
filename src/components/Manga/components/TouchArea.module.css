@@ -61,10 +61,23 @@
   &[data-vert='true'] {
     flex-direction: column !important;
   }
-}
 
-.touchAreaRoot[data-area='edge'] {
-  grid-template-columns: 1fr min(30%, 10em) 1fr;
+  &:not([data-turn-page]) {
+    .touchArea[data-area='next'],
+    .touchArea[data-area='NEXT'],
+    .touchArea[data-area='prev'],
+    .touchArea[data-area='PREV'] {
+      visibility: hidden;
+    }
+  }
+
+  &[data-shrink-menu] {
+    grid-template-columns: 1fr 2em 1fr;
+
+    .touchArea[data-area='MENU'] {
+      letter-spacing: 0;
+    }
+  }
 }
 
 .root[data-mobile] {

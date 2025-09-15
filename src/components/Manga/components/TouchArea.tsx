@@ -47,20 +47,6 @@ export const dir = createRootMemo(() => {
   return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
 });
 
-const isShowArea = (area: Area) => {
-  switch (area) {
-    case 'PREV':
-    case 'prev':
-    case 'NEXT':
-    case 'next':
-      return store.option.clickPageTurn.enabled;
-
-    case 'MENU':
-    case 'menu':
-      return store.option.clickPageTurn.enableMenu;
-  }
-};
-
 export const TouchArea: Component = () => (
   <div
     ref={bindRef('touchArea')}
@@ -68,6 +54,8 @@ export const TouchArea: Component = () => (
     dir={dir()}
     data-show={boolDataVal(store.show.touchArea)}
     data-area={areaType()}
+    data-turn-page={boolDataVal(store.option.clickPageTurn.enabled)}
+    data-shrink-menu={boolDataVal(store.option.clickPageTurn.shrinkMenu)}
   >
     <For each={areaArrayMap[areaType()]}>
       {(rows) => (
@@ -75,7 +63,6 @@ export const TouchArea: Component = () => (
           {(area) => (
             <div
               class={classes.touchArea}
-              style={{ visibility: isShowArea(area) ? undefined : 'hidden' }}
               data-area={area}
               role="button"
               tabIndex={-1}

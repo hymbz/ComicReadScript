@@ -144,7 +144,6 @@
       "dir_ltr": "LTR (American comics)",
       "dir_rtl": "RTL (Japanese manga)",
       "disable_auto_enlarge": "Disable automatic image enlarge",
-      "enable_menu": "Enable menu area",
       "first_page_fill": "Enable first page fill by default",
       "fit_to_width": "Fit to width",
       "img_recognition": "Image Recognition",
@@ -172,6 +171,7 @@
       "scrollbar_show_img_status": "Show image loading status",
       "show_clickable_area": "Show clickable areas",
       "show_comments": "Show comments on the end page",
+      "shrink_menu": "Enable menu area",
       "swap_page_turn_key": "Swap LR page-turning keys",
       "zoom": "Image zoom ratio"
     },

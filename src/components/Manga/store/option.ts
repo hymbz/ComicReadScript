@@ -58,7 +58,8 @@ export type Option = {
     enabled: boolean;
     /** 左右反转点击区域 */
     reverse: boolean;
-    enableMenu: boolean;
+    /** 缩小菜单区域 */
+    shrinkMenu: boolean;
     /** 区域排列类型 */
     area: keyof typeof areaArrayMap;
   };
@@ -140,7 +141,7 @@ const _defaultOption: Readonly<Option> = {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,
     area: 'left_right',
-    enableMenu: true,
+    shrinkMenu: false,
   },
   firstPageFill: true,
   disableZoom: false,
