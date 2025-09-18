@@ -82,7 +82,6 @@ export const useCssVar = () => {
           store.option.customBackground ??
           (store.option.darkMode ? '#000' : '#fff')
         }`,
-      '--scroll-mode-img-scale': () => store.option.scrollMode.imgScale,
       '--scroll-mode-spacing': () => store.option.scrollMode.spacing,
     },
     () => (store.option.darkMode ? darkStyle : lightStyle),

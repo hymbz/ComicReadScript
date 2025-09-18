@@ -209,7 +209,6 @@ export const ComicImgFlow: Component = () => {
         data-hidden-mouse={
           !store.gridMode && store.option.autoHiddenMouse && hiddenMouse()
         }
-        data-fit-width={boolDataVal(store.option.scrollMode.fitToWidth)}
         on:mousemove={onMouseMove}
         onTransitionEnd={handleTransitionEnd}
         tabIndex={-1}

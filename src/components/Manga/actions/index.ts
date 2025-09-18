@@ -13,6 +13,7 @@ export * from './readProgress';
 export * from './renderPage';
 export * from './scroll';
 export * from './scrollbar';
+export * from './scrollMode';
 export * from './scrollModeDrag';
 export * from './show';
 export * from './switch';

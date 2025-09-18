@@ -67,16 +67,28 @@ export type Option = {
   /** 卷轴模式 */
   scrollMode: {
     enabled: boolean;
-    /** 卷轴模式下的图片间距 */
+    /** 图片间距 */
     spacing: number;
-    /** 卷轴模式下图片的缩放比例 */
+    /** 图片缩放比例 */
     imgScale: number;
-    /** 卷轴模式下图片适应宽度 */
-    fitToWidth: boolean;
+
+    /**
+     * 调整图片的显示宽度
+     *
+     * - 'disable': 禁用
+     * - 'full': 全部图片缩放适应页宽
+     * - number: 通过调整图片缩放比例，让**大多数**图片的宽度接近指定值
+     */
+    adjustToWidth: 'disable' | 'full' | number;
+    // 虽然放在同一个选项里，但 'full' 和 number 其实是毫无关联的两套实现
+    // number 之所以是作用于大多数而不是全部，是为了避免跨页大图被缩小得看不清字
+    // https://github.com/hymbz/ComicReadScript/issues/285
+
     /** 并排模式 */
     abreastMode: boolean;
     /** 并排模式下重新显示上列结尾部分的比例 */
     abreastDuplicate: number;
+
     /** 双页模式 */
     doubleMode: boolean;
     /** 滚动翻页时对齐边缘 */
@@ -166,7 +178,7 @@ const _defaultOption: Readonly<Option> = {
     enabled: false,
     spacing: 0,
     imgScale: 1,
-    fitToWidth: false,
+    adjustToWidth: 'disable',
     abreastMode: false,
     abreastDuplicate: 0.1,
     doubleMode: false,

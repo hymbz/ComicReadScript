@@ -11,13 +11,15 @@ import type { Option } from './store/option';
 import {
   autoPageNum,
   bindOption,
+  isScrollMode,
+  isUseAutoScale,
   saveScrollProgress,
+  setAdjustToWidth,
+  setImgScale,
   setOption,
   switchDir,
-  switchFitToWidth,
   switchImgRecognition,
   zoom,
-  zoomScrollModeImg,
 } from './actions';
 import { SettingHotkeysBlock } from './components/SettingHotkeys';
 import { SettingsItem } from './components/SettingsItem';
@@ -96,6 +98,7 @@ export const defaultSettingList: () => SettingList = () => [
               jump();
             }}
           />
+
           <Show when={store.option.scrollMode.abreastMode}>
             <SettingsItemNumber
               name={t('setting.option.abreast_duplicate')}
@@ -112,24 +115,54 @@ export const defaultSettingList: () => SettingList = () => [
               value={Math.round(store.option.scrollMode.abreastDuplicate * 100)}
             />
           </Show>
+
           <Show when={!store.option.scrollMode.abreastMode}>
-            <SettingsItemSwitch
-              name={t('setting.option.fit_to_width')}
-              value={store.option.scrollMode.fitToWidth}
-              onChange={switchFitToWidth}
+            <SettingsItemSelect
+              name={t('setting.option.adjust_to_width')}
+              options={[
+                ['disable', t('other.disable')],
+                ['full', t('setting.option.full_width')],
+                ['custom', t('other.custom')],
+              ]}
+              value={
+                typeof store.option.scrollMode.adjustToWidth === 'number'
+                  ? 'custom'
+                  : store.option.scrollMode.adjustToWidth
+              }
+              onChange={(val) => {
+                const jump = saveScrollProgress();
+                setOption((draftOption, state) => {
+                  if (val === 'custom')
+                    draftOption.scrollMode.adjustToWidth = state.isMobile
+                      ? state.rootSize.width
+                      : 1280;
+                  else draftOption.scrollMode.adjustToWidth = val;
+                });
+                jump();
+              }}
+            />
+            <Show when={isUseAutoScale()}>
+              <SettingsItemNumber
+                name={t('setting.option.adjust_to_width')}
+                maxLength={6}
+                step={100}
+                onChange={setAdjustToWidth}
+                value={store.option.scrollMode.adjustToWidth as number}
+              />
+            </Show>
+          </Show>
+
+          <Show when={store.option.scrollMode.adjustToWidth === 'disable'}>
+            <SettingsItemNumber
+              name={t('setting.option.scroll_mode_img_scale')}
+              maxLength={3}
+              suffix="%"
+              step={5}
+              onChange={(val) => setImgScale(val / 100)}
+              value={Math.round(store.option.scrollMode.imgScale * 100)}
             />
           </Show>
 
-          <SettingsItemNumber
-            name={t('setting.option.scroll_mode_img_scale')}
-            maxLength={3}
-            suffix="%"
-            step={5}
-            onChange={(val) =>
-              Number.isNaN(val) || zoomScrollModeImg(val / 100, true)
-            }
-            value={Math.round(store.option.scrollMode.imgScale * 100)}
-          />
           <SettingsItemNumber
             name={t('setting.option.scroll_mode_img_spacing')}
             maxLength={5}
@@ -162,8 +195,8 @@ export const defaultSettingList: () => SettingList = () => [
       </>
     ),
     {
-      initShow: () => store.option.scrollMode.enabled,
-      hidden: () => !store.option.scrollMode.enabled,
+      initShow: () => isScrollMode(),
+      hidden: () => !isScrollMode(),
     },
   ],
   [

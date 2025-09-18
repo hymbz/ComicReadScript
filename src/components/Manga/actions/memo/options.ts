@@ -9,12 +9,29 @@ export const isAbreastMode = createRootMemo(
 
 /** 当前是否为双页卷轴模式 */
 export const isDoubleMode = createRootMemo(
-  () => store.option.scrollMode.enabled && store.option.scrollMode.doubleMode,
+  () =>
+    store.option.scrollMode.enabled &&
+    store.option.scrollMode.doubleMode &&
+    !store.option.scrollMode.abreastMode,
+);
+
+/** 当前是否为单页卷轴模式 */
+export const isSingleMode = createRootMemo(
+  () =>
+    store.option.scrollMode.enabled &&
+    !store.option.scrollMode.doubleMode &&
+    !store.option.scrollMode.abreastMode,
 );
 
 /** 当前是否为普通卷轴模式（包含了双页卷轴模式） */
 export const isScrollMode = createRootMemo(
   () => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode,
+);
+
+/** 当前是否正在卷轴模式下使用自动缩放值 */
+export const isUseAutoScale = createRootMemo(
+  () =>
+    isScrollMode() && typeof store.option.scrollMode.adjustToWidth === 'number',
 );
 
 /** 当前是否开启了识别背景色 */

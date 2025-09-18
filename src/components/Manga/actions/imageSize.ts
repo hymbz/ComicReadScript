@@ -9,6 +9,7 @@ import {
   imgList,
   isAbreastMode,
   placeholderSize,
+  scrollModeScale,
 } from './memo';
 
 /** 获取指定图片的显示尺寸 */
@@ -28,10 +29,11 @@ export const getImgDisplaySize = (
   };
 
   if (isAbreastMode()) return setWidth(abreastColumnWidth());
-  if (state.option.scrollMode.fitToWidth) return setWidth(state.rootSize.width);
+  if (state.option.scrollMode.adjustToWidth === 'full')
+    return setWidth(state.rootSize.width);
 
-  height *= state.option.scrollMode.imgScale;
-  width *= state.option.scrollMode.imgScale;
+  height *= scrollModeScale();
+  width *= scrollModeScale();
 
   if (width > state.rootSize.width) return setWidth(state.rootSize.width);
 
@@ -54,8 +56,8 @@ createEffectOn(
     imgList,
     () => store.option.scrollMode.enabled,
     () => store.option.scrollMode.abreastMode,
-    () => store.option.scrollMode.fitToWidth,
-    () => store.option.scrollMode.imgScale,
+    () => store.option.scrollMode.adjustToWidth,
+    scrollModeScale,
     () => store.rootSize,
     placeholderSize,
   ],

@@ -19,6 +19,7 @@ import { createEffectOn, t } from 'helper';
 import { IconButton } from '../IconButton';
 import {
   doubleClickZoom,
+  handleScrollModeZoom,
   isOnePageMode,
   isScrollMode,
   isTranslatingImage,
@@ -31,7 +32,6 @@ import {
   switchScrollMode,
   translateCurrent,
   translateToEnd,
-  zoomScrollModeImg,
 } from './actions';
 import { AutoScrollButton } from './components/autoScroll';
 import { SettingPanel } from './components/SettingPanel';
@@ -133,22 +133,35 @@ export const defaultButtonList: ToolbarButtonList = [
     </Show>
   ),
   () => <hr />,
-  // 放大模式
+  // 缩放
   () => (
-    <Show when={store.option.scrollMode.enabled} fallback={<ZoomButton />}>
-      <IconButton
-        tip={t('button.zoom_in')}
-        enabled={store.option.scrollMode.imgScale >= 3}
-        onClick={() => zoomScrollModeImg(0.05)}
-        children={<MdZoomIn />}
-      />
-      <IconButton
-        tip={t('button.zoom_out')}
-        enabled={store.option.scrollMode.imgScale <= 0.1}
-        onClick={() => zoomScrollModeImg(-0.05)}
-        children={<MdZoomOut />}
-      />
-    </Show>
+    <>
+      {/* 翻页模式下是放大按钮 */}
+      <Show when={!store.option.scrollMode.enabled}>
+        <ZoomButton />
+      </Show>
+
+      {/* 卷轴模式下改为调整图片缩放比例 */}
+      <Show
+        when={
+          store.option.scrollMode.enabled &&
+          store.option.scrollMode.adjustToWidth !== 'full'
+        }
+      >
+        <IconButton
+          tip={t('button.zoom_in')}
+          enabled={store.option.scrollMode.imgScale >= 3}
+          onClick={() => handleScrollModeZoom('add')}
+          children={<MdZoomIn />}
+        />
+        <IconButton
+          tip={t('button.zoom_out')}
+          enabled={store.option.scrollMode.imgScale <= 0.1}
+          onClick={() => handleScrollModeZoom('sub')}
+          children={<MdZoomOut />}
+        />
+      </Show>
+    </>
   ),
   // 全屏
   () => (

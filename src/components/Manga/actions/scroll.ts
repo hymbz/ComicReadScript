@@ -1,7 +1,7 @@
 import { AnimationFrame, clamp, inRange } from 'helper';
 
 import { refs, setState, store } from '../store';
-import { openScrollLock, setOption } from './helper';
+import { openScrollLock } from './helper';
 import {
   abreastArea,
   abreastColumnWidth,
@@ -151,20 +151,4 @@ export const jumpToImg = (index: number) => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
-};
-
-/** 在卷轴模式下进行缩放，并且保持滚动进度不变 */
-export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
-  const jump = saveScrollProgress();
-  setOption((draftOption) => {
-    const newVal = set
-      ? zoomLevel
-      : store.option.scrollMode.imgScale + zoomLevel;
-    draftOption.scrollMode.imgScale = clamp(0.1, Number(newVal.toFixed(2)), 3);
-  });
-  jump();
-
-  // 并排卷轴模式下并没有一个明确直观的滚动进度，
-  // 也想不出有什么实现效果能和普通卷轴模式的效果一致,
-  // 所以就摆烂不管了，反正现在这样也已经能避免乱跳了
 };

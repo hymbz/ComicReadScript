@@ -27,7 +27,7 @@ export const pageHeightList = createRootMemo(() => {
     if (!targetImg) throw new Error('找不到图片');
     if (
       targetImg.size.width < doubleWidth &&
-      !store.option.scrollMode.fitToWidth
+      store.option.scrollMode.adjustToWidth === 'disable'
     )
       return targetImg.size.height;
     return targetImg.size.height * (doubleWidth / targetImg.size.width);

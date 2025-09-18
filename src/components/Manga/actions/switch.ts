@@ -4,7 +4,7 @@ import { updatePageData } from './image';
 import { updateImgLoadType } from './imageLoad';
 import { handleImgRecognition } from './imageRecognition';
 import { activeImgIndex, autoPageNum, nowFillIndex, pageNum } from './memo';
-import { jumpToImg, saveScrollProgress } from './scroll';
+import { jumpToImg } from './scroll';
 import { zoom } from './zoom';
 
 /** 切换页面填充 */
@@ -76,15 +76,6 @@ export const switchGridMode = () => {
         inline: 'center',
       });
     });
-};
-
-/** 切换卷轴模式下图片适应宽度 */
-export const switchFitToWidth = () => {
-  const jump = saveScrollProgress();
-  setOption((draftOption) => {
-    draftOption.scrollMode.fitToWidth = !draftOption.scrollMode.fitToWidth;
-  });
-  jump();
 };
 
 /** 切换全屏 */

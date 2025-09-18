@@ -16,12 +16,8 @@ import {
   setAbreastScrollFill,
 } from './memo';
 import { handleTrackpadWheel } from './pointer';
-import {
-  constantScroll,
-  scrollBy,
-  scrollTo,
-  zoomScrollModeImg,
-} from './scroll';
+import { constantScroll, scrollBy, scrollTo } from './scroll';
+import { handleScrollModeZoom } from './scrollMode';
 import {
   switchAutoScroll,
   switchDir,
@@ -354,8 +350,7 @@ export const handleWheel = (e: WheelEvent) => {
     store.option.zoom.ratio === 100
   ) {
     e.preventDefault();
-    if (store.option.scrollMode.fitToWidth) return;
-    return zoomScrollModeImg(isWheelDown ? -0.05 : 0.05);
+    return handleScrollModeZoom(isWheelDown ? 'sub' : 'add');
   }
 
   if (e.ctrlKey || e.altKey) {
