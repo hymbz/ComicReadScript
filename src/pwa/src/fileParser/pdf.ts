@@ -20,7 +20,10 @@ export const handlePdf = async (file: File): Promise<ImgFile[]> => {
     outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0];
 
   try {
-    const task = pdfjsLib.getDocument(await file.arrayBuffer());
+    const task = pdfjsLib.getDocument({
+      data: await file.arrayBuffer(),
+      wasmUrl: '/pdfJsWasm/',
+    });
     task.onPassword = (updatePassword: (password: string) => void) => {
       // eslint-disable-next-line no-alert
       const password = prompt(t('pwa.message.enter_password'));
