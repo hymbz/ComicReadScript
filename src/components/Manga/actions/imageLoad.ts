@@ -200,7 +200,8 @@ export const updateImgLoadType = singleThreaded(() => {
 createEffectOn(
   [
     preloadNum,
-    createRootMemo(() => [...renderImgList()].map((i) => store.imgList[i])),
+    renderImgList,
+    () => store.imgMap,
     () => store.option.alwaysLoadAllImg,
   ],
   updateImgLoadType,
