@@ -4148,11 +4148,11 @@ const setImgScale = val => {
   setOption(draftOption => {
     val = helper.clamp(0.1, val, 3);
 
-    // 如果当前最小图片宽度都大于视窗宽度，并且这次操作是在调小缩放值
+    // 如果当前最小图片宽度大于视窗宽度，并且这次操作是在调小缩放值
     // 那就将这次操作改为：将缩放值修改为只要缩小一点就会立刻让图片变小的极限值
     // 避免用户需要多次调小缩放值才能看到效果的情况
     // https://github.com/hymbz/ComicReadScript/issues/285
-    if (minImgWidth() <= store.rootSize.width && val < draftOption.scrollMode.imgScale) {
+    if (minImgWidth() > store.rootSize.width && val < draftOption.scrollMode.imgScale) {
       const maxImgScale = store.rootSize.width / minImgWidth();
       if (val > maxImgScale) val = maxImgScale;
     }
@@ -13502,7 +13502,7 @@ web.delegateEvents(["click"]);
   const resizeObserver = new ResizeObserver(() => {
     // 只在超出正常高度时才使用 css 限制，避免和其他脚本（如：EhAria2下载助手）冲突
     Reflect.deleteProperty(sidebarDom.dataset, 'long');
-    const lastNode = helper.querySelector('#gd5 p:last-child');
+    const lastNode = helper.querySelector('#gd5 p:last-of-type');
     if (lastNode.offsetTop + lastNode.offsetHeight > 352) sidebarDom.dataset.long = '';
   });
   resizeObserver.observe(sidebarDom);
@@ -14916,7 +14916,7 @@ const main = require('main');
 
     // #[NoyAcg](https://noy1.top)
     // test: https://noy1.top/#/read/13349
-    
+
     case 'noy1.top':
       {
         options = {
@@ -15270,9 +15270,9 @@ const main = require('main');
       {
         // #[Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
         // #[LANraragi](https://github.com/Difegue/LANraragi)
+const Manga = require('components/Manga');
 const helper = require('helper');
 const request = require('request');
-const Manga = require('components/Manga');
 
 if (document.querySelector(`head > meta[content="A manga reader that runs tachiyomi's extensions"]`)) {
   const jump = (mangaId, chapterId) => {

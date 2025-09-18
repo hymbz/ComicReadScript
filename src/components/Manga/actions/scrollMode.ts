@@ -37,12 +37,12 @@ export const setImgScale = (val: number | ((oldVal: number) => number)) => {
   setOption((draftOption) => {
     val = clamp(0.1, val as number, 3);
 
-    // 如果当前最小图片宽度都大于视窗宽度，并且这次操作是在调小缩放值
+    // 如果当前最小图片宽度大于视窗宽度，并且这次操作是在调小缩放值
     // 那就将这次操作改为：将缩放值修改为只要缩小一点就会立刻让图片变小的极限值
     // 避免用户需要多次调小缩放值才能看到效果的情况
     // https://github.com/hymbz/ComicReadScript/issues/285
     if (
-      minImgWidth() <= store.rootSize.width &&
+      minImgWidth() > store.rootSize.width &&
       val < draftOption.scrollMode.imgScale
     ) {
       const maxImgScale = store.rootSize.width / minImgWidth();

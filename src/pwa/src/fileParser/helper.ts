@@ -1,4 +1,5 @@
 import type { IterableElement } from 'type-fest';
+
 import { setState } from '../store';
 
 export const imgExtension = new Set([

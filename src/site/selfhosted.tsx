@@ -1,8 +1,8 @@
+import { setState } from 'components/Manga';
 import { clamp, debounce, querySelector, range, sleep, wait } from 'helper';
 import { request } from 'request';
 
 import type { InitOptions } from '../userscript/main';
-import { setState } from 'components/Manga';
 
 declare let options: InitOptions; // oxlint-disable-line no-unused-vars
 
