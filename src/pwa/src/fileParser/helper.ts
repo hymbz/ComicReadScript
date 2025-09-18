@@ -1,4 +1,5 @@
 import type { IterableElement } from 'type-fest';
+import { setState } from '../store';
 
 export const imgExtension = new Set([
   '.png',
@@ -39,4 +40,11 @@ export const isSupportFile = (name: string) => {
   if (iszipExtension(extension)) return extension;
   if (isimgExtension(extension)) return 'img';
   return null;
+};
+
+/** 在动态加载时修改图片 url */
+export const setImg = (i: number, src: string) => {
+  setState((state) => {
+    state.imgList = state.imgList.with(i, { ...state.imgList[i], src });
+  });
 };

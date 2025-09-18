@@ -5,7 +5,8 @@ import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { toast } from 'components/Toast';
 import { canvasToBlob, plimit, range, t } from 'helper';
 
-import type { ImgFile } from '../store';
+import { type ImgFile } from '../store';
+import { setImg } from './helper';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
@@ -14,7 +15,9 @@ export const handlePdf = async (file: File): Promise<ImgFile[]> => {
   const tip = `「${file.name}」${t('pwa.message.parsing')}`;
   toast(tip, { duration: Number.POSITIVE_INFINITY });
 
-  let list: ImgFile[] = [];
+  const outputScale = window.devicePixelRatio || 1;
+  const transform =
+    outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0];
 
   try {
     const task = pdfjsLib.getDocument(await file.arrayBuffer());
@@ -26,23 +29,41 @@ export const handlePdf = async (file: File): Promise<ImgFile[]> => {
     };
     const pdf = await task.promise;
 
-    list = await plimit(
-      range(pdf.numPages, (i) => async (): Promise<ImgFile> => {
-        const page = await pdf.getPage(i + 1);
-        const viewport = page.getViewport({ scale: 1 });
-        const canvas = new OffscreenCanvas(viewport.width, viewport.height);
-        await page.render({ canvas: canvas as any, viewport }).promise;
-        const src = URL.createObjectURL(await canvasToBlob(canvas));
-        return { src, name: `${i}` };
-      }),
+    setTimeout(() =>
+      plimit(
+        range(pdf.numPages, (i) => async () => {
+          const page = await pdf.getPage(i + 1);
+          const [, , width, height] = page.view;
+          let scale = 1;
+
+          // 缩放图片适应屏幕
+          if (height > width) {
+            if (height < document.body.clientHeight)
+              scale = document.body.clientHeight / height;
+          } else if (width < document.body.clientWidth)
+            scale = document.body.clientWidth / width;
+
+          const viewport = page.getViewport({ scale });
+          const canvas = new OffscreenCanvas(
+            Math.floor(viewport.width * outputScale),
+            Math.floor(viewport.height * outputScale),
+          );
+          await page.render({ canvas: canvas as any, viewport, transform })
+            .promise;
+          const src = URL.createObjectURL(await canvasToBlob(canvas));
+          setImg(i, src);
+        }),
+      ),
     );
+
+    return range(pdf.numPages, (i) => ({ src: '', name: `${i}` }));
   } catch (error) {
     toast.error(
       `${file.name} ${t('pwa.alert.parse_error')}：${(error as Error).message}`,
     );
+  } finally {
+    toast.dismiss(tip);
   }
 
-  toast.dismiss(tip);
-
-  return list;
+  return [];
 };
