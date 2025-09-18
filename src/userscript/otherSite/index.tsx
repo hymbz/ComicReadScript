@@ -216,7 +216,7 @@ export const otherSite = async () => {
         if (newUrl === store.manga.imgList[i]) return;
 
         isEdited ||= true;
-        setState('comicMap', '', 'imgList', i, newUrl);
+        setState('comicMap', '', 'imgList', (list) => list!.with(i, newUrl));
       }),
     );
     if (isEdited)

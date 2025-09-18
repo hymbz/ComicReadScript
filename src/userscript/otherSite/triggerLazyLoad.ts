@@ -140,7 +140,7 @@ const waitTime = 300;
 
 /** 触发页面上图片元素的懒加载 */
 export const triggerLazyLoad = singleThreaded(
-  async (state, targetImgList: HTMLElement[], runCondition: () => boolean) => {
+  async (_, targetImgList: HTMLElement[], runCondition: () => boolean) => {
     for (const e of targetImgList) {
       imgShowObserver.observe(e);
       if (!imgMap.has(e))
@@ -168,7 +168,5 @@ export const triggerLazyLoad = singleThreaded(
     }
 
     await triggerTurnPage(waitTime, runCondition);
-
-    if (targetImgList.length > 0) state.continueRun();
   },
 );
