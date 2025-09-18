@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.3.0
+// @version         12.3.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、熱辣漫畫、hitomi、SchaleNetwork、nude-moon、kemono、nekohouse、welovemanga、HentaiZap、最前線、Tachidesk、LANraragi
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nude-moon | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -289,11 +289,11 @@ const useFaviconProgress = () => {
   //
 };
 
-const en = {alert:{comic_load_error:"Comic loading error",download_failed:"Download failed",fetch_comic_img_failed:"Failed to fetch comic images",img_load_failed:"Image loading failed",no_img_download:"No images available for download",repeat_load:"Loading image, please wait",retry_get_img_url:"Retrieve the URL of the image on page {{i}} again",server_connect_failed:"Unable to connect to the server"},button:{auto_scroll:"Auto scroll",close_current_page_translation:"Close translation of the current page",download_completed:"Download completed",download_completed_error:"Download complete, but {{errorNum}} images failed to download",downloading:"Downloading",fullscreen:"Fullscreen",fullscreen_exit:"Exit Fullscreen",grid_mode:"Grid mode",packaging:"Packaging",page_fill:"Page fill",page_mode_double:"Double page mode",page_mode_single:"Single page mode",scroll_mode:"Scroll mode",translate_current_page:"Translate current page",zoom_in:"Zoom in",zoom_out:"Zoom out"},description:"Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.",eh_tag_lint:{combo:"[tag]: In most cases, Should coexist with [tag]",conflict:"[tag]: Should not coexist with [tag]",correct_tag:"Should be the correct tag",miss_female:"Missing male tag, might need",miss_parody:"Missing parody tag, might need",possible_conflict:"[tag]: In most cases, Should not coexist with [tag]",prerequisite:"[tag]: The prerequisite tag [tag] does not exist"},end_page:{next_button:"Next chapter",prev_button:"Prev chapter",tip:{end_jump:"Reached the last page, scrolling down will jump to the next chapter",exit:"Reached the last page, scrolling down will exit",start_jump:"Reached the first page, scrolling up will jump to the previous chapter"}},hotkeys:{enter_read_mode:"Enter reading mode",float_tag_list:"Floating tag list",jump_to_end:"Jump to the last page",jump_to_home:"Jump to the first page",page_down:"Turn the page to the down",page_up:"Turn the page to the up",repeat_tip:"This hotkey has been bound to \\"{{hotkey}}\\"",scroll_down:"Scroll down",scroll_left:"Scroll left",scroll_right:"Scroll right",scroll_up:"Scroll up",switch_auto_enlarge:"Switch auto image enlarge option",switch_dir:"Switch reading direction",switch_grid_mode:"Switch grid mode",switch_page_fill:"Switch page fill",switch_scroll_mode:"Switch scroll mode",switch_single_double_page_mode:"Switch single/double page mode"},img_status:{error:"Load Error",loading:"Loading",wait:"Waiting for load"},other:{auto:"Auto",disable:"Disable",distance:"distance",download:"Download",enabled:"Enabled",enter_comic_read_mode:"Enter comic reading mode",exit:"Exit",fab_hidden:"Hide floating button",fab_show:"Show floating button",fill_page:"Fill Page",hotkeys:"Hotkeys",img_loading:"Image loading",interval:"interval",loading_img:"Loading image",none:"None",or:"or",other:"Other",page_range:"Please enter the page range.:\\n (e.g., 1, 3-5, 9-)",read_mode:"Reading mode",setting:"Settings"},pwa:{alert:{img_data_error:"Image data error",img_not_found:"Image not found",img_not_found_files:"Please select an image file or a compressed file containing image files",img_not_found_folder:"No image files or compressed files containing image files in the folder",not_valid_url:"Not a valid URL",parse_error:"Parsing error",password_error:"Incorrect password",repeat_load:"Loading other files…",userscript_not_installed:"ComicRead userscript not installed"},button:{enter_url:"Enter URL",install:"Install",no_more_prompt:"Do not prompt again",resume_read:"Restore reading",select_files:"Select File",select_folder:"Select folder"},install_md:"### Tired of opening this webpage every time?\\nIf you wish to:\\n1. Have an independent window, as if using local software\\n1. Add to the local compressed file opening method for easy direct opening\\n1. Use offline\\n### Welcome to install this page as a PWA app on your computer😃👍",message:{enter_password:"Please enter your password",parsing:"Parsing"},tip_enter_url:"Please enter the URL of the compressed file",tip_md:"# ComicRead PWA\\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\\n---\\n### Drag and drop image files, folders, or compressed files directly to start reading\\n*You can also choose to **paste directly** or **enter** the URL of the compressed file for downloading and reading*"},setting:{hotkeys:{add:"Add new hotkeys",restore:"Restore default hotkeys"},language:"Language",option:{abreast_duplicate:"Column duplicates ratio",abreast_mode:"Abreast scroll mode",align_edge:"Align to edge when turning page",always_load_all_img:"Always load all images",autoFullscreen:"Auto fullscreen",autoHiddenMouse:"Auto hide mouse",auto_scroll_trigger_end:"Continue scrolling on the end page",auto_switch_page_mode:"Auto switch single/double page mode by aspect ratio",background_color:"Background Color",click_page_turn_area:"Touch area",click_page_turn_enabled:"Click to turn page",click_page_turn_swap_area:"Swap LR clickable areas",dark_mode:"Dark mode",dark_mode_auto:"Dark mode follow system",dir_ltr:"LTR (American comics)",dir_rtl:"RTL (Japanese manga)",disable_auto_enlarge:"Disable automatic image enlarge",enable_menu:"Enable menu area",first_page_fill:"Enable first page fill by default",fit_to_width:"Fit to width",img_recognition:"Image Recognition",img_recognition_background:"Recognition background color",img_recognition_pageFill:"Auto switch page fill",img_recognition_warn:"❗ The current browser does not support Web Workers. Enabling this feature may cause page lag. It's recommended to upgrade or switch browsers.",img_recognition_warn_2:"❗ The current website does not support Web Workers. Enabling this feature may cause page lag.",paragraph_appearance:"Appearance",paragraph_dir:"Reading direction",paragraph_display:"Display",paragraph_scrollbar:"Scrollbar",paragraph_translation:"Translation",preload_page_num:"Preload page number",scroll_end:"After reaching the End",scroll_end_auto:"First jump to previous/next chapter, else exit",scroll_mode_img_scale:"Scroll mode image zoom ratio",scroll_mode_img_spacing:"Scroll mode image spacing",scrollbar_auto_hidden:"Auto hide",scrollbar_easy_scroll:"Easy scroll",scrollbar_position:"position",scrollbar_position_bottom:"Bottom",scrollbar_position_hidden:"Hidden",scrollbar_position_right:"Right",scrollbar_position_top:"Top",scrollbar_show_img_status:"Show image loading status",show_clickable_area:"Show clickable areas",show_comments:"Show comments on the end page",swap_page_turn_key:"Swap LR page-turning keys",zoom:"Image zoom ratio"},sync_options_other_site:"Sync read options to other sites",translation:{cotrans_tip:"<p>Using the interface provided by <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\\n<p>So please <b>mind the frequency of use</b>.</p>\\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",options:{box_threshold:"Box threshold",detection_resolution:"Text detection resolution",direction:"Render text orientation",direction_auto:"Follow source",direction_horizontal:"Horizontal only",direction_vertical:"Vertical only",force_retry:"Force retry (ignore cache)",inpainter:"Inpainter",inpainting_size:"Inpainting size",local_url:"customize server URL",mask_dilation_offset:"Mask dilation offset",only_download_translated:"Download only the translated images",target_language:"Target language",text_detector:"Text detector",translator:"Translator",unclip_ratio:"Unclip ratio"},range:"Scope of Translation",server:"Translation server",server_selfhosted:"Selfhosted",translate_all:"Translate all images",translate_to_end:"Translate the current page to the end"}},site:{add_feature:{add_hotkeys_actions:"Add hotkeys actions",auto_adjust_option:"Auto adjust reading option",auto_page_turn:"Infinite scroll",auto_show:"Auto enter reading mode",block_totally:"Totally block comics",colorize_tag:"Colorize tags",cross_site_link:"Cross-site Link",detect_ad:"Detect advertise page",expand_tag_list:"Expand tag list",float_tag_list:"Floating tag list",load_original_image:"Load original image",lock_option:"Lock site option",open_link_new_page:"Open links in a new page",quick_favorite:"Quick favorite",quick_rating:"Quick rating",quick_tag_define:"Quick view tag define",remember_current_site:"Remember the current site",tag_lint:"Tag Lint"},changed_load_failed:"The website has undergone changes, unable to load comics",ehentai:{change_favorite_failed:"Failed to change the favorite",change_favorite_success:"Successfully changed the favorite",change_rating_failed:"Failed to change the rating",change_rating_success:"Successfully changed the rating",fetch_favorite_failed:"Failed to get favorite info",fetch_img_page_source_failed:"Failed to get the source code of the image page",fetch_img_page_url_failed:"Failed to get the image page address from the detail page",fetch_img_url_failed:"Failed to get the image address from the image page",hitomi_error:"hitomi matching error",html_changed_link_failed:"The page structure has changed, and the associated external site features are not functioning properly",ip_banned:"IP address is banned",nhentai_error:"nhentai matching error",nhentai_failed:"Matching failed, please refresh after confirming login to {{nhentai}}"},nhentai:{fetch_next_page_failed:"Failed to get next page of comic data",tag_blacklist_fetch_failed:"Failed to fetch tag blacklist"},show_settings_menu:"Show settings menu",simple:{auto_read_mode_message:"\\"Auto enter reading mode\\" is enabled by default",no_img:"No suitable comic images were found.\\nIf necessary, you can click here to close the simple reading mode.",simple_read_mode:"Enter simple reading mode"}},touch_area:{menu:"Menu",type:{edge:"Edge",l:"L",left_right:"Left Right",up_down:"Up Down"}},translation:{status:{colorizing:"Colorizing","default":"Unknown status",detection:"Detecting text",downscaling:"Downscaling",error:"Error during translation","error-lang":"The target language is not supported by the chosen translator","error-translating":"Did not get any text back from the text translation service","error-with-id":"Error during translation",finished:"Finishing",inpainting:"Inpainting","mask-generation":"Generating mask",ocr:"Scanning text",pending:"Pending","pending-pos":"Pending",preparing:"Waiting for idle window",rendering:"Rendering",saved:"Saved","skip-no-regions":"No text regions detected in the image","skip-no-text":"No text detected in the image",textline_merge:"Merging text lines",translating:"Translating",upscaling:"Upscaling"},tip:{check_img_status_failed:"Failed to check image status",download_img_failed:"Failed to download image",get_translator_list_error:"Error occurred while getting the list of available translation services",id_not_returned:"No id returned",img_downloading:"Downloading images",img_not_fully_loaded:"Image has not finished loading",pending:"Pending, {{pos}} in queue",resize_img_failed:"Failed to resize image",translating:"Translating image",translation_completed:"Translation completed",upload:"Uploading image",upload_error:"Image upload error",upload_return_error:"Error during server translation",wait_translation:"Waiting for translation"},translator:{baidu:"baidu",deepl:"DeepL",google:"Google","gpt3.5":"GPT-3.5",none:"Remove texts",offline:"offline translator",original:"Original",youdao:"youdao"}},upscale:{module_download_complete:"Image Upscaling Model Download Complete",module_download_failed:"Image Upscaling Model Download Failed",module_downloading:"Image Upscaling Model Downloading...",title:"Upscale Image",upscaled:"upscaled",upscaling:"upscaling",webgpu_tip:"Unable to upscale images using WebGPU, processing will be slower"}};
+const en = {alert:{comic_load_error:"Comic loading error",download_failed:"Download failed",fetch_comic_img_failed:"Failed to fetch comic images",img_load_failed:"Image loading failed",no_img_download:"No images available for download",repeat_load:"Loading image, please wait",retry_get_img_url:"Retrieve the URL of the image on page {{i}} again",server_connect_failed:"Unable to connect to the server"},button:{auto_scroll:"Auto scroll",close_current_page_translation:"Close translation of the current page",download_completed:"Download completed",download_completed_error:"Download complete, but {{errorNum}} images failed to download",downloading:"Downloading",fullscreen:"Fullscreen",fullscreen_exit:"Exit Fullscreen",grid_mode:"Grid mode",packaging:"Packaging",page_fill:"Page fill",page_mode_double:"Double page mode",page_mode_single:"Single page mode",scroll_mode:"Scroll mode",translate_current_page:"Translate current page",zoom_in:"Zoom in",zoom_out:"Zoom out"},description:"Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.",eh_tag_lint:{combo:"[tag]: In most cases, Should coexist with [tag]",conflict:"[tag]: Should not coexist with [tag]",correct_tag:"Should be the correct tag",miss_female:"Missing male tag, might need",miss_parody:"Missing parody tag, might need",possible_conflict:"[tag]: In most cases, Should not coexist with [tag]",prerequisite:"[tag]: The prerequisite tag [tag] does not exist"},end_page:{next_button:"Next chapter",prev_button:"Prev chapter",tip:{end_jump:"Reached the last page, scrolling down will jump to the next chapter",exit:"Reached the last page, scrolling down will exit",start_jump:"Reached the first page, scrolling up will jump to the previous chapter"}},hotkeys:{enter_read_mode:"Enter reading mode",float_tag_list:"Floating tag list",jump_to_end:"Jump to the last page",jump_to_home:"Jump to the first page",page_down:"Turn the page to the down",page_up:"Turn the page to the up",repeat_tip:"This hotkey has been bound to \\"{{hotkey}}\\"",scroll_down:"Scroll down",scroll_left:"Scroll left",scroll_right:"Scroll right",scroll_up:"Scroll up",switch_auto_enlarge:"Switch auto image enlarge option",switch_dir:"Switch reading direction",switch_grid_mode:"Switch grid mode",switch_page_fill:"Switch page fill",switch_scroll_mode:"Switch scroll mode",switch_single_double_page_mode:"Switch single/double page mode"},img_status:{error:"Load Error",loading:"Loading",wait:"Waiting for load"},other:{auto:"Auto",custom:"Custom",disable:"Disable",distance:"distance",download:"Download",enabled:"Enabled",enter_comic_read_mode:"Enter comic reading mode",exit:"Exit",fab_hidden:"Hide floating button",fab_show:"Show floating button",fill_page:"Fill Page",hotkeys:"Hotkeys",img_loading:"Image loading",interval:"interval",loading_img:"Loading image",none:"None",or:"or",other:"Other",page_range:"Please enter the page range.:\\n (e.g., 1, 3-5, 9-)",read_mode:"Reading mode",setting:"Settings"},pwa:{alert:{img_data_error:"Image data error",img_not_found:"Image not found",img_not_found_files:"Please select an image file or a compressed file containing image files",img_not_found_folder:"No image files or compressed files containing image files in the folder",not_valid_url:"Not a valid URL",parse_error:"Parsing error",password_error:"Incorrect password",repeat_load:"Loading other files…",userscript_not_installed:"ComicRead userscript not installed"},button:{enter_url:"Enter URL",install:"Install",no_more_prompt:"Do not prompt again",resume_read:"Restore reading",select_files:"Select File",select_folder:"Select folder"},install_md:"### Tired of opening this webpage every time?\\nIf you wish to:\\n1. Have an independent window, as if using local software\\n1. Add to the local compressed file opening method for easy direct opening\\n1. Use offline\\n### Welcome to install this page as a PWA app on your computer😃👍",message:{enter_password:"Please enter your password",parsing:"Parsing"},tip_enter_url:"Please enter the URL of the compressed file",tip_md:"# ComicRead PWA\\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\\n---\\n### Drag and drop image files, folders, or compressed files directly to start reading\\n*You can also choose to **paste directly** or **enter** the URL of the compressed file for downloading and reading*"},setting:{hotkeys:{add:"Add new hotkeys",restore:"Restore default hotkeys"},language:"Language",option:{abreast_duplicate:"Column duplicates ratio",abreast_mode:"Abreast scroll mode",adjust_to_width:"Adaptive Width",align_edge:"Align to edge when turning page",always_load_all_img:"Always load all images",autoFullscreen:"Auto fullscreen",autoHiddenMouse:"Auto hide mouse",auto_scale:"Auto Scale",auto_scroll_trigger_end:"Continue scrolling on the end page",auto_switch_page_mode:"Auto switch single/double page mode by aspect ratio",background_color:"Background Color",click_page_turn_area:"Touch area",click_page_turn_enabled:"Click to turn page",click_page_turn_swap_area:"Swap LR clickable areas",dark_mode:"Dark mode",dark_mode_auto:"Dark mode follow system",dir_ltr:"LTR (American comics)",dir_rtl:"RTL (Japanese manga)",disable_auto_enlarge:"Disable automatic image enlarge",first_page_fill:"Enable first page fill by default",full_width:"Viewport Width",img_recognition:"Image Recognition",img_recognition_background:"Recognition background color",img_recognition_pageFill:"Auto switch page fill",img_recognition_warn:"❗ The current browser does not support Web Workers. Enabling this feature may cause page lag. It's recommended to upgrade or switch browsers.",img_recognition_warn_2:"❗ The current website does not support Web Workers. Enabling this feature may cause page lag.",paragraph_appearance:"Appearance",paragraph_dir:"Reading direction",paragraph_display:"Display",paragraph_scrollbar:"Scrollbar",paragraph_translation:"Translation",preload_page_num:"Preload page number",scroll_end:"After reaching the End",scroll_end_auto:"First jump to previous/next chapter, else exit",scroll_mode_img_scale:"Scroll mode image zoom ratio",scroll_mode_img_spacing:"Scroll mode image spacing",scrollbar_auto_hidden:"Auto hide",scrollbar_easy_scroll:"Easy scroll",scrollbar_position:"position",scrollbar_position_bottom:"Bottom",scrollbar_position_hidden:"Hidden",scrollbar_position_right:"Right",scrollbar_position_top:"Top",scrollbar_show_img_status:"Show image loading status",show_clickable_area:"Show clickable areas",show_comments:"Show comments on the end page",shrink_menu:"Enable menu area",swap_page_turn_key:"Swap LR page-turning keys",zoom:"Image zoom ratio"},sync_options_other_site:"Sync read options to other sites",translation:{cotrans_tip:"<p>Using the interface provided by <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\\n<p>So please <b>mind the frequency of use</b>.</p>\\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",options:{box_threshold:"Box threshold",detection_resolution:"Text detection resolution",direction:"Render text orientation",direction_auto:"Follow source",direction_horizontal:"Horizontal only",direction_vertical:"Vertical only",force_retry:"Force retry (ignore cache)",inpainter:"Inpainter",inpainting_size:"Inpainting size",local_url:"customize server URL",mask_dilation_offset:"Mask dilation offset",only_download_translated:"Download only the translated images",target_language:"Target language",text_detector:"Text detector",translator:"Translator",unclip_ratio:"Unclip ratio"},range:"Scope of Translation",server:"Translation server",server_selfhosted:"Selfhosted",translate_all:"Translate all images",translate_to_end:"Translate the current page to the end"}},site:{add_feature:{add_hotkeys_actions:"Add hotkeys actions",auto_adjust_option:"Auto adjust reading option",auto_page_turn:"Infinite scroll",auto_show:"Auto enter reading mode",block_totally:"Totally block comics",colorize_tag:"Colorize tags",cross_site_link:"Cross-site Link",detect_ad:"Detect advertise page",expand_tag_list:"Expand tag list",float_tag_list:"Floating tag list",load_original_image:"Load original image",lock_option:"Lock site option",open_link_new_page:"Open links in a new page",quick_favorite:"Quick favorite",quick_rating:"Quick rating",quick_tag_define:"Quick view tag define",remember_current_site:"Remember the current site",tag_lint:"Tag Lint"},changed_load_failed:"The website has undergone changes, unable to load comics",ehentai:{change_favorite_failed:"Failed to change the favorite",change_favorite_success:"Successfully changed the favorite",change_rating_failed:"Failed to change the rating",change_rating_success:"Successfully changed the rating",fetch_favorite_failed:"Failed to get favorite info",fetch_img_page_source_failed:"Failed to get the source code of the image page",fetch_img_page_url_failed:"Failed to get the image page address from the detail page",fetch_img_url_failed:"Failed to get the image address from the image page",hitomi_error:"hitomi matching error",html_changed_link_failed:"The page structure has changed, and the associated external site features are not functioning properly",ip_banned:"IP address is banned",nhentai_error:"nhentai matching error",nhentai_failed:"Matching failed, please refresh after confirming login to {{nhentai}}"},nhentai:{fetch_next_page_failed:"Failed to get next page of comic data",tag_blacklist_fetch_failed:"Failed to fetch tag blacklist"},show_settings_menu:"Show settings menu",simple:{auto_read_mode_message:"\\"Auto enter reading mode\\" is enabled by default",no_img:"No suitable comic images were found.\\nIf necessary, you can click here to close the simple reading mode.",simple_read_mode:"Enter simple reading mode"}},touch_area:{menu:"Menu",type:{edge:"Edge",l:"L",left_right:"Left Right",up_down:"Up Down"}},translation:{status:{colorizing:"Colorizing","default":"Unknown status",detection:"Detecting text",downscaling:"Downscaling",error:"Error during translation","error-lang":"The target language is not supported by the chosen translator","error-translating":"Did not get any text back from the text translation service","error-with-id":"Error during translation",finished:"Finishing",inpainting:"Inpainting","mask-generation":"Generating mask",ocr:"Scanning text",pending:"Pending","pending-pos":"Pending",preparing:"Waiting for idle window",rendering:"Rendering",saved:"Saved","skip-no-regions":"No text regions detected in the image","skip-no-text":"No text detected in the image",textline_merge:"Merging text lines",translating:"Translating",upscaling:"Upscaling"},tip:{check_img_status_failed:"Failed to check image status",download_img_failed:"Failed to download image",get_translator_list_error:"Error occurred while getting the list of available translation services",id_not_returned:"No id returned",img_downloading:"Downloading images",img_not_fully_loaded:"Image has not finished loading",pending:"Pending, {{pos}} in queue",resize_img_failed:"Failed to resize image",translating:"Translating image",translation_completed:"Translation completed",upload:"Uploading image",upload_error:"Image upload error",upload_return_error:"Error during server translation",wait_translation:"Waiting for translation"},translator:{baidu:"baidu",deepl:"DeepL",google:"Google","gpt3.5":"GPT-3.5",none:"Remove texts",offline:"offline translator",original:"Original",youdao:"youdao"}},upscale:{module_download_complete:"Image Upscaling Model Download Complete",module_download_failed:"Image Upscaling Model Download Failed",module_downloading:"Image Upscaling Model Downloading...",title:"Upscale Image",upscaled:"upscaled",upscaling:"upscaling",webgpu_tip:"Unable to upscale images using WebGPU, processing will be slower"}};
 
-const ru = {alert:{comic_load_error:"Ошибка загрузки комикса",download_failed:"Ошибка загрузки",fetch_comic_img_failed:"Не удалось загрузить изображения",img_load_failed:"Не удалось загрузить изображение",no_img_download:"Нет доступных картинок для загрузки",repeat_load:"Загрузка изображения, пожалуйста подождите",retry_get_img_url:"Повторно получить адрес изображения на странице {{i}}",server_connect_failed:"Не удалось подключиться к серверу"},button:{auto_scroll:"Автопрокрутка",close_current_page_translation:"Скрыть перевод текущей страницы",download_completed:"Загрузка завершена",download_completed_error:"Загрузка завершена, но {{errorNum}} изображений не удалось загрузить",downloading:"Скачивание",fullscreen:"полноэкранный",fullscreen_exit:"выйти из полноэкранного режима",grid_mode:"Режим сетки",packaging:"Упаковка",page_fill:"Заполнить страницу",page_mode_double:"Двухчастичный режим",page_mode_single:"Одностраничный режим",scroll_mode:"Режим прокрутки",translate_current_page:"Перевести текущую страницу",zoom_in:"Приблизить",zoom_out:"Уменьшить"},description:"Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.",eh_tag_lint:{combo:"[тег]: В большинстве случаев должен сосуществовать с [тегом]",conflict:"[tag]: Не должен сосуществовать с [tag]",correct_tag:"Должен быть правильный тег",miss_female:"Отсутствует мужской тег, возможно, понадобится",miss_parody:"Отсутствует тег пародии, возможно, понадобится",possible_conflict:"[tag]: В большинстве случаев не должен сосуществовать с [tag]",prerequisite:"[tag]: Предварительный тег [tag] не существует"},end_page:{next_button:"Следующая глава",prev_button:"Предыдущая глава",tip:{end_jump:"Последняя страница, следующая глава ниже",exit:"Последняя страница, ниже комикс будет закрыт",start_jump:"Первая страница, выше будет загружена предыдущая глава"}},hotkeys:{enter_read_mode:"Режим чтения",float_tag_list:"Плавающий список тегов",jump_to_end:"Перейти к последней странице",jump_to_home:"Перейти к первой странице",page_down:"Перелистнуть страницу вниз",page_up:"Перелистнуть страницу вверх",repeat_tip:"Эта горячая клавиша была назначена на \\"{{hotkey}}\\"",scroll_down:"Прокрутить вниз",scroll_left:"Прокрутить влево",scroll_right:"Прокрутите вправо",scroll_up:"Прокрутите вверх",switch_auto_enlarge:"Автоматическое приближение",switch_dir:"Направление чтения",switch_grid_mode:"Режим сетки",switch_page_fill:"Заполнение страницы",switch_scroll_mode:"Режим прокрутки",switch_single_double_page_mode:"Одностраничный/Двухстраничный режим"},img_status:{error:"Ошибка загрузки",loading:"Загрузка",wait:"Ожидание загрузки"},other:{auto:"Авто",disable:"Отключить",distance:"расстояние",download:"Скачать",enabled:"Включено",enter_comic_read_mode:"Режим чтения комиксов",exit:"Выход",fab_hidden:"Скрыть плавающую кнопку",fab_show:"Показать плавающую кнопку",fill_page:"Заполнить страницу",hotkeys:"Горячие клавиши",img_loading:"Изображение загружается",interval:"интервал",loading_img:"Загрузка изображения",none:"Отсутствует",or:"или",other:"Другое",page_range:"Введите диапазон страниц.:\\n (например, 1, 3-5, 9-)",read_mode:"Режим чтения",setting:"Настройки"},pwa:{alert:{img_data_error:"Ошибка данных изображения",img_not_found:"Изображение не найдено",img_not_found_files:"Пожалуйста выберите файл или архив с изображениями",img_not_found_folder:"В папке не найдены изображения или архивы с изображениями",not_valid_url:"Невалидный URL",parse_error:"Ошибка анализа",password_error:"Неверный пароль",repeat_load:"Загрузка других файлов…",userscript_not_installed:"ComicRead не установлен"},button:{enter_url:"Ввести URL",install:"Установить",no_more_prompt:"Больше не показывать",resume_read:"Продолжить чтение",select_files:"Выбрать файл",select_folder:"Выбрать папку"},install_md:"### Устали открывать эту страницу каждый раз?\\nЕсли вы хотите:\\n1. Иметь отдельное окно, как если бы вы использовали обычное программное обеспечение\\n1. Открывать архивы напрямую\\n1. Пользоваться оффлайн\\n### Установите эту страницу в качестве [PWA](https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B5%D1%81%D1%81%D0%B8%D0%B2%D0%BD%D0%BE%D0%B5_%D0%B2%D0%B5%D0%B1-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5) на свой компьютер 🐺☝️",message:{enter_password:"Пожалуйста введите пароль",parsing:"Разбор"},tip_enter_url:"Введите URL архива",tip_md:"# ComicRead PWA\\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов **локально**.\\n---\\n### Перетащите изображения, папки или архивы чтобы начать читать\\n*Вы так же можете **открыть** или **вставить** URL архива на напрямую*"},setting:{hotkeys:{add:"Добавить горячие клавиши",restore:"Восстановить горячие клавиши по умолчанию"},language:"Язык",option:{abreast_duplicate:"Коэффициент дублирования столбцов",abreast_mode:"Режим прокрутки в ряд",align_edge:"Выравнивание по краю при перелистывании страницы",always_load_all_img:"Всегда загружать все изображения",autoFullscreen:"Авто полный экран",autoHiddenMouse:"Автоматически скрывать курсор мыши",auto_scroll_trigger_end:"Продолжить прокрутку на конечной странице",auto_switch_page_mode:"Автоматическое переключение режима одной/двойной страницы в зависимости от соотношения сторон",background_color:"Цвет фона",click_page_turn_area:"Область нажатия",click_page_turn_enabled:"Перелистывать по клику",click_page_turn_swap_area:"Поменять местами правую и левую области переключения страниц",dark_mode:"Тёмная тема",dark_mode_auto:"Тёмный режим следует за системой",dir_ltr:"Чтение слева направо (Американские комиксы)",dir_rtl:"Чтение справа налево (Японская манга)",disable_auto_enlarge:"Отключить автоматическое масштабирование изображений",enable_menu:"Включить область меню",first_page_fill:"Включить заполнение первой страницы по умолчанию",fit_to_width:"По ширине",img_recognition:"распознавание изображений",img_recognition_background:"Определить цвет фона",img_recognition_pageFill:"Автоматическое переключение заполнения страницы",img_recognition_warn:"❗ Текущий браузер не поддерживает Web Workers. Включение этой функции может вызвать задержку страницы. Рекомендуется обновить или сменить браузер.",img_recognition_warn_2:"❗ Текущий веб-сайт не поддерживает Web Workers. Включение этой функции может привести к задержке страницы.",paragraph_appearance:"Внешность",paragraph_dir:"Направление чтения",paragraph_display:"Отображение",paragraph_scrollbar:"Полоса прокрутки",paragraph_translation:"Перевод",preload_page_num:"Предзагружать страниц",scroll_end:"После достижения конца",scroll_end_auto:"Сначала переход к предыдущей/следующей главе, иначе выход",scroll_mode_img_scale:"Коэффициент масштабирования изображения в режиме скроллинга",scroll_mode_img_spacing:"Расстояние между страницами в режиме скроллинга",scrollbar_auto_hidden:"Автоматически скрывать",scrollbar_easy_scroll:"Лёгкая прокрутка",scrollbar_position:"Позиция",scrollbar_position_bottom:"Снизу",scrollbar_position_hidden:"Спрятано",scrollbar_position_right:"Справа",scrollbar_position_top:"Сверху",scrollbar_show_img_status:"Показывать статус загрузки изображения",show_clickable_area:"Показывать кликабельные области",show_comments:"Показывать комментарии на последней странице",swap_page_turn_key:"Поменять местами клавиши переключения страниц",zoom:"Коэффициент масштабирования изображения"},sync_options_other_site:"Синхронизировать настройки чтения с другими сайтами",translation:{cotrans_tip:"<p>Использует для перевода <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans API</a>, работающий исключительно за счёт своего создателя.</p>\\n<p>Запросы обрабатываются по одному в порядке синхронной очереди. Когда очередь превышает лимит новые запросы будут приводить к ошибке. Если такое случилось попробуйте позже.</p>\\n<p>Так что пожалуйста <b>учитывайте загруженность при выборе</b></p>\\n<p>Настоятельно рекомендовано использовать проект развёрнутый локально т.к. это не потребляет серверные ресурсы и вы не ограничены очередью.</p>",options:{box_threshold:"Порог коробки",detection_resolution:"Разрешение распознавания текста",direction:"Ориетнация текста",direction_auto:"Следование оригиналу",direction_horizontal:"Только горизонтально",direction_vertical:"Только вертикально",force_retry:"Принудительный повтор(Игнорировать кэш)",inpainter:"Инпейнтер",inpainting_size:"Инпейнтинг размер области",local_url:"Настроить URL сервера",mask_dilation_offset:"Маскировочное смещение дилатации",only_download_translated:"Скачать только переведённые изображения",target_language:"Целевой язык",text_detector:"Детектор текста",translator:"Переводчик",unclip_ratio:"Необрезанное соотношение"},range:"Объем перевода",server:"Сервер",server_selfhosted:"Свой",translate_all:"Перевести все изображения",translate_to_end:"Переводить страницу до конца"}},site:{add_feature:{add_hotkeys_actions:"Добавить операции с горячими клавишами",auto_adjust_option:"Автоматическая настройка параметра чтения",auto_page_turn:"Бесконечная прокрутка",auto_show:"Автоматически включать режим чтения",block_totally:"Глобально заблокировать комиксы",colorize_tag:"Цветные названия",cross_site_link:"Кросс-сайтовая ссылка",detect_ad:"Detect advertise page",expand_tag_list:"Развернуть список тегов",float_tag_list:"Плавающий список тегов",load_original_image:"Загружать оригинальное изображение",lock_option:"Блокировка опции сайта",open_link_new_page:"Открывать ссылки в новой вкладке",quick_favorite:"Быстрый фаворит",quick_rating:"Быстрый рейтинг",quick_tag_define:"Определение тега быстрого просмотра",remember_current_site:"Запомнить текущий сайт",tag_lint:"Тэг Линт"},changed_load_failed:"Страница изменилась, невозможно загрузить комикс",ehentai:{change_favorite_failed:"Не удалось изменить избранное",change_favorite_success:"Избранное успешно изменено",change_rating_failed:"Не удалось изменить оценку",change_rating_success:"Успешно изменен рейтинг",fetch_favorite_failed:"Не удалось получить информацию о избранном",fetch_img_page_source_failed:"Не удалось получить исходный код страницы с изображениями",fetch_img_page_url_failed:"Не удалось получить адрес страницы изображений из деталей",fetch_img_url_failed:"Не удалось получить адрес изображения",hitomi_error:"Ошибка сопоставления hitomi",html_changed_link_failed:"Структура страницы изменилась, и связанные функции внешнего сайта не работают должным образом",ip_banned:"IP адрес забанен",nhentai_error:"Ошибка сопоставления nhentai",nhentai_failed:"Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"},nhentai:{fetch_next_page_failed:"Не удалось получить следующую страницу",tag_blacklist_fetch_failed:"Не удалось получить заблокированные теги"},show_settings_menu:"Показать меню настроек",simple:{auto_read_mode_message:"\\"Автоматически включать режим чтения\\" по умолчанию",no_img:"Не найдено подходящих изображений. Нажмите тут что бы выключить режим простого чтения.",simple_read_mode:"Включить простой режим чтения"}},touch_area:{menu:"Меню",type:{edge:"Грань",l:"L",left_right:"Лево Право",up_down:"Верх Низ"}},translation:{status:{colorizing:"Раскрашивание","default":"Неизвестный статус",detection:"Распознавание текста",downscaling:"Уменьшение масштаба",error:"Ошибка перевода","error-lang":"Целевой язык не поддерживается выбранным переводчиком","error-translating":"Ошибка перевода(пустой ответ)","error-with-id":"Ошибка во время перевода",finished:"Завершение",inpainting:"Наложение","mask-generation":"Генерация маски",ocr:"Распознавание текста",pending:"Ожидание","pending-pos":"Ожидание",preparing:"Ожидание окна бездействия",rendering:"Отрисовка",saved:"Сохранено","skip-no-regions":"На изображении не обнаружено текстовых областей.","skip-no-text":"Текст на изображении не обнаружен",textline_merge:"Обьединение текста",translating:"Переводится",upscaling:"Увеличение изображения"},tip:{check_img_status_failed:"Не удалось проверить статус изображения",download_img_failed:"Не удалось скачать изображение",get_translator_list_error:"Произошла ошибка во время получения списка доступных переводчиков",id_not_returned:"ID не вернули(",img_downloading:"Скачать",img_not_fully_loaded:"Изображение всё ещё загружается",pending:"Ожидение, позиция в очереди {{pos}}",resize_img_failed:"Не удалось изменить размер изображения",translating:"Изображение переводится",translation_completed:"Перевод завершён",upload:"Загрузка изображения",upload_error:"Ошибка отправки изображения",upload_return_error:"Ошибка перевода на сервере",wait_translation:"Ожидание перевода"},translator:{baidu:"baidu",deepl:"DeepL",google:"Google","gpt3.5":"GPT-3.5",none:"Убрать текст",offline:"Оффлайн переводчик",original:"Оригинал",youdao:"youdao"}},upscale:{module_download_complete:"Загрузка модели увеличения изображений завершена",module_download_failed:"Сбой загрузки модели увеличения изображений",module_downloading:"Загрузка модели увеличения изображений...",title:"Увеличение изображения",upscaled:"Увеличенный",upscaling:"Увеличивается",webgpu_tip:"Невозможно увеличить изображения с помощью WebGPU, обработка будет медленнее"}};
+const ru = {alert:{comic_load_error:"Ошибка загрузки комикса",download_failed:"Ошибка загрузки",fetch_comic_img_failed:"Не удалось загрузить изображения",img_load_failed:"Не удалось загрузить изображение",no_img_download:"Нет доступных картинок для загрузки",repeat_load:"Загрузка изображения, пожалуйста подождите",retry_get_img_url:"Повторно получить адрес изображения на странице {{i}}",server_connect_failed:"Не удалось подключиться к серверу"},button:{auto_scroll:"Автопрокрутка",close_current_page_translation:"Скрыть перевод текущей страницы",download_completed:"Загрузка завершена",download_completed_error:"Загрузка завершена, но {{errorNum}} изображений не удалось загрузить",downloading:"Скачивание",fullscreen:"полноэкранный",fullscreen_exit:"выйти из полноэкранного режима",grid_mode:"Режим сетки",packaging:"Упаковка",page_fill:"Заполнить страницу",page_mode_double:"Двухчастичный режим",page_mode_single:"Одностраничный режим",scroll_mode:"Режим прокрутки",translate_current_page:"Перевести текущую страницу",zoom_in:"Приблизить",zoom_out:"Уменьшить"},description:"Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.",eh_tag_lint:{combo:"[тег]: В большинстве случаев должен сосуществовать с [тегом]",conflict:"[tag]: Не должен сосуществовать с [tag]",correct_tag:"Должен быть правильный тег",miss_female:"Отсутствует мужской тег, возможно, понадобится",miss_parody:"Отсутствует тег пародии, возможно, понадобится",possible_conflict:"[tag]: В большинстве случаев не должен сосуществовать с [tag]",prerequisite:"[tag]: Предварительный тег [tag] не существует"},end_page:{next_button:"Следующая глава",prev_button:"Предыдущая глава",tip:{end_jump:"Последняя страница, следующая глава ниже",exit:"Последняя страница, ниже комикс будет закрыт",start_jump:"Первая страница, выше будет загружена предыдущая глава"}},hotkeys:{enter_read_mode:"Режим чтения",float_tag_list:"Плавающий список тегов",jump_to_end:"Перейти к последней странице",jump_to_home:"Перейти к первой странице",page_down:"Перелистнуть страницу вниз",page_up:"Перелистнуть страницу вверх",repeat_tip:"Эта горячая клавиша была назначена на \\"{{hotkey}}\\"",scroll_down:"Прокрутить вниз",scroll_left:"Прокрутить влево",scroll_right:"Прокрутите вправо",scroll_up:"Прокрутите вверх",switch_auto_enlarge:"Автоматическое приближение",switch_dir:"Направление чтения",switch_grid_mode:"Режим сетки",switch_page_fill:"Заполнение страницы",switch_scroll_mode:"Режим прокрутки",switch_single_double_page_mode:"Одностраничный/Двухстраничный режим"},img_status:{error:"Ошибка загрузки",loading:"Загрузка",wait:"Ожидание загрузки"},other:{auto:"Авто",custom:"Custom",disable:"Отключить",distance:"расстояние",download:"Скачать",enabled:"Включено",enter_comic_read_mode:"Режим чтения комиксов",exit:"Выход",fab_hidden:"Скрыть плавающую кнопку",fab_show:"Показать плавающую кнопку",fill_page:"Заполнить страницу",hotkeys:"Горячие клавиши",img_loading:"Изображение загружается",interval:"интервал",loading_img:"Загрузка изображения",none:"Отсутствует",or:"или",other:"Другое",page_range:"Введите диапазон страниц.:\\n (например, 1, 3-5, 9-)",read_mode:"Режим чтения",setting:"Настройки"},pwa:{alert:{img_data_error:"Ошибка данных изображения",img_not_found:"Изображение не найдено",img_not_found_files:"Пожалуйста выберите файл или архив с изображениями",img_not_found_folder:"В папке не найдены изображения или архивы с изображениями",not_valid_url:"Невалидный URL",parse_error:"Ошибка анализа",password_error:"Неверный пароль",repeat_load:"Загрузка других файлов…",userscript_not_installed:"ComicRead не установлен"},button:{enter_url:"Ввести URL",install:"Установить",no_more_prompt:"Больше не показывать",resume_read:"Продолжить чтение",select_files:"Выбрать файл",select_folder:"Выбрать папку"},install_md:"### Устали открывать эту страницу каждый раз?\\nЕсли вы хотите:\\n1. Иметь отдельное окно, как если бы вы использовали обычное программное обеспечение\\n1. Открывать архивы напрямую\\n1. Пользоваться оффлайн\\n### Установите эту страницу в качестве [PWA](https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B5%D1%81%D1%81%D0%B8%D0%B2%D0%BD%D0%BE%D0%B5_%D0%B2%D0%B5%D0%B1-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5) на свой компьютер 🐺☝️",message:{enter_password:"Пожалуйста введите пароль",parsing:"Разбор"},tip_enter_url:"Введите URL архива",tip_md:"# ComicRead PWA\\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов **локально**.\\n---\\n### Перетащите изображения, папки или архивы чтобы начать читать\\n*Вы так же можете **открыть** или **вставить** URL архива на напрямую*"},setting:{hotkeys:{add:"Добавить горячие клавиши",restore:"Восстановить горячие клавиши по умолчанию"},language:"Язык",option:{abreast_duplicate:"Коэффициент дублирования столбцов",abreast_mode:"Режим прокрутки в ряд",adjust_to_width:"Адаптивная ширина",align_edge:"Выравнивание по краю при перелистывании страницы",always_load_all_img:"Всегда загружать все изображения",autoFullscreen:"Авто полный экран",autoHiddenMouse:"Автоматически скрывать курсор мыши",auto_scale:"Авто масштаб",auto_scroll_trigger_end:"Продолжить прокрутку на конечной странице",auto_switch_page_mode:"Автоматическое переключение режима одной/двойной страницы в зависимости от соотношения сторон",background_color:"Цвет фона",click_page_turn_area:"Область нажатия",click_page_turn_enabled:"Перелистывать по клику",click_page_turn_swap_area:"Поменять местами правую и левую области переключения страниц",dark_mode:"Тёмная тема",dark_mode_auto:"Тёмный режим следует за системой",dir_ltr:"Чтение слева направо (Американские комиксы)",dir_rtl:"Чтение справа налево (Японская манга)",disable_auto_enlarge:"Отключить автоматическое масштабирование изображений",first_page_fill:"Включить заполнение первой страницы по умолчанию",full_width:"Ширина окна просмотра",img_recognition:"распознавание изображений",img_recognition_background:"Определить цвет фона",img_recognition_pageFill:"Автоматическое переключение заполнения страницы",img_recognition_warn:"❗ Текущий браузер не поддерживает Web Workers. Включение этой функции может вызвать задержку страницы. Рекомендуется обновить или сменить браузер.",img_recognition_warn_2:"❗ Текущий веб-сайт не поддерживает Web Workers. Включение этой функции может привести к задержке страницы.",paragraph_appearance:"Внешность",paragraph_dir:"Направление чтения",paragraph_display:"Отображение",paragraph_scrollbar:"Полоса прокрутки",paragraph_translation:"Перевод",preload_page_num:"Предзагружать страниц",scroll_end:"После достижения конца",scroll_end_auto:"Сначала переход к предыдущей/следующей главе, иначе выход",scroll_mode_img_scale:"Коэффициент масштабирования изображения в режиме скроллинга",scroll_mode_img_spacing:"Расстояние между страницами в режиме скроллинга",scrollbar_auto_hidden:"Автоматически скрывать",scrollbar_easy_scroll:"Лёгкая прокрутка",scrollbar_position:"Позиция",scrollbar_position_bottom:"Снизу",scrollbar_position_hidden:"Спрятано",scrollbar_position_right:"Справа",scrollbar_position_top:"Сверху",scrollbar_show_img_status:"Показывать статус загрузки изображения",show_clickable_area:"Показывать кликабельные области",show_comments:"Показывать комментарии на последней странице",shrink_menu:"Включить область меню",swap_page_turn_key:"Поменять местами клавиши переключения страниц",zoom:"Коэффициент масштабирования изображения"},sync_options_other_site:"Синхронизировать настройки чтения с другими сайтами",translation:{cotrans_tip:"<p>Использует для перевода <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans API</a>, работающий исключительно за счёт своего создателя.</p>\\n<p>Запросы обрабатываются по одному в порядке синхронной очереди. Когда очередь превышает лимит новые запросы будут приводить к ошибке. Если такое случилось попробуйте позже.</p>\\n<p>Так что пожалуйста <b>учитывайте загруженность при выборе</b></p>\\n<p>Настоятельно рекомендовано использовать проект развёрнутый локально т.к. это не потребляет серверные ресурсы и вы не ограничены очередью.</p>",options:{box_threshold:"Порог коробки",detection_resolution:"Разрешение распознавания текста",direction:"Ориетнация текста",direction_auto:"Следование оригиналу",direction_horizontal:"Только горизонтально",direction_vertical:"Только вертикально",force_retry:"Принудительный повтор(Игнорировать кэш)",inpainter:"Инпейнтер",inpainting_size:"Инпейнтинг размер области",local_url:"Настроить URL сервера",mask_dilation_offset:"Маскировочное смещение дилатации",only_download_translated:"Скачать только переведённые изображения",target_language:"Целевой язык",text_detector:"Детектор текста",translator:"Переводчик",unclip_ratio:"Необрезанное соотношение"},range:"Объем перевода",server:"Сервер",server_selfhosted:"Свой",translate_all:"Перевести все изображения",translate_to_end:"Переводить страницу до конца"}},site:{add_feature:{add_hotkeys_actions:"Добавить операции с горячими клавишами",auto_adjust_option:"Автоматическая настройка параметра чтения",auto_page_turn:"Бесконечная прокрутка",auto_show:"Автоматически включать режим чтения",block_totally:"Глобально заблокировать комиксы",colorize_tag:"Цветные названия",cross_site_link:"Кросс-сайтовая ссылка",detect_ad:"Detect advertise page",expand_tag_list:"Развернуть список тегов",float_tag_list:"Плавающий список тегов",load_original_image:"Загружать оригинальное изображение",lock_option:"Блокировка опции сайта",open_link_new_page:"Открывать ссылки в новой вкладке",quick_favorite:"Быстрый фаворит",quick_rating:"Быстрый рейтинг",quick_tag_define:"Определение тега быстрого просмотра",remember_current_site:"Запомнить текущий сайт",tag_lint:"Тэг Линт"},changed_load_failed:"Страница изменилась, невозможно загрузить комикс",ehentai:{change_favorite_failed:"Не удалось изменить избранное",change_favorite_success:"Избранное успешно изменено",change_rating_failed:"Не удалось изменить оценку",change_rating_success:"Успешно изменен рейтинг",fetch_favorite_failed:"Не удалось получить информацию о избранном",fetch_img_page_source_failed:"Не удалось получить исходный код страницы с изображениями",fetch_img_page_url_failed:"Не удалось получить адрес страницы изображений из деталей",fetch_img_url_failed:"Не удалось получить адрес изображения",hitomi_error:"Ошибка сопоставления hitomi",html_changed_link_failed:"Структура страницы изменилась, и связанные функции внешнего сайта не работают должным образом",ip_banned:"IP адрес забанен",nhentai_error:"Ошибка сопоставления nhentai",nhentai_failed:"Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"},nhentai:{fetch_next_page_failed:"Не удалось получить следующую страницу",tag_blacklist_fetch_failed:"Не удалось получить заблокированные теги"},show_settings_menu:"Показать меню настроек",simple:{auto_read_mode_message:"\\"Автоматически включать режим чтения\\" по умолчанию",no_img:"Не найдено подходящих изображений. Нажмите тут что бы выключить режим простого чтения.",simple_read_mode:"Включить простой режим чтения"}},touch_area:{menu:"Меню",type:{edge:"Грань",l:"L",left_right:"Лево Право",up_down:"Верх Низ"}},translation:{status:{colorizing:"Раскрашивание","default":"Неизвестный статус",detection:"Распознавание текста",downscaling:"Уменьшение масштаба",error:"Ошибка перевода","error-lang":"Целевой язык не поддерживается выбранным переводчиком","error-translating":"Ошибка перевода(пустой ответ)","error-with-id":"Ошибка во время перевода",finished:"Завершение",inpainting:"Наложение","mask-generation":"Генерация маски",ocr:"Распознавание текста",pending:"Ожидание","pending-pos":"Ожидание",preparing:"Ожидание окна бездействия",rendering:"Отрисовка",saved:"Сохранено","skip-no-regions":"На изображении не обнаружено текстовых областей.","skip-no-text":"Текст на изображении не обнаружен",textline_merge:"Обьединение текста",translating:"Переводится",upscaling:"Увеличение изображения"},tip:{check_img_status_failed:"Не удалось проверить статус изображения",download_img_failed:"Не удалось скачать изображение",get_translator_list_error:"Произошла ошибка во время получения списка доступных переводчиков",id_not_returned:"ID не вернули(",img_downloading:"Скачать",img_not_fully_loaded:"Изображение всё ещё загружается",pending:"Ожидение, позиция в очереди {{pos}}",resize_img_failed:"Не удалось изменить размер изображения",translating:"Изображение переводится",translation_completed:"Перевод завершён",upload:"Загрузка изображения",upload_error:"Ошибка отправки изображения",upload_return_error:"Ошибка перевода на сервере",wait_translation:"Ожидание перевода"},translator:{baidu:"baidu",deepl:"DeepL",google:"Google","gpt3.5":"GPT-3.5",none:"Убрать текст",offline:"Оффлайн переводчик",original:"Оригинал",youdao:"youdao"}},upscale:{module_download_complete:"Загрузка модели увеличения изображений завершена",module_download_failed:"Сбой загрузки модели увеличения изображений",module_downloading:"Загрузка модели увеличения изображений...",title:"Увеличение изображения",upscaled:"Увеличенный",upscaling:"Увеличивается",webgpu_tip:"Невозможно увеличить изображения с помощью WebGPU, обработка будет медленнее"}};
 
-const zh = {alert:{comic_load_error:"漫画加载出错",download_failed:"下载失败",fetch_comic_img_failed:"获取漫画图片失败",img_load_failed:"图片加载失败",no_img_download:"没有能下载的图片",repeat_load:"加载图片中，请稍候",retry_get_img_url:"重新获取第 {{i}} 页图片的地址",server_connect_failed:"无法连接到服务器"},button:{auto_scroll:"自动滚动",close_current_page_translation:"关闭当前页的翻译",download_completed:"下载完成",download_completed_error:"下载完成，但有 {{errorNum}} 张图片下载失败",downloading:"下载中",fullscreen:"全屏",fullscreen_exit:"退出全屏",grid_mode:"网格模式",packaging:"打包中",page_fill:"页面填充",page_mode_double:"双页模式",page_mode_single:"单页模式",scroll_mode:"卷轴模式",translate_current_page:"翻译当前页",zoom_in:"放大",zoom_out:"缩小"},description:"为漫画站增加双页阅读、翻译等优化体验的增强功能。",eh_tag_lint:{combo:"存在 [tag] 时，一般也存在 [tag]",conflict:"存在 [tag] 时，不应该存在 [tag]",correct_tag:"应该是正确的标签",miss_female:"缺少男性标签，可能需要",miss_parody:"缺少原作标签，可能需要",possible_conflict:"存在 [tag] 时，一般不应该存在 [tag]",prerequisite:"[tag] 的前置标签 [tag] 不存在"},end_page:{next_button:"下一话",prev_button:"上一话",tip:{end_jump:"已到结尾，继续向下翻页将跳至下一话",exit:"已到结尾，继续翻页将退出",start_jump:"已到开头，继续向上翻页将跳至上一话"}},hotkeys:{enter_read_mode:"进入阅读模式",float_tag_list:"悬浮标签列表",jump_to_end:"跳至尾页",jump_to_home:"跳至首页",page_down:"向下翻页",page_up:"向上翻页",repeat_tip:"此快捷键已被绑定至「{{hotkey}}」",scroll_down:"向下滚动",scroll_left:"向左滚动",scroll_right:"向右滚动",scroll_up:"向上滚动",switch_auto_enlarge:"切换图片自动放大选项",switch_dir:"切换阅读方向",switch_grid_mode:"切换网格模式",switch_page_fill:"切换页面填充",switch_scroll_mode:"切换卷轴模式",switch_single_double_page_mode:"切换单双页模式"},img_status:{error:"加载出错",loading:"正在加载",wait:"等待加载"},other:{auto:"自动",disable:"禁用",distance:"距离",download:"下载",enabled:"启用",enter_comic_read_mode:"进入漫画阅读模式",exit:"退出",fab_hidden:"隐藏悬浮按钮",fab_show:"显示悬浮按钮",fill_page:"填充页",hotkeys:"快捷键",img_loading:"图片加载中",interval:"间隔",loading_img:"加载图片中",none:"无",or:"或",other:"其他",page_range:"请输入页码范围：\\n（例如：1, 3-5, 9-)",read_mode:"阅读模式",setting:"设置"},pwa:{alert:{img_data_error:"图片数据错误",img_not_found:"找不到图片",img_not_found_files:"请选择图片文件或含有图片文件的压缩包",img_not_found_folder:"文件夹下没有图片文件或含有图片文件的压缩包",not_valid_url:"不是有效的 URL",parse_error:"解析出错",password_error:"密码错误",repeat_load:"正在加载其他文件中……",userscript_not_installed:"未安装 ComicRead 脚本"},button:{enter_url:"输入 URL",install:"安装",no_more_prompt:"不再提示",resume_read:"恢复阅读",select_files:"选择文件",select_folder:"选择文件夹"},install_md:"### 每次都要打开这个网页很麻烦？\\n如果你希望\\n1. 能有独立的窗口，像是在使用本地软件一样\\n1. 加入本地压缩文件的打开方式之中，方便直接打开\\n1. 离线使用~~（主要是担心国内网络抽风无法访问这个网页~~\\n### 欢迎将本页面作为 PWA 应用安装到电脑上😃👍",message:{enter_password:"请输入密码",parsing:"解析中"},tip_enter_url:"请输入压缩包 URL",tip_md:"# ComicRead PWA\\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\\n---\\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\\n*也可以选择**直接粘贴**或**输入**压缩包 URL 下载阅读*"},setting:{hotkeys:{add:"添加新快捷键",restore:"恢复默认快捷键"},language:"语言",option:{abreast_duplicate:"每列重复比例",abreast_mode:"并排卷轴模式",align_edge:"滚动翻页时对齐边缘",always_load_all_img:"始终加载所有图片",autoFullscreen:"自动全屏",autoHiddenMouse:"自动隐藏鼠标",auto_scroll_trigger_end:"在结束页上继续滚动",auto_switch_page_mode:"按屏幕比例切换单双页",background_color:"背景颜色",click_page_turn_area:"点击区域",click_page_turn_enabled:"点击翻页",click_page_turn_swap_area:"左右点击区域交换",dark_mode:"黑暗模式",dark_mode_auto:"黑暗模式跟随系统",dir_ltr:"从左到右（美漫）",dir_rtl:"从右到左（日漫）",disable_auto_enlarge:"禁止图片自动放大",enable_menu:"启用菜单区域",first_page_fill:"默认启用首页填充",fit_to_width:"图片适合宽度",img_recognition:"图像识别",img_recognition_background:"识别背景色",img_recognition_pageFill:"自动调整页面填充",img_recognition_warn:"❗ 当前浏览器不支持 Web Worker，开启此功能可能导致页面卡顿，建议升级或更换浏览器。",img_recognition_warn_2:"❗ 当前网站不支持 Web Worker，开启此功能可能导致页面卡顿。",paragraph_appearance:"外观",paragraph_dir:"阅读方向",paragraph_display:"显示",paragraph_scrollbar:"滚动条",paragraph_translation:"翻译",preload_page_num:"预加载页数",scroll_end:"翻页至尽头后",scroll_end_auto:"优先跳至上/下一话，否则退出",scroll_mode_img_scale:"卷轴图片缩放",scroll_mode_img_spacing:"卷轴图片间距",scrollbar_auto_hidden:"自动隐藏",scrollbar_easy_scroll:"快捷滚动",scrollbar_position:"位置",scrollbar_position_bottom:"底部",scrollbar_position_hidden:"隐藏",scrollbar_position_right:"右侧",scrollbar_position_top:"顶部",scrollbar_show_img_status:"显示图片加载状态",show_clickable_area:"显示点击区域",show_comments:"在结束页显示评论",swap_page_turn_key:"左右翻页键交换",zoom:"图片缩放"},sync_options_other_site:"同步阅读配置至其他站点",translation:{cotrans_tip:"<p>将使用 <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\\n<p>所以还请 <b>注意用量</b></p>\\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",options:{box_threshold:"文本框阈值",detection_resolution:"文本扫描清晰度",direction:"渲染字体方向",direction_auto:"原文一致",direction_horizontal:"仅限水平",direction_vertical:"仅限垂直",force_retry:"忽略缓存强制重试",inpainter:"图像修复器",inpainting_size:"图像修复尺寸",local_url:"自定义服务器 URL",mask_dilation_offset:"掩码膨胀偏移量",only_download_translated:"只下载翻译完的图片",target_language:"目标语言",text_detector:"文本扫描器",translator:"翻译服务",unclip_ratio:"文本框膨胀比率"},range:"翻译范围",server:"翻译服务器",server_selfhosted:"本地部署",translate_all:"翻译全部图片",translate_to_end:"翻译当前页至结尾"}},site:{add_feature:{add_hotkeys_actions:"增加快捷键操作",auto_adjust_option:"自动调整阅读配置",auto_page_turn:"无限滚动",auto_show:"自动进入阅读模式",block_totally:"彻底屏蔽漫画",colorize_tag:"标签染色",cross_site_link:"关联外站",detect_ad:"识别广告页",expand_tag_list:"展开标签列表",float_tag_list:"悬浮标签列表",load_original_image:"加载原图",lock_option:"锁定站点配置",open_link_new_page:"在新页面中打开链接",quick_favorite:"快捷收藏",quick_rating:"快捷评分",quick_tag_define:"快捷查看标签定义",remember_current_site:"记住当前站点",tag_lint:"标签检查"},changed_load_failed:"网站发生变化，无法加载漫画",ehentai:{change_favorite_failed:"收藏夹修改失败",change_favorite_success:"收藏夹修改成功",change_rating_failed:"评分修改失败",change_rating_success:"评分修改成功",fetch_favorite_failed:"获取收藏夹信息失败",fetch_img_page_source_failed:"获取图片页源码失败",fetch_img_page_url_failed:"从详情页获取图片页地址失败",fetch_img_url_failed:"从图片页获取图片地址失败",hitomi_error:"hitomi 匹配出错",html_changed_link_failed:"页面结构发生改变，关联外站功能无法正常生效",ip_banned:"IP地址被禁",nhentai_error:"nhentai 匹配出错",nhentai_failed:"匹配失败，请在确认登录 {{nhentai}} 后刷新"},nhentai:{fetch_next_page_failed:"获取下一页漫画数据失败",tag_blacklist_fetch_failed:"标签黑名单获取失败"},show_settings_menu:"显示设置菜单",simple:{auto_read_mode_message:"已默认开启「自动进入阅读模式」",no_img:"未找到合适的漫画图片，\\n如有需要可点此关闭简易阅读模式",simple_read_mode:"使用简易阅读模式"}},touch_area:{menu:"菜单",type:{edge:"边缘",l:"L",left_right:"左右",up_down:"上下"}},translation:{status:{colorizing:"正在上色","default":"未知状态",detection:"正在检测文本",downscaling:"正在缩小图片",error:"翻译出错","error-lang":"你选择的翻译服务不支持你选择的语言","error-translating":"翻译服务没有返回任何文本","error-with-id":"翻译出错",finished:"正在整理结果",inpainting:"正在修补图片","mask-generation":"正在生成文本掩码",ocr:"正在识别文本",pending:"正在等待","pending-pos":"正在等待",preparing:"等待空闲窗口",rendering:"正在渲染",saved:"保存结果","skip-no-regions":"图片中没有检测到文本区域","skip-no-text":"图片中没有检测到文本",textline_merge:"正在整合文本",translating:"正在翻译文本",upscaling:"正在放大图片"},tip:{check_img_status_failed:"检查图片状态失败",download_img_failed:"下载图片失败",get_translator_list_error:"获取可用翻译服务列表时出错",id_not_returned:"未返回 id",img_downloading:"下载图片中",img_not_fully_loaded:"图片未加载完毕",pending:"正在等待，列队还有 {{pos}} 张图片",resize_img_failed:"缩放图片失败",translating:"翻译图片中",translation_completed:"翻译完成",upload:"上传图片中",upload_error:"上传图片出错",upload_return_error:"服务器翻译出错",wait_translation:"等待翻译"},translator:{baidu:"百度",deepl:"DeepL",google:"谷歌","gpt3.5":"GPT-3.5",none:"删除文本",offline:"离线模型",original:"原文",youdao:"有道"}},upscale:{module_download_complete:"图片放大模型下载完成",module_download_failed:"图片放大模型下载失败",module_downloading:"图片放大模型下载中...",title:"无损放大图片",upscaled:"已放大",upscaling:"放大中",webgpu_tip:"无法使用 WebGPU 放大图片，处理速度将变慢"}};
+const zh = {alert:{comic_load_error:"漫画加载出错",download_failed:"下载失败",fetch_comic_img_failed:"获取漫画图片失败",img_load_failed:"图片加载失败",no_img_download:"没有能下载的图片",repeat_load:"加载图片中，请稍候",retry_get_img_url:"重新获取第 {{i}} 页图片的地址",server_connect_failed:"无法连接到服务器"},button:{auto_scroll:"自动滚动",close_current_page_translation:"关闭当前页的翻译",download_completed:"下载完成",download_completed_error:"下载完成，但有 {{errorNum}} 张图片下载失败",downloading:"下载中",fullscreen:"全屏",fullscreen_exit:"退出全屏",grid_mode:"网格模式",packaging:"打包中",page_fill:"页面填充",page_mode_double:"双页模式",page_mode_single:"单页模式",scroll_mode:"卷轴模式",translate_current_page:"翻译当前页",zoom_in:"放大",zoom_out:"缩小"},description:"为漫画站增加双页阅读、翻译等优化体验的增强功能。",eh_tag_lint:{combo:"存在 [tag] 时，一般也存在 [tag]",conflict:"存在 [tag] 时，不应该存在 [tag]",correct_tag:"应该是正确的标签",miss_female:"缺少男性标签，可能需要",miss_parody:"缺少原作标签，可能需要",possible_conflict:"存在 [tag] 时，一般不应该存在 [tag]",prerequisite:"[tag] 的前置标签 [tag] 不存在"},end_page:{next_button:"下一话",prev_button:"上一话",tip:{end_jump:"已到结尾，继续向下翻页将跳至下一话",exit:"已到结尾，继续翻页将退出",start_jump:"已到开头，继续向上翻页将跳至上一话"}},hotkeys:{enter_read_mode:"进入阅读模式",float_tag_list:"悬浮标签列表",jump_to_end:"跳至尾页",jump_to_home:"跳至首页",page_down:"向下翻页",page_up:"向上翻页",repeat_tip:"此快捷键已被绑定至「{{hotkey}}」",scroll_down:"向下滚动",scroll_left:"向左滚动",scroll_right:"向右滚动",scroll_up:"向上滚动",switch_auto_enlarge:"切换图片自动放大选项",switch_dir:"切换阅读方向",switch_grid_mode:"切换网格模式",switch_page_fill:"切换页面填充",switch_scroll_mode:"切换卷轴模式",switch_single_double_page_mode:"切换单双页模式"},img_status:{error:"加载出错",loading:"正在加载",wait:"等待加载"},other:{auto:"自动",custom:"自定义",disable:"禁用",distance:"距离",download:"下载",enabled:"启用",enter_comic_read_mode:"进入漫画阅读模式",exit:"退出",fab_hidden:"隐藏悬浮按钮",fab_show:"显示悬浮按钮",fill_page:"填充页",hotkeys:"快捷键",img_loading:"图片加载中",interval:"间隔",loading_img:"加载图片中",none:"无",or:"或",other:"其他",page_range:"请输入页码范围：\\n（例如：1, 3-5, 9-)",read_mode:"阅读模式",setting:"设置"},pwa:{alert:{img_data_error:"图片数据错误",img_not_found:"找不到图片",img_not_found_files:"请选择图片文件或含有图片文件的压缩包",img_not_found_folder:"文件夹下没有图片文件或含有图片文件的压缩包",not_valid_url:"不是有效的 URL",parse_error:"解析出错",password_error:"密码错误",repeat_load:"正在加载其他文件中……",userscript_not_installed:"未安装 ComicRead 脚本"},button:{enter_url:"输入 URL",install:"安装",no_more_prompt:"不再提示",resume_read:"恢复阅读",select_files:"选择文件",select_folder:"选择文件夹"},install_md:"### 每次都要打开这个网页很麻烦？\\n如果你希望\\n1. 能有独立的窗口，像是在使用本地软件一样\\n1. 加入本地压缩文件的打开方式之中，方便直接打开\\n1. 离线使用~~（主要是担心国内网络抽风无法访问这个网页~~\\n### 欢迎将本页面作为 PWA 应用安装到电脑上😃👍",message:{enter_password:"请输入密码",parsing:"解析中"},tip_enter_url:"请输入压缩包 URL",tip_md:"# ComicRead PWA\\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\\n---\\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\\n*也可以选择**直接粘贴**或**输入**压缩包 URL 下载阅读*"},setting:{hotkeys:{add:"添加新快捷键",restore:"恢复默认快捷键"},language:"语言",option:{abreast_duplicate:"每列重复比例",abreast_mode:"并排卷轴模式",adjust_to_width:"自适应宽度",align_edge:"滚动翻页时对齐边缘",always_load_all_img:"始终加载所有图片",autoFullscreen:"自动全屏",autoHiddenMouse:"自动隐藏鼠标",auto_scale:"自动缩放",auto_scroll_trigger_end:"在结束页上继续滚动",auto_switch_page_mode:"按屏幕比例切换单双页",background_color:"背景颜色",click_page_turn_area:"点击区域",click_page_turn_enabled:"点击翻页",click_page_turn_swap_area:"左右点击区域交换",dark_mode:"黑暗模式",dark_mode_auto:"黑暗模式跟随系统",dir_ltr:"从左到右（美漫）",dir_rtl:"从右到左（日漫）",disable_auto_enlarge:"禁止图片自动放大",first_page_fill:"默认启用首页填充",full_width:"视窗宽度",img_recognition:"图像识别",img_recognition_background:"识别背景色",img_recognition_pageFill:"自动调整页面填充",img_recognition_warn:"❗ 当前浏览器不支持 Web Worker，开启此功能可能导致页面卡顿，建议升级或更换浏览器。",img_recognition_warn_2:"❗ 当前网站不支持 Web Worker，开启此功能可能导致页面卡顿。",paragraph_appearance:"外观",paragraph_dir:"阅读方向",paragraph_display:"显示",paragraph_scrollbar:"滚动条",paragraph_translation:"翻译",preload_page_num:"预加载页数",scroll_end:"翻页至尽头后",scroll_end_auto:"优先跳至上/下一话，否则退出",scroll_mode_img_scale:"卷轴图片缩放",scroll_mode_img_spacing:"卷轴图片间距",scrollbar_auto_hidden:"自动隐藏",scrollbar_easy_scroll:"快捷滚动",scrollbar_position:"位置",scrollbar_position_bottom:"底部",scrollbar_position_hidden:"隐藏",scrollbar_position_right:"右侧",scrollbar_position_top:"顶部",scrollbar_show_img_status:"显示图片加载状态",show_clickable_area:"显示点击区域",show_comments:"在结束页显示评论",shrink_menu:"缩小菜单区域",swap_page_turn_key:"左右翻页键交换",zoom:"图片缩放"},sync_options_other_site:"同步阅读配置至其他站点",translation:{cotrans_tip:"<p>将使用 <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\\n<p>所以还请 <b>注意用量</b></p>\\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",options:{box_threshold:"文本框阈值",detection_resolution:"文本扫描清晰度",direction:"渲染字体方向",direction_auto:"原文一致",direction_horizontal:"仅限水平",direction_vertical:"仅限垂直",force_retry:"忽略缓存强制重试",inpainter:"图像修复器",inpainting_size:"图像修复尺寸",local_url:"自定义服务器 URL",mask_dilation_offset:"掩码膨胀偏移量",only_download_translated:"只下载翻译完的图片",target_language:"目标语言",text_detector:"文本扫描器",translator:"翻译服务",unclip_ratio:"文本框膨胀比率"},range:"翻译范围",server:"翻译服务器",server_selfhosted:"本地部署",translate_all:"翻译全部图片",translate_to_end:"翻译当前页至结尾"}},site:{add_feature:{add_hotkeys_actions:"增加快捷键操作",auto_adjust_option:"自动调整阅读配置",auto_page_turn:"无限滚动",auto_show:"自动进入阅读模式",block_totally:"彻底屏蔽漫画",colorize_tag:"标签染色",cross_site_link:"关联外站",detect_ad:"识别广告页",expand_tag_list:"展开标签列表",float_tag_list:"悬浮标签列表",load_original_image:"加载原图",lock_option:"锁定站点配置",open_link_new_page:"在新页面中打开链接",quick_favorite:"快捷收藏",quick_rating:"快捷评分",quick_tag_define:"快捷查看标签定义",remember_current_site:"记住当前站点",tag_lint:"标签检查"},changed_load_failed:"网站发生变化，无法加载漫画",ehentai:{change_favorite_failed:"收藏夹修改失败",change_favorite_success:"收藏夹修改成功",change_rating_failed:"评分修改失败",change_rating_success:"评分修改成功",fetch_favorite_failed:"获取收藏夹信息失败",fetch_img_page_source_failed:"获取图片页源码失败",fetch_img_page_url_failed:"从详情页获取图片页地址失败",fetch_img_url_failed:"从图片页获取图片地址失败",hitomi_error:"hitomi 匹配出错",html_changed_link_failed:"页面结构发生改变，关联外站功能无法正常生效",ip_banned:"IP地址被禁",nhentai_error:"nhentai 匹配出错",nhentai_failed:"匹配失败，请在确认登录 {{nhentai}} 后刷新"},nhentai:{fetch_next_page_failed:"获取下一页漫画数据失败",tag_blacklist_fetch_failed:"标签黑名单获取失败"},show_settings_menu:"显示设置菜单",simple:{auto_read_mode_message:"已默认开启「自动进入阅读模式」",no_img:"未找到合适的漫画图片，\\n如有需要可点此关闭简易阅读模式",simple_read_mode:"使用简易阅读模式"}},touch_area:{menu:"菜单",type:{edge:"边缘",l:"L",left_right:"左右",up_down:"上下"}},translation:{status:{colorizing:"正在上色","default":"未知状态",detection:"正在检测文本",downscaling:"正在缩小图片",error:"翻译出错","error-lang":"你选择的翻译服务不支持你选择的语言","error-translating":"翻译服务没有返回任何文本","error-with-id":"翻译出错",finished:"正在整理结果",inpainting:"正在修补图片","mask-generation":"正在生成文本掩码",ocr:"正在识别文本",pending:"正在等待","pending-pos":"正在等待",preparing:"等待空闲窗口",rendering:"正在渲染",saved:"保存结果","skip-no-regions":"图片中没有检测到文本区域","skip-no-text":"图片中没有检测到文本",textline_merge:"正在整合文本",translating:"正在翻译文本",upscaling:"正在放大图片"},tip:{check_img_status_failed:"检查图片状态失败",download_img_failed:"下载图片失败",get_translator_list_error:"获取可用翻译服务列表时出错",id_not_returned:"未返回 id",img_downloading:"下载图片中",img_not_fully_loaded:"图片未加载完毕",pending:"正在等待，列队还有 {{pos}} 张图片",resize_img_failed:"缩放图片失败",translating:"翻译图片中",translation_completed:"翻译完成",upload:"上传图片中",upload_error:"上传图片出错",upload_return_error:"服务器翻译出错",wait_translation:"等待翻译"},translator:{baidu:"百度",deepl:"DeepL",google:"谷歌","gpt3.5":"GPT-3.5",none:"删除文本",offline:"离线模型",original:"原文",youdao:"有道"}},upscale:{module_download_complete:"图片放大模型下载完成",module_download_failed:"图片放大模型下载失败",module_downloading:"图片放大模型下载中...",title:"无损放大图片",upscaled:"已放大",upscaling:"放大中",webgpu_tip:"无法使用 WebGPU 放大图片，处理速度将变慢"}};
 
 /**
  * Creates a callback that is debounced and cancellable. The debounced callback is called on **trailing** edge.
@@ -1528,7 +1528,7 @@ const _defaultOption = {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,
     area: 'left_right',
-    enableMenu: true
+    shrinkMenu: false
   },
   firstPageFill: true,
   disableZoom: false,
@@ -1554,7 +1554,7 @@ const _defaultOption = {
     enabled: false,
     spacing: 0,
     imgScale: 1,
-    fitToWidth: false,
+    adjustToWidth: 'disable',
     abreastMode: false,
     abreastDuplicate: 0.1,
     doubleMode: false,
@@ -1943,10 +1943,16 @@ const listenHotkey = (actions, capture) => {
 const isAbreastMode = helper.createRootMemo(() => store.option.scrollMode.enabled && store.option.scrollMode.abreastMode);
 
 /** 当前是否为双页卷轴模式 */
-const isDoubleMode = helper.createRootMemo(() => store.option.scrollMode.enabled && store.option.scrollMode.doubleMode);
+const isDoubleMode = helper.createRootMemo(() => store.option.scrollMode.enabled && store.option.scrollMode.doubleMode && !store.option.scrollMode.abreastMode);
+
+/** 当前是否为单页卷轴模式 */
+const isSingleMode = helper.createRootMemo(() => store.option.scrollMode.enabled && !store.option.scrollMode.doubleMode && !store.option.scrollMode.abreastMode);
 
 /** 当前是否为普通卷轴模式（包含了双页卷轴模式） */
 const isScrollMode = helper.createRootMemo(() => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode);
+
+/** 当前是否正在卷轴模式下使用自动缩放值 */
+const isUseAutoScale = helper.createRootMemo(() => isScrollMode() && typeof store.option.scrollMode.adjustToWidth === 'number');
 
 /** 当前是否开启了识别背景色 */
 const isEnableBg = helper.createRootMemo(() => store.option.imgRecognition.enabled && store.option.imgRecognition.background);
@@ -2122,6 +2128,14 @@ const placeholderSize = helper.createThrottleMemo(() => ({
   height: getImgMedian(img => img.height) ?? 1200
 }), 500);
 
+/** 卷轴模式下的图片缩放比例 */
+const scrollModeScale = helper.createRootMemo(() => {
+  if (!isUseAutoScale()) return store.option.scrollMode.imgScale;
+
+  // 能让大多数图片的宽度接近指定值的图片缩放比例
+  return store.option.scrollMode.adjustToWidth / placeholderSize().width;
+});
+
 /** 记录每张图片所在的页面 */
 const imgPageMap = helper.createRootMemo(() => {
   const map = {};
@@ -2270,7 +2284,7 @@ const pageHeightList = createRootMemo(() => {
       if (!targetImg || img.size.height > targetImg.size.height) targetImg = img;
     }
     if (!targetImg) throw new Error('找不到图片');
-    if (targetImg.size.width < doubleWidth && !store.option.scrollMode.fitToWidth) return targetImg.size.height;
+    if (targetImg.size.width < doubleWidth && store.option.scrollMode.adjustToWidth === 'disable') return targetImg.size.height;
     return targetImg.size.height * (doubleWidth / targetImg.size.width);
   });
 });
@@ -2520,9 +2534,9 @@ const getImgDisplaySize = (state, img) => {
     };
   };
   if (isAbreastMode()) return setWidth(abreastColumnWidth());
-  if (state.option.scrollMode.fitToWidth) return setWidth(state.rootSize.width);
-  height *= state.option.scrollMode.imgScale;
-  width *= state.option.scrollMode.imgScale;
+  if (state.option.scrollMode.adjustToWidth === 'full') return setWidth(state.rootSize.width);
+  height *= scrollModeScale();
+  width *= scrollModeScale();
   if (width > state.rootSize.width) return setWidth(state.rootSize.width);
   return {
     height,
@@ -2539,7 +2553,7 @@ const updateImgSize = (url, width, height) => setState(state => {
   img.size = getImgDisplaySize(state, img);
   updateImgType(state, img);
 });
-helper.createEffectOn([imgList, () => store.option.scrollMode.enabled, () => store.option.scrollMode.abreastMode, () => store.option.scrollMode.fitToWidth, () => store.option.scrollMode.imgScale, () => store.rootSize, placeholderSize], ([{
+helper.createEffectOn([imgList, () => store.option.scrollMode.enabled, () => store.option.scrollMode.abreastMode, () => store.option.scrollMode.adjustToWidth, scrollModeScale, () => store.rootSize, placeholderSize], ([{
   length
 }]) => {
   if (length === 0) return;
@@ -3237,7 +3251,7 @@ const updateImgLoadType = helper.singleThreaded(() => {
     }
   });
 });
-helper.createEffectOn([preloadNum, helper.createRootMemo(() => [...renderImgList()].map(i => store.imgList[i])), () => store.option.alwaysLoadAllImg], updateImgLoadType);
+helper.createEffectOn([preloadNum, renderImgList, () => store.imgMap, () => store.option.alwaysLoadAllImg], updateImgLoadType);
 
 // 如果当前显示页面有出错的图片，就重新加载一次
 helper.createEffectOn(showImgList, helper.debounce(list => {
@@ -3404,7 +3418,7 @@ const initWorker = helper.onec(() => {
   worker$1.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
 });
 
-var css$1 = ".img____hash_base64_5_ img{display:block;height:100%;object-fit:contain;width:100%}.img____hash_base64_5_{align-content:center;content-visibility:hidden;display:none;height:100%;margin-left:auto;margin-right:auto;position:relative;width:100%}.img____hash_base64_5_[data-show]{content-visibility:visible;display:block}.img____hash_base64_5_>picture{display:block;height:auto;inset:0;margin-bottom:auto;margin-left:inherit;margin-right:inherit;margin-top:auto;max-height:100%;max-width:100%;position:absolute;width:auto}.img____hash_base64_5_>picture,.img____hash_base64_5_>picture:after{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%}.img____hash_base64_5_[data-load-type=error]>picture:after{background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img____hash_base64_5_[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img____hash_base64_5_[data-load-type=loading]>picture) img{animation:show____hash_base64_5_ .1s forwards}.img____hash_base64_5_[data-load-type=error]>picture{cursor:pointer}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"1\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"0\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow____hash_base64_5_{backface-visibility:hidden;color:var(--text);contain:layout;display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;height:100%;overflow:visible;place-items:center;position:absolute;row-gap:0;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;width:100%;will-change:left,top}.mangaFlow____hash_base64_5_[data-disable-zoom] .img____hash_base64_5_>picture{height:fit-content;width:fit-content}.mangaFlow____hash_base64_5_[data-hidden-mouse=true]{cursor:none}.mangaFlow____hash_base64_5_[data-vertical]{grid-auto-flow:row}.mangaBox____hash_base64_5_{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0s;width:100%}.mangaBox____hash_base64_5_[data-animation=page] .mangaFlow____hash_base64_5_,.mangaBox____hash_base64_5_[data-animation=zoom]{transition-duration:.3s}.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_{scrollbar-width:none}:is(.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_)::-webkit-scrollbar{display:none}.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_{align-items:end;box-sizing:border-box;grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;grid-template-rows:unset;overflow:auto;row-gap:1.5em}:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>.gridModeTip____hash_base64_5_{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[data-load-type=wait]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[src=\\"\\"]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_){height:100%}.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_{overflow:auto}:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{height:fit-content;row-gap:calc(var(--scroll-mode-spacing)*7px);touch-action:pan-y}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_){overflow:hidden;touch-action:none}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{align-items:start;column-gap:calc(var(--scroll-mode-spacing)*7px);height:100%}:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_{height:auto;width:100%;will-change:transform}:is(:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}@keyframes show____hash_base64_5_{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPageBody____hash_base64_5_,.endPage____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:center;width:100%;z-index:10}.endPage____hash_base64_5_{background-color:#333d;color:#fff;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s}.endPage____hash_base64_5_[data-show]{opacity:1;pointer-events:all}.endPage____hash_base64_5_[data-type=start] .tip____hash_base64_5_{transform:translateY(-10em)}.endPage____hash_base64_5_[data-type=end] .tip____hash_base64_5_{transform:translateY(10em)}.endPage____hash_base64_5_ .endPageBody____hash_base64_5_{transform:translateY(var(--drag-y,0));transition:transform .2s}:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) button{animation:jello____hash_base64_5_ .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) button){font-size:3em;margin:2em}:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) .tip____hash_base64_5_{margin:auto;position:absolute}.endPage____hash_base64_5_[data-drag] .endPageBody____hash_base64_5_{transition:transform 0s}.root____hash_base64_5_[data-mobile] .endPage____hash_base64_5_>button{width:1em}.comments____hash_base64_5_{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments____hash_base64_5_>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments____hash_base64_5_:hover{opacity:1}.root____hash_base64_5_[data-mobile] .comments____hash_base64_5_{bottom:0;max-height:15em;opacity:.8}@keyframes jello____hash_base64_5_{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel____hash_base64_5_{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.toolbarPanel____hash_base64_5_>hr{border:none;height:1em;margin:0;visibility:hidden}:is(.toolbar____hash_base64_5_[data-show],.toolbar____hash_base64_5_:hover) .toolbarPanel____hash_base64_5_{transform:none}.toolbar____hash_base64_5_[data-close] .toolbarPanel____hash_base64_5_{transform:translateX(-100%);visibility:hidden}.toolbarBg____hash_base64_5_{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_{font-size:1.3em}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_:not([data-show]){pointer-events:none}.root____hash_base64_5_[data-mobile] .toolbarBg____hash_base64_5_{filter:opacity(.8)}.SettingPanelPopper____hash_base64_5_{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel____hash_base64_5_{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel____hash_base64_5_ hr{color:#fff;margin:.5em 0}.SettingPanel____hash_base64_5_>hr{margin:0}.SettingBlock____hash_base64_5_{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div+:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div{margin-top:1em}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_) input,:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_) textarea{margin-top:.3em;width:97%}.SettingBlock____hash_base64_5_[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock____hash_base64_5_[data-show=false] .SettingBlockBody____hash_base64_5_{padding:unset}.SettingBlockSubtitle____hash_base64_5_{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingBlockBody____hash_base64_5_ .SettingBlockSubtitle____hash_base64_5_{height:1em;line-height:1em;position:unset}.SettingsItem____hash_base64_5_{align-items:center;display:flex;justify-content:space-between;position:relative}:is(.SettingsItem____hash_base64_5_,.SettingsShowItem____hash_base64_5_)+.SettingsItem____hash_base64_5_{margin-top:1em}.SettingsItem____hash_base64_5_[data-disabled]{opacity:.5}.SettingsItem____hash_base64_5_[data-disabled] button{cursor:not-allowed}.SettingsItemName____hash_base64_5_{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch____hash_base64_5_{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound____hash_base64_5_{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch____hash_base64_5_[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch____hash_base64_5_[data-checked=true] .SettingsItemSwitchRound____hash_base64_5_{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton____hash_base64_5_{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.5em;height:1em;position:absolute;right:0}.SettingsItemSelect____hash_base64_5_{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover____hash_base64_5_{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem____hash_base64_5_{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_{display:flex;flex-direction:column;overflow:hidden}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>.SettingsItem____hash_base64_5_{margin-top:1em}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>:is(textarea,input){line-height:1.2;margin:.4em .2em 0}[data-only-number]{padding:0 .2em}[data-only-number]+span{margin-left:-.1em}.hotkeys____hash_base64_5_{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys____hash_base64_5_+.hotkeys____hash_base64_5_{margin-top:.5em}.hotkeys____hash_base64_5_:last-child{border-bottom:none}.hotkeysItem____hash_base64_5_{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem____hash_base64_5_>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem____hash_base64_5_>svg):hover{opacity:.9}.hotkeysItem____hash_base64_5_:hover{padding:.2em .5em}.hotkeysItem____hash_base64_5_:hover>svg{display:unset}.hotkeysItem____hash_base64_5_:focus,.hotkeysItem____hash_base64_5_:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader____hash_base64_5_{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader____hash_base64_5_>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader____hash_base64_5_>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader____hash_base64_5_>div[title])>svg{width:1.6em}.hotkeys____hash_base64_5_:hover div[title]{transform:scale(1)}.scrollbar____hash_base64_5_{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar____hash_base64_5_>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage____hash_base64_5_{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage____hash_base64_5_[data-type=loaded]{transform:scaleY(0)}.scrollbarPage____hash_base64_5_[data-upscale]{background-color:#b39ddb;transform:scaleY(1)}.scrollbarPage____hash_base64_5_[data-upscale=loading]{background-color:#d1c4e9}.scrollbarPage____hash_base64_5_[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage____hash_base64_5_[data-translation-type=wait]{background-color:#81c784}.scrollbarPage____hash_base64_5_[data-translation-type=show]{background-color:#4caf50}.scrollbarPage____hash_base64_5_[data-translation-type=error]{background-color:#f005}.scrollbarPage____hash_base64_5_[data-type=wait]{opacity:.5}.scrollbarPage____hash_base64_5_[data-null]{background-color:#fbc02d}.scrollbarPage____hash_base64_5_[data-type=error]{background-color:#f005}.scrollbarSlider____hash_base64_5_{background-color:#fff5;border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper____hash_base64_5_{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_:before{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarPoper____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarSlider____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]):before{opacity:1}.scrollbar____hash_base64_5_[data-drag] .scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag] .scrollbarSlider____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag]:before{transition:opacity .15s}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]) .scrollbarSlider____hash_base64_5_{opacity:0}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider____hash_base64_5_{opacity:1}.scrollbar____hash_base64_5_[data-position=hidden]{display:none}.scrollbar____hash_base64_5_[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar____hash_base64_5_[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar____hash_base64_5_[data-position=top] .scrollbarPoper____hash_base64_5_{top:1.2em}.scrollbar____hash_base64_5_[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar____hash_base64_5_[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar____hash_base64_5_[data-position=bottom] .scrollbarPoper____hash_base64_5_{bottom:1.2em}.scrollbar____hash_base64_5_[data-position=bottom],.scrollbar____hash_base64_5_[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{transform:translateX(var(--poper-top))}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(1)}.scrollbar____hash_base64_5_[data-is-abreast-mode] .scrollbarPoper____hash_base64_5_{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar____hash_base64_5_[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper____hash_base64_5_{writing-mode:vertical-lr}.root____hash_base64_5_[data-scroll-mode] .scrollbar____hash_base64_5_:before,.root____hash_base64_5_[data-scroll-mode] :is(.scrollbarSlider____hash_base64_5_,.scrollbarPoper____hash_base64_5_){transition:opacity .15s}:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover) .scrollbarPoper____hash_base64_5_,:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover):before{opacity:0}.touchAreaRoot____hash_base64_5_{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot____hash_base64_5_[data-show]{opacity:1}.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=prev]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=menu]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=next]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-next)}.touchAreaRoot____hash_base64_5_[data-vert=true]{flex-direction:column!important}.touchAreaRoot____hash_base64_5_[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root____hash_base64_5_[data-mobile] .touchAreaRoot____hash_base64_5_{flex-direction:column!important;letter-spacing:0}.root____hash_base64_5_[data-mobile] [data-area]:after{font-size:.8em}.root____hash_base64_5_{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root____hash_base64_5_ a{color:var(--text-secondary)}.root____hash_base64_5_[data-mobile]{font-size:.8em}.hidden____hash_base64_5_{display:none!important}.invisible____hash_base64_5_{visibility:hidden!important}.beautifyScrollbar____hash_base64_5_{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-size:.9em;font-style:italic;line-height:1.2em;margin:.5em 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".img____hash_base64_5_ img{display:block;height:100%;object-fit:contain;width:100%}.img____hash_base64_5_{align-content:center;content-visibility:hidden;display:none;height:100%;margin-left:auto;margin-right:auto;position:relative;width:100%}.img____hash_base64_5_[data-show]{content-visibility:visible;display:block}.img____hash_base64_5_>picture{display:block;height:auto;inset:0;margin-bottom:auto;margin-left:inherit;margin-right:inherit;margin-top:auto;max-height:100%;max-width:100%;position:absolute;width:auto}.img____hash_base64_5_>picture,.img____hash_base64_5_>picture:after{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%}.img____hash_base64_5_[data-load-type=error]>picture:after{background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img____hash_base64_5_[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img____hash_base64_5_[data-load-type=loading]>picture) img{animation:show____hash_base64_5_ .1s forwards}.img____hash_base64_5_[data-load-type=error]>picture{cursor:pointer}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"1\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"0\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow____hash_base64_5_{backface-visibility:hidden;color:var(--text);contain:layout;display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;height:100%;overflow:visible;place-items:center;position:absolute;row-gap:0;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;width:100%;will-change:left,top}.mangaFlow____hash_base64_5_[data-disable-zoom] .img____hash_base64_5_>picture{height:fit-content;width:fit-content}.mangaFlow____hash_base64_5_[data-hidden-mouse=true]{cursor:none}.mangaFlow____hash_base64_5_[data-vertical]{grid-auto-flow:row}.mangaBox____hash_base64_5_{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0s;width:100%}.mangaBox____hash_base64_5_[data-animation=page] .mangaFlow____hash_base64_5_,.mangaBox____hash_base64_5_[data-animation=zoom]{transition-duration:.3s}.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_{scrollbar-width:none}:is(.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_)::-webkit-scrollbar{display:none}.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_{align-items:end;box-sizing:border-box;grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;grid-template-rows:unset;overflow:auto;row-gap:1.5em}:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>.gridModeTip____hash_base64_5_{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[data-load-type=wait]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[src=\\"\\"]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_){height:100%}.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_{overflow:auto}:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{height:fit-content;row-gap:calc(var(--scroll-mode-spacing)*7px);touch-action:pan-y}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_){overflow:hidden;touch-action:none}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{align-items:start;column-gap:calc(var(--scroll-mode-spacing)*7px);height:100%}:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_{height:auto;width:100%;will-change:transform}:is(:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}@keyframes show____hash_base64_5_{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPageBody____hash_base64_5_,.endPage____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:center;width:100%;z-index:10}.endPage____hash_base64_5_{background-color:#333d;color:#fff;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s}.endPage____hash_base64_5_[data-show]{opacity:1;pointer-events:all}.endPage____hash_base64_5_[data-type=start] .tip____hash_base64_5_{transform:translateY(-10em)}.endPage____hash_base64_5_[data-type=end] .tip____hash_base64_5_{transform:translateY(10em)}.endPage____hash_base64_5_ .endPageBody____hash_base64_5_{transform:translateY(var(--drag-y,0));transition:transform .2s}:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) button{animation:jello____hash_base64_5_ .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) button){font-size:3em;margin:2em}:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) .tip____hash_base64_5_{margin:auto;position:absolute}.endPage____hash_base64_5_[data-drag] .endPageBody____hash_base64_5_{transition:transform 0s}.root____hash_base64_5_[data-mobile] .endPage____hash_base64_5_>button{width:1em}.comments____hash_base64_5_{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments____hash_base64_5_>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments____hash_base64_5_:hover{opacity:1}.root____hash_base64_5_[data-mobile] .comments____hash_base64_5_{bottom:0;max-height:15em;opacity:.8}@keyframes jello____hash_base64_5_{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel____hash_base64_5_{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.toolbarPanel____hash_base64_5_>hr{border:none;height:1em;margin:0;visibility:hidden}:is(.toolbar____hash_base64_5_[data-show],.toolbar____hash_base64_5_:hover) .toolbarPanel____hash_base64_5_{transform:none}.toolbar____hash_base64_5_[data-close] .toolbarPanel____hash_base64_5_{transform:translateX(-100%);visibility:hidden}.toolbarBg____hash_base64_5_{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_{font-size:1.3em}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_:not([data-show]){pointer-events:none}.root____hash_base64_5_[data-mobile] .toolbarBg____hash_base64_5_{filter:opacity(.8)}.SettingPanelPopper____hash_base64_5_{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel____hash_base64_5_{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel____hash_base64_5_ hr{color:#fff;margin:.5em 0}.SettingPanel____hash_base64_5_>hr{margin:0}.SettingBlock____hash_base64_5_{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div+:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div{margin-top:1em}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_) input,:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_) textarea{margin-top:.3em;width:97%}.SettingBlock____hash_base64_5_[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock____hash_base64_5_[data-show=false] .SettingBlockBody____hash_base64_5_{padding:unset}.SettingBlockSubtitle____hash_base64_5_{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingBlockBody____hash_base64_5_ .SettingBlockSubtitle____hash_base64_5_{height:1em;line-height:1em;position:unset}.SettingsItem____hash_base64_5_{align-items:center;display:flex;justify-content:space-between;position:relative}:is(.SettingsItem____hash_base64_5_,.SettingsShowItem____hash_base64_5_)+.SettingsItem____hash_base64_5_{margin-top:1em}.SettingsItem____hash_base64_5_[data-disabled]{opacity:.5}.SettingsItem____hash_base64_5_[data-disabled] button{cursor:not-allowed}.SettingsItemName____hash_base64_5_{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch____hash_base64_5_{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound____hash_base64_5_{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch____hash_base64_5_[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch____hash_base64_5_[data-checked=true] .SettingsItemSwitchRound____hash_base64_5_{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton____hash_base64_5_{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.5em;height:1em;position:absolute;right:0}.SettingsItemSelect____hash_base64_5_{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover____hash_base64_5_{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem____hash_base64_5_{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_{display:flex;flex-direction:column;overflow:hidden}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>.SettingsItem____hash_base64_5_{margin-top:1em}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>:is(textarea,input){line-height:1.2;margin:.4em .2em 0}[data-only-number]{padding:0 .2em}[data-only-number]+span{margin-left:-.1em}.hotkeys____hash_base64_5_{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys____hash_base64_5_+.hotkeys____hash_base64_5_{margin-top:.5em}.hotkeys____hash_base64_5_:last-child{border-bottom:none}.hotkeysItem____hash_base64_5_{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem____hash_base64_5_>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem____hash_base64_5_>svg):hover{opacity:.9}.hotkeysItem____hash_base64_5_:hover{padding:.2em .5em}.hotkeysItem____hash_base64_5_:hover>svg{display:unset}.hotkeysItem____hash_base64_5_:focus,.hotkeysItem____hash_base64_5_:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader____hash_base64_5_{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader____hash_base64_5_>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader____hash_base64_5_>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader____hash_base64_5_>div[title])>svg{width:1.6em}.hotkeys____hash_base64_5_:hover div[title]{transform:scale(1)}.scrollbar____hash_base64_5_{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar____hash_base64_5_>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage____hash_base64_5_{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage____hash_base64_5_[data-type=loaded]{transform:scaleY(0)}.scrollbarPage____hash_base64_5_[data-upscale]{background-color:#b39ddb;transform:scaleY(1)}.scrollbarPage____hash_base64_5_[data-upscale=loading]{background-color:#d1c4e9}.scrollbarPage____hash_base64_5_[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage____hash_base64_5_[data-translation-type=wait]{background-color:#81c784}.scrollbarPage____hash_base64_5_[data-translation-type=show]{background-color:#4caf50}.scrollbarPage____hash_base64_5_[data-translation-type=error]{background-color:#f005}.scrollbarPage____hash_base64_5_[data-type=wait]{opacity:.5}.scrollbarPage____hash_base64_5_[data-null]{background-color:#fbc02d}.scrollbarPage____hash_base64_5_[data-type=error]{background-color:#f005}.scrollbarSlider____hash_base64_5_{background-color:#fff5;border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper____hash_base64_5_{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_:before{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarPoper____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarSlider____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]):before{opacity:1}.scrollbar____hash_base64_5_[data-drag] .scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag] .scrollbarSlider____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag]:before{transition:opacity .15s}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]) .scrollbarSlider____hash_base64_5_{opacity:0}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider____hash_base64_5_{opacity:1}.scrollbar____hash_base64_5_[data-position=hidden]{display:none}.scrollbar____hash_base64_5_[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar____hash_base64_5_[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar____hash_base64_5_[data-position=top] .scrollbarPoper____hash_base64_5_{top:1.2em}.scrollbar____hash_base64_5_[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar____hash_base64_5_[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar____hash_base64_5_[data-position=bottom] .scrollbarPoper____hash_base64_5_{bottom:1.2em}.scrollbar____hash_base64_5_[data-position=bottom],.scrollbar____hash_base64_5_[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{transform:translateX(var(--poper-top))}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(1)}.scrollbar____hash_base64_5_[data-is-abreast-mode] .scrollbarPoper____hash_base64_5_{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar____hash_base64_5_[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper____hash_base64_5_{writing-mode:vertical-lr}.root____hash_base64_5_[data-scroll-mode] .scrollbar____hash_base64_5_:before,.root____hash_base64_5_[data-scroll-mode] :is(.scrollbarSlider____hash_base64_5_,.scrollbarPoper____hash_base64_5_){transition:opacity .15s}:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover) .scrollbarPoper____hash_base64_5_,:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover):before{opacity:0}.touchAreaRoot____hash_base64_5_{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot____hash_base64_5_[data-show]{opacity:1}.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=prev]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=menu]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=next]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-next)}.touchAreaRoot____hash_base64_5_[data-vert=true]{flex-direction:column!important}.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=NEXT],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=PREV],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=next],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=prev]{visibility:hidden}.touchAreaRoot____hash_base64_5_[data-shrink-menu]{grid-template-columns:1fr 2em 1fr}.touchAreaRoot____hash_base64_5_[data-shrink-menu] .touchArea____hash_base64_5_[data-area=MENU]{letter-spacing:0}.root____hash_base64_5_[data-mobile] .touchAreaRoot____hash_base64_5_{flex-direction:column!important;letter-spacing:0}.root____hash_base64_5_[data-mobile] [data-area]:after{font-size:.8em}.root____hash_base64_5_{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root____hash_base64_5_ a{color:var(--text-secondary)}.root____hash_base64_5_[data-mobile]{font-size:.8em}.hidden____hash_base64_5_{display:none!important}.invisible____hash_base64_5_{visibility:hidden!important}.beautifyScrollbar____hash_base64_5_{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-size:.9em;font-style:italic;line-height:1.2em;margin:.5em 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"img____hash_base64_5_","mangaFlow":"mangaFlow____hash_base64_5_","mangaBox":"mangaBox____hash_base64_5_","root":"root____hash_base64_5_","gridModeTip":"gridModeTip____hash_base64_5_","endPage":"endPage____hash_base64_5_","endPageBody":"endPageBody____hash_base64_5_","tip":"tip____hash_base64_5_","comments":"comments____hash_base64_5_","toolbar":"toolbar____hash_base64_5_","toolbarPanel":"toolbarPanel____hash_base64_5_","toolbarBg":"toolbarBg____hash_base64_5_","SettingPanelPopper":"SettingPanelPopper____hash_base64_5_","SettingPanel":"SettingPanel____hash_base64_5_","SettingBlock":"SettingBlock____hash_base64_5_","SettingBlockBody":"SettingBlockBody____hash_base64_5_","SettingBlockSubtitle":"SettingBlockSubtitle____hash_base64_5_","SettingsItem":"SettingsItem____hash_base64_5_","SettingsShowItem":"SettingsShowItem____hash_base64_5_","SettingsItemName":"SettingsItemName____hash_base64_5_","SettingsItemSwitch":"SettingsItemSwitch____hash_base64_5_","SettingsItemSwitchRound":"SettingsItemSwitchRound____hash_base64_5_","SettingsItemIconButton":"SettingsItemIconButton____hash_base64_5_","SettingsItemSelect":"SettingsItemSelect____hash_base64_5_","closeCover":"closeCover____hash_base64_5_","SettingsShowItemBody":"SettingsShowItemBody____hash_base64_5_","hotkeys":"hotkeys____hash_base64_5_","hotkeysItem":"hotkeysItem____hash_base64_5_","hotkeysHeader":"hotkeysHeader____hash_base64_5_","scrollbar":"scrollbar____hash_base64_5_","scrollbarPage":"scrollbarPage____hash_base64_5_","scrollbarSlider":"scrollbarSlider____hash_base64_5_","scrollbarPoper":"scrollbarPoper____hash_base64_5_","touchAreaRoot":"touchAreaRoot____hash_base64_5_","touchArea":"touchArea____hash_base64_5_","hidden":"hidden____hash_base64_5_","invisible":"invisible____hash_base64_5_","beautifyScrollbar":"beautifyScrollbar____hash_base64_5_"};
 
 let clickTimeout = null;
@@ -3742,20 +3756,6 @@ const jumpToImg = index => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
-};
-
-/** 在卷轴模式下进行缩放，并且保持滚动进度不变 */
-const zoomScrollModeImg = (zoomLevel, set = false) => {
-  const jump = saveScrollProgress();
-  setOption(draftOption => {
-    const newVal = set ? zoomLevel : store.option.scrollMode.imgScale + zoomLevel;
-    draftOption.scrollMode.imgScale = helper.clamp(0.1, Number(newVal.toFixed(2)), 3);
-  });
-  jump();
-
-  // 并排卷轴模式下并没有一个明确直观的滚动进度，
-  // 也想不出有什么实现效果能和普通卷轴模式的效果一致,
-  // 所以就摆烂不管了，反正现在这样也已经能避免乱跳了
 };
 
 const touches = new Map();
@@ -4124,6 +4124,54 @@ const handleTrackpadWheel = e => {
   handleDragEnd.debounce();
 };
 
+/** 修改卷轴模式下图片的目标宽度 */
+const setAdjustToWidth = val => {
+  if (typeof store.option.scrollMode.adjustToWidth !== 'number') return;
+  if (typeof val === 'function') val = val(store.option.scrollMode.adjustToWidth);
+  if (Number.isNaN(val)) return;
+  setOption(draftOption => {
+    const max = Math.ceil(store.rootSize.width);
+    draftOption.scrollMode.adjustToWidth = helper.clamp(200, val, max);
+  });
+};
+const minImgWidth = helper.createRootMemo(() => {
+  let min = Number.POSITIVE_INFINITY;
+  for (const img of Object.values(store.imgMap)) if (img.width && img.width < min) min = img.width;
+  return min;
+});
+
+/** 在卷轴模式下进行缩放，并且保持滚动进度不变 */
+const setImgScale = val => {
+  if (typeof val === 'function') val = val(store.option.scrollMode.imgScale);
+  if (Number.isNaN(val)) return;
+  const jump = saveScrollProgress();
+  setOption(draftOption => {
+    val = helper.clamp(0.1, val, 3);
+
+    // 如果当前最小图片宽度都大于视窗宽度，并且这次操作是在调小缩放值
+    // 那就将这次操作改为：将缩放值修改为只要缩小一点就会立刻让图片变小的极限值
+    // 避免用户需要多次调小缩放值才能看到效果的情况
+    // https://github.com/hymbz/ComicReadScript/issues/285
+    if (minImgWidth() <= store.rootSize.width && val < draftOption.scrollMode.imgScale) {
+      const maxImgScale = store.rootSize.width / minImgWidth();
+      if (val > maxImgScale) val = maxImgScale;
+    }
+    draftOption.scrollMode.imgScale = helper.clamp(0.1, Number(val.toFixed(2)), 3);
+  });
+  jump();
+
+  // 并排卷轴模式下并没有一个明确直观的滚动进度，
+  // 也想不出有什么实现效果能和普通卷轴模式的效果一致,
+  // 所以就摆烂不管了，反正现在这样也已经能避免乱跳了
+};
+
+/** 处理卷轴模式下的放大/缩小操作 */
+const handleScrollModeZoom = dir => {
+  if (!store.option.scrollMode.enabled) return;
+  if (store.option.scrollMode.adjustToWidth === 'full') return;
+  if (store.option.scrollMode.adjustToWidth === 'disable' || isAbreastMode()) setImgScale(0.05 * (dir === 'add' ? 1 : -1));else setAdjustToWidth(val => val + 100 * (dir === 'add' ? 1 : -1));
+};
+
 /** 切换页面填充 */
 const switchFillEffect = () => {
   setState(state => {
@@ -4185,15 +4233,6 @@ const switchGridMode = () => {
       inline: 'center'
     });
   });
-};
-
-/** 切换卷轴模式下图片适应宽度 */
-const switchFitToWidth = () => {
-  const jump = saveScrollProgress();
-  setOption(draftOption => {
-    draftOption.scrollMode.fitToWidth = !draftOption.scrollMode.fitToWidth;
-  });
-  jump();
 };
 
 /** 切换全屏 */
@@ -4479,8 +4518,7 @@ const handleWheel = e => {
   // 卷轴模式下的图片缩放
   if ((e.ctrlKey || e.altKey) && isScrollMode() && store.option.zoom.ratio === 100) {
     e.preventDefault();
-    if (store.option.scrollMode.fitToWidth) return;
-    return zoomScrollModeImg(isWheelDown ? -0.05 : 0.05);
+    return handleScrollModeZoom(isWheelDown ? 'sub' : 'add');
   }
   if (e.ctrlKey || e.altKey) {
     e.preventDefault();
@@ -4982,8 +5020,7 @@ const ComicImgFlow = () => {
         _v$7 = helper.boolDataVal(store.option.disableZoom && !store.option.scrollMode.enabled),
         _v$8 = helper.boolDataVal(store.option.zoom.ratio !== 100),
         _v$9 = helper.boolDataVal(store.page.vertical),
-        _v$0 = !store.gridMode && store.option.autoHiddenMouse && hiddenMouse(),
-        _v$1 = helper.boolDataVal(store.option.scrollMode.fitToWidth);
+        _v$0 = !store.gridMode && store.option.autoHiddenMouse && hiddenMouse();
       _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
       _v$2 !== _p$.t && web.setAttribute(_el$, "data-animation", _p$.t = _v$2);
       _v$3 !== _p$.a && web.setAttribute(_el$, "data-abreast-scroll", _p$.a = _v$3);
@@ -4994,7 +5031,6 @@ const ComicImgFlow = () => {
       _v$8 !== _p$.h && web.setAttribute(_el$2, "data-scale-mode", _p$.h = _v$8);
       _v$9 !== _p$.r && web.setAttribute(_el$2, "data-vertical", _p$.r = _v$9);
       _v$0 !== _p$.d && web.setAttribute(_el$2, "data-hidden-mouse", _p$.d = _v$0);
-      _v$1 !== _p$.l && web.setAttribute(_el$2, "data-fit-width", _p$.l = _v$1);
       return _p$;
     }, {
       e: undefined,
@@ -5006,8 +5042,7 @@ const ComicImgFlow = () => {
       s: undefined,
       h: undefined,
       r: undefined,
-      d: undefined,
-      l: undefined
+      d: undefined
     });
     return _el$;
   })();
@@ -5025,18 +5060,6 @@ const dir = helper.createRootMemo(() => {
   if (!store.option.clickPageTurn.reverse) return store.option.dir;
   return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
 });
-const isShowArea = area => {
-  switch (area) {
-    case 'PREV':
-    case 'prev':
-    case 'NEXT':
-    case 'next':
-      return store.option.clickPageTurn.enabled;
-    case 'MENU':
-    case 'menu':
-      return store.option.clickPageTurn.enableMenu;
-  }
-};
 const TouchArea = () => (() => {
   var _el$ = web.template(\`<div>\`)();
   var _ref$ = bindRef('touchArea');
@@ -5050,16 +5073,7 @@ const TouchArea = () => (() => {
       children: area => (() => {
         var _el$2 = web.template(\`<div role=button tabindex=-1>\`)();
         web.setAttribute(_el$2, "data-area", area);
-        web.effect(_p$ => {
-          var _v$5 = modules_c21c94f2$1.touchArea,
-            _v$6 = isShowArea(area) ? undefined : 'hidden';
-          _v$5 !== _p$.e && web.className(_el$2, _p$.e = _v$5);
-          _v$6 !== _p$.t && web.setStyleProperty(_el$2, "visibility", _p$.t = _v$6);
-          return _p$;
-        }, {
-          e: undefined,
-          t: undefined
-        });
+        web.effect(() => web.className(_el$2, modules_c21c94f2$1.touchArea));
         return _el$2;
       })()
     })
@@ -5068,17 +5082,23 @@ const TouchArea = () => (() => {
     var _v$ = modules_c21c94f2$1.touchAreaRoot,
       _v$2 = dir(),
       _v$3 = helper.boolDataVal(store.show.touchArea),
-      _v$4 = areaType();
+      _v$4 = areaType(),
+      _v$5 = helper.boolDataVal(store.option.clickPageTurn.enabled),
+      _v$6 = helper.boolDataVal(store.option.clickPageTurn.shrinkMenu);
     _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
     _v$2 !== _p$.t && web.setAttribute(_el$, "dir", _p$.t = _v$2);
     _v$3 !== _p$.a && web.setAttribute(_el$, "data-show", _p$.a = _v$3);
     _v$4 !== _p$.o && web.setAttribute(_el$, "data-area", _p$.o = _v$4);
+    _v$5 !== _p$.i && web.setAttribute(_el$, "data-turn-page", _p$.i = _v$5);
+    _v$6 !== _p$.n && web.setAttribute(_el$, "data-shrink-menu", _p$.n = _v$6);
     return _p$;
   }, {
     e: undefined,
     t: undefined,
     a: undefined,
-    o: undefined
+    o: undefined,
+    i: undefined,
+    n: undefined
   });
   return _el$;
 })();
@@ -6432,26 +6452,59 @@ const defaultSettingList = () => [[helper.t('setting.option.paragraph_dir'), () 
         return !store.option.scrollMode.abreastMode;
       },
       get children() {
-        return web.createComponent(SettingsItemSwitch, {
+        return [web.createComponent(SettingsItemSelect, {
           get name() {
-            return helper.t('setting.option.fit_to_width');
+            return helper.t('setting.option.adjust_to_width');
+          },
+          get options() {
+            return [['disable', helper.t('other.disable')], ['full', helper.t('setting.option.full_width')], ['custom', helper.t('other.custom')]];
           },
           get value() {
-            return store.option.scrollMode.fitToWidth;
+            return web.memo(() => typeof store.option.scrollMode.adjustToWidth === 'number')() ? 'custom' : store.option.scrollMode.adjustToWidth;
           },
-          onChange: switchFitToWidth
-        });
+          onChange: val => {
+            const jump = saveScrollProgress();
+            setOption((draftOption, state) => {
+              if (val === 'custom') draftOption.scrollMode.adjustToWidth = state.isMobile ? state.rootSize.width : 1280;else draftOption.scrollMode.adjustToWidth = val;
+            });
+            jump();
+          }
+        }), web.createComponent(solidJs.Show, {
+          get when() {
+            return isUseAutoScale();
+          },
+          get children() {
+            return web.createComponent(SettingsItemNumber, {
+              get name() {
+                return helper.t('setting.option.adjust_to_width');
+              },
+              maxLength: 6,
+              step: 100,
+              onChange: setAdjustToWidth,
+              get value() {
+                return store.option.scrollMode.adjustToWidth;
+              }
+            });
+          }
+        })];
       }
-    }), web.createComponent(SettingsItemNumber, {
-      get name() {
-        return helper.t('setting.option.scroll_mode_img_scale');
+    }), web.createComponent(solidJs.Show, {
+      get when() {
+        return store.option.scrollMode.adjustToWidth === 'disable';
       },
-      maxLength: 3,
-      suffix: "%",
-      step: 5,
-      onChange: val => Number.isNaN(val) || zoomScrollModeImg(val / 100, true),
-      get value() {
-        return Math.round(store.option.scrollMode.imgScale * 100);
+      get children() {
+        return web.createComponent(SettingsItemNumber, {
+          get name() {
+            return helper.t('setting.option.scroll_mode_img_scale');
+          },
+          maxLength: 3,
+          suffix: "%",
+          step: 5,
+          onChange: val => setImgScale(val / 100),
+          get value() {
+            return Math.round(store.option.scrollMode.imgScale * 100);
+          }
+        });
       }
     }), web.createComponent(SettingsItemNumber, {
       get name() {
@@ -6481,8 +6534,8 @@ const defaultSettingList = () => [[helper.t('setting.option.paragraph_dir'), () 
     return helper.t('setting.option.scrollbar_easy_scroll');
   }
 }, () => bindOption$1('scrollbar', 'easyScroll')))], {
-  initShow: () => store.option.scrollMode.enabled,
-  hidden: () => !store.option.scrollMode.enabled
+  initShow: () => isScrollMode(),
+  hidden: () => !isScrollMode()
 }], [helper.t('setting.option.paragraph_appearance'), () => [web.createComponent(SettingsItemSwitch, web.mergeProps({
   get name() {
     return helper.t('setting.option.dark_mode');
@@ -6569,9 +6622,9 @@ const defaultSettingList = () => [[helper.t('setting.option.paragraph_dir'), () 
   onChange: () => setState('show', 'touchArea', !store.show.touchArea)
 }), web.createComponent(SettingsItemSwitch, web.mergeProps({
   get name() {
-    return helper.t('setting.option.enable_menu');
+    return helper.t('setting.option.shrink_menu');
   }
-}, () => bindOption$1('clickPageTurn', 'enableMenu'))), web.createComponent(SettingsShowItem, {
+}, () => bindOption$1('clickPageTurn', 'shrinkMenu'))), web.createComponent(SettingsShowItem, {
   get when() {
     return store.option.clickPageTurn.enabled;
   },
@@ -6937,13 +6990,17 @@ const defaultButtonList = [
     return [web.template(\`<hr>\`)(), web.createComponent(AutoScrollButton, {})];
   }
 }), () => web.template(\`<hr>\`)(),
-// 放大模式
-() => web.createComponent(solidJs.Show, {
+// 缩放
+() => [web.createComponent(solidJs.Show, {
   get when() {
-    return store.option.scrollMode.enabled;
+    return !store.option.scrollMode.enabled;
   },
-  get fallback() {
+  get children() {
     return web.createComponent(ZoomButton, {});
+  }
+}), web.createComponent(solidJs.Show, {
+  get when() {
+    return web.memo(() => !!store.option.scrollMode.enabled)() && store.option.scrollMode.adjustToWidth !== 'full';
   },
   get children() {
     return [web.createComponent(IconButton, {
@@ -6953,7 +7010,7 @@ const defaultButtonList = [
       get enabled() {
         return store.option.scrollMode.imgScale >= 3;
       },
-      onClick: () => zoomScrollModeImg(0.05),
+      onClick: () => handleScrollModeZoom('add'),
       get children() {
         return web.createComponent(MdZoomIn, {});
       }
@@ -6964,13 +7021,13 @@ const defaultButtonList = [
       get enabled() {
         return store.option.scrollMode.imgScale <= 0.1;
       },
-      onClick: () => zoomScrollModeImg(-0.05),
+      onClick: () => handleScrollModeZoom('sub'),
       get children() {
         return web.createComponent(MdZoomOut, {});
       }
     })];
   }
-}),
+})],
 // 全屏
 () => web.createComponent(IconButton, {
   get tip() {
@@ -7126,7 +7183,6 @@ const useCssVar = () => {
   });
   useStyleMemo(\`.\${modules_c21c94f2$1.root}\`, [{
     '--bg': () => \`\${store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff')}\`,
-    '--scroll-mode-img-scale': () => store.option.scrollMode.imgScale,
     '--scroll-mode-spacing': () => store.option.scrollMode.spacing
   }, () => store.option.darkMode ? darkStyle : lightStyle, svg, i18n]);
 };
@@ -7420,6 +7476,7 @@ exports.handleMangaFlowDrag = handleMangaFlowDrag;
 exports.handleMouseDown = handleMouseDown;
 exports.handlePinchZoom = handlePinchZoom;
 exports.handleScrollModeDrag = handleScrollModeDrag;
+exports.handleScrollModeZoom = handleScrollModeZoom;
 exports.handleScrollbarSlider = handleScrollbarSlider;
 exports.handleTrackpadWheel = handleTrackpadWheel;
 exports.handleWheel = handleWheel;
@@ -7436,11 +7493,13 @@ exports.isDrag = isDrag;
 exports.isEnableBg = isEnableBg;
 exports.isOnePageMode = isOnePageMode;
 exports.isScrollMode = isScrollMode;
+exports.isSingleMode = isSingleMode;
 exports.isTop = isTop;
 exports.isTranslatingAll = isTranslatingAll;
 exports.isTranslatingImage = isTranslatingImage;
 exports.isTranslatingToEnd = isTranslatingToEnd;
 exports.isUpscale = isUpscale;
+exports.isUseAutoScale = isUseAutoScale;
 exports.jumpToImg = jumpToImg;
 exports.listenHotkey = listenHotkey;
 exports.loadingImgList = loadingImgList;
@@ -7463,6 +7522,7 @@ exports.saveScrollProgress = saveScrollProgress;
 exports.scrollBy = scrollBy;
 exports.scrollDomLength = scrollDomLength;
 exports.scrollLength = scrollLength;
+exports.scrollModeScale = scrollModeScale;
 exports.scrollPercentage = scrollPercentage;
 exports.scrollPosition = scrollPosition;
 exports.scrollProgress = scrollProgress;
@@ -7472,7 +7532,9 @@ exports.scrollViewImg = scrollViewImg;
 exports.selfhostedOptions = selfhostedOptions;
 exports.selfhostedTranslation = selfhostedTranslation;
 exports.setAbreastScrollFill = setAbreastScrollFill;
+exports.setAdjustToWidth = setAdjustToWidth;
 exports.setDefaultHotkeys = setDefaultHotkeys;
+exports.setImgScale = setImgScale;
 exports.setImgTranslationEnbale = setImgTranslationEnbale;
 exports.setIsDrag = setIsDrag;
 exports.setOption = setOption;
@@ -7486,7 +7548,6 @@ exports.store = store;
 exports.switchAutoScroll = switchAutoScroll;
 exports.switchDir = switchDir;
 exports.switchFillEffect = switchFillEffect;
-exports.switchFitToWidth = switchFitToWidth;
 exports.switchFullscreen = switchFullscreen;
 exports.switchGridMode = switchGridMode;
 exports.switchImgRecognition = switchImgRecognition;
@@ -7512,7 +7573,6 @@ exports.upscaleImage = upscaleImage;
 exports.watchDomSize = watchDomSize;
 exports.withOptionalState = withOptionalState;
 exports.zoom = zoom;
-exports.zoomScrollModeImg = zoomScrollModeImg;
 `
 break;
 case 'components/IconButton':
@@ -8182,6 +8242,84 @@ exports.getChapterInfo = getChapterInfo;
 exports.getComicId = getComicId;
 exports.getViewpoint = getViewpoint;
 exports.useComicDetail = useComicDetail;
+`
+break;
+case 'userscript/copyApi':
+code =`
+const helper = require('helper');
+const main = require('main');
+const request = require('request');
+
+let contentKey = '';
+let key = '';
+const getKeys = async url => {
+  if (contentKey && key) return [contentKey, key];
+
+  // 热辣漫画放在网页元素里
+  if (helper.querySelector('.disData[contentkey]')) {
+    contentKey = helper.querySelector('.disData[contentkey]').getAttribute('contentkey');
+    key = helper.querySelector('.disPass[contentkey]').getAttribute('contentkey');
+    return [contentKey, key];
+  }
+
+  // 拷贝 PC 端直接放在网页变量里，不过另一个变量的名字会变
+  if (unsafeWindow.contentKey && unsafeWindow.cct) {
+    contentKey = unsafeWindow.contentKey; // oxlint-disable-line prefer-destructuring
+    key = unsafeWindow.cct;
+    return [contentKey, key];
+  }
+
+  // 如果另一个变量的名字变了，或者是在拷贝的移动端，就得从 PC 端的网页里解析获取了
+  if (url) {
+    const html = await request.request(url, {
+      fetch: false,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36'
+      }
+    });
+    const [script] = html.responseText.match(/(?<=<script>\\s+)(var .+?contentKey =.+?)(?=<\\/script)/gs);
+    const res = {};
+    for (const [, key, value] of script.matchAll(/var (\\S+) = '(.+?)';\\n/g)) res[key] = value;
+    contentKey = res.contentKey; // oxlint-disable-line prefer-destructuring
+
+    const passKey = Object.keys(res).find(key => key !== 'contentKey');
+    if (!passKey) {
+      main.toast.error(helper.t('site.changed_load_failed'));
+      throw new Error(helper.t('site.changed_load_failed'));
+    }
+    key = res[passKey];
+    return [contentKey, key];
+  }
+  main.toast.error(helper.t('site.changed_load_failed'));
+  throw new Error(helper.t('site.changed_load_failed'));
+};
+
+// by: https://github.com/MapoMagpie/comic-looms/blob/7799f87fdd5a8ac73c878f338b7ae6aa5c0b2d18/src/platform/matchers/mangacopy.ts#L96-L125
+const decryptData = async (raw, key) => {
+  key ||= (await getKeys())[1]; // oxlint-disable-line no-await-expression-member
+
+  const cipher = raw.slice(16);
+  const iv = raw.slice(0, 16);
+  const decryptedBuffer = await crypto.subtle.decrypt({
+    name: 'AES-CBC',
+    iv: new TextEncoder().encode(iv)
+  }, await crypto.subtle.importKey('raw', new TextEncoder().encode(key), {
+    name: 'AES-CBC'
+  }, false, ['decrypt']), new Uint8Array(cipher.match(/.{1,2}/g).map(byte => Number.parseInt(byte, 16))).buffer);
+  return JSON.parse(new TextDecoder().decode(decryptedBuffer));
+};
+
+/** 通过解析网页变量获取图片列表 */
+const getImglistByHtml = async url => {
+  const keys = await getKeys(url);
+  const res = await decryptData(...keys);
+  return res.map(({
+    url
+  }) => url.replace(/(?<=(\\/|\\.))c800x/, 'c1500x'));
+};
+
+exports.decryptData = decryptData;
+exports.getImglistByHtml = getImglistByHtml;
 `
 break;
 case 'userscript/detectAd':
@@ -9229,7 +9367,7 @@ const triggerTurnPage = async (waitTime, runCondition) => {
 const waitTime = 300;
 
 /** 触发页面上图片元素的懒加载 */
-const triggerLazyLoad = helper.singleThreaded(async (state, targetImgList, runCondition) => {
+const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondition) => {
   for (const e of targetImgList) {
     imgShowObserver.observe(e);
     if (!imgMap.has(e)) imgMap.set(e, createImgData(isImageElement(e) ? e.src : ''));
@@ -9243,7 +9381,6 @@ const triggerLazyLoad = helper.singleThreaded(async (state, targetImgList, runCo
     if (await triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc), runCondition)) handleTrigged(e);
   }
   await triggerTurnPage(waitTime, runCondition);
-  if (targetImgList.length > 0) state.continueRun();
 });
 
 
@@ -9385,7 +9522,7 @@ const otherSite = async () => {
       }
       if (newUrl === store.manga.imgList[i]) return;
       isEdited ||= true;
-      setState('comicMap', '', 'imgList', i, newUrl);
+      setState('comicMap', '', 'imgList', list => list.with(i, newUrl));
     }));
     if (isEdited) saveImgEleSelector(imgEleList.filter(Boolean));
     if (isEdited || imgEleList.some(e => !e || needTrigged(e))) {
@@ -10145,7 +10282,7 @@ const handleVersionUpdate = async () => {
       var _el$ = web.template(\`<h2>🥳 ComicRead 已更新到 v\`)();
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>支持 LANraragi </p></li><li><p>增加「同步阅读配置至其他站点」功能 </p></li><li><p>增加「启用菜单区域」设置项，以便禁用点击中间唤出菜单功能 </p></li><li><p>增加卷轴模式下的「滚动翻页时对齐边缘」选项\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复卷轴模式下向上/下翻页快捷键有时未正确跳至图片头/尾的 bug </p></li><li><p>修复拷贝漫画只显示了前一百条评论的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>百合会增加「移动端显示帖子权限」功能 </p></li><li><p>增加卷轴模式下的「自适应宽度」设置，替代删除「图片适合宽度」设置\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 PWA 上 PDF 显示模糊的 bug </p></li><li><p>修复 PWA 上部分 PDF 显示空白图片的 bug </p></li><li><p>修复简易阅读模式在部分网站只能加载出前几张图的 bug </p></li><li><p>将「启用菜单区域」设置项改为「缩小菜单区域」\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '12');
       },
@@ -10411,7 +10548,9 @@ const universal = async ({
   setState('comicMap', '', {
     getImgList: () => getImgList(mainContext)
   });
-  setState('manga', 'onShowImgsChange', onShowImgsChange);
+  setState('manga', {
+    onShowImgsChange
+  });
   if (onExit) setState('manga', {
     onExit: isEnd => {
       onExit?.(isEnd);
@@ -10784,6 +10923,7 @@ const Manga = require('components/Manga');
 const helper = require('helper');
 const languages = require('helper/languages');
 const main = require('main');
+const copyApi = require('userscript/copyApi');
 const otherSite = require('userscript/otherSite');
 
 /** 站点配置 */
@@ -10815,7 +10955,8 @@ const main = require('main');
     关闭快捷导航的跳转: true,
     修正点击页数时的跳转判定: true,
     固定导航条: true,
-    自动签到: true
+    自动签到: true,
+    移动端显示帖子权限: true
   });
   helper.useStyle(`#fab { --fab: #6E2B19; }
 
@@ -11115,6 +11256,27 @@ const main = require('main');
       document.addEventListener('visibilitychange', updateHistoryTag);
       // 点击下一页后更新提示
       helper.querySelector('#autopbn')?.addEventListener('click', updateHistoryTag);
+    }
+    if (options.移动端显示帖子权限 && /mod=forumdisplay/.test(document.URL)) {
+      const apiUrl = new URL(location.href);
+      apiUrl.pathname = '/api/mobile/index.php';
+      apiUrl.searchParams.set('module', apiUrl.searchParams.get('mod'));
+      apiUrl.searchParams.delete('mod');
+      const res = await main.request(`${apiUrl}`, {
+        responseType: 'json',
+        errorText: '获取帖子权限时出错'
+      });
+      const readpermMap = new Map();
+      for (const {
+        tid,
+        readperm
+      } of res.response.Variables.forum_threadlist) if (readperm !== '0') readpermMap.set(Number(tid), Number(readperm));
+      for (const item of helper.querySelectorAll('.threadlist li.list')) {
+        const a = item.querySelector('a[href*="&tid="]');
+        const tid = Number(new URLSearchParams(a.href).get('tid'));
+        if (!readpermMap.has(tid)) continue;
+        item.querySelector('.threadlist_foot li.mr').insertAdjacentHTML('beforeend', `<span style="margin-right: .5em; color: #EE1B2E">#权限${readpermMap.get(tid)}</span>`);
+      }
     }
   }
 })().catch(error => helper.log.error(error));
@@ -13778,6 +13940,7 @@ const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const helper = require('helper');
 const main = require('main');
+const copyApi = require('userscript/copyApi');
 
 
 // 拷贝有些漫画虽然可以通过 api 获取到数据，但网页上的目录被隐藏了
@@ -13811,41 +13974,6 @@ const pcApi = new class {
     ...details
   }, ...args);
 }();
-
-// by: https://github.com/MapoMagpie/comic-looms/blob/7799f87fdd5a8ac73c878f338b7ae6aa5c0b2d18/src/platform/matchers/mangacopy.ts#L96-L125
-const decryptData = async (raw, key = unsafeWindow.cct || 'oppzzivv.nzm.oip') => {
-  const cipher = raw.slice(16);
-  const iv = raw.slice(0, 16);
-  const decryptedBuffer = await crypto.subtle.decrypt({
-    name: 'AES-CBC',
-    iv: new TextEncoder().encode(iv)
-  }, await crypto.subtle.importKey('raw', new TextEncoder().encode(key), {
-    name: 'AES-CBC'
-  }, false, ['decrypt']), new Uint8Array(cipher.match(/.{1,2}/g).map(byte => Number.parseInt(byte, 16))).buffer);
-  return JSON.parse(new TextDecoder().decode(decryptedBuffer));
-};
-/** 通过解析网页变量获取图片列表 */
-const getImglistByHtml = async (comicName, id) => {
-  const getKeys = async () => {
-    // 移动端没有 contentKey，就从 PC 端的网页获取
-    if (!unsafeWindow.contentKey) {
-      const html = await main.request(`${location.origin}/comic/${comicName}/chapter/${id}`, {
-        fetch: false,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36'
-        }
-      });
-      const [script] = html.responseText.match(/(?<=<script>\s+)(var .+?contentKey =.+?)(?=<\/script)/gs);
-      eval(script); // oxlint-disable-line no-eval
-    }
-    return [contentKey, cct];
-  };
-  const keys = await getKeys();
-  const res = await decryptData(...keys);
-  return res.map(({
-    url
-  }) => url.replace(/(?<=(\/|\.))c800x/, 'c1500x'));
-};
 
 // 在目录页显示上次阅读记录
 const handleLastChapter = comicName => {
@@ -13895,7 +14023,7 @@ const buildChapters = async (comicName, hiddenType) => {
   } = await mobileApi.get(`/comicdetail/${comicName}/chapters`, {
     errorText: '加載漫畫目錄失敗'
   });
-  const data = await decryptData(results);
+  const data = await copyApi.decryptData(results);
   helper.log(data);
   const {
     build: {
@@ -14185,7 +14313,7 @@ const buildChapters = async (comicName, hiddenType) => {
         if (titleDom) return getImglistByApi();
         // 其他普通漫画优先通过解析网页变量加载，避免触发 api 的限制
         try {
-          const imgList = await getImglistByHtml(comicName, id);
+          const imgList = await copyApi.getImglistByHtml(`${location.origin}/comic/${comicName}/chapter/${id}`);
           if (imgList.length === 0) throw new Error('解析网页变量失败');
           return imgList;
         } catch (error) {
@@ -14836,19 +14964,14 @@ const main = require('main');
     case 'www.manga2024.com':
     case 'www.2024manga.com':
       {
-        if (!location.pathname.includes('/chapter/') && !document.querySelector('.disData[contentkey]')) break;
-        const getImgList = async () => {
-          const [,, comicName,, id] = location.pathname.split('/');
-          const res = await main.request(`https://api.manga2025.com/api/v3/comic/${comicName}/chapter/${id}`, {
-            responseType: 'json'
-          });
-          return res.response.results.chapter.contents.map(({
-            url
-          }) => url.replace('.h800x.', '.h1500x.'));
-        };
+        if (!location.pathname.includes('/chapter/')) break;
+        if (!document.querySelector('.disData[contentkey]')) {
+          main.toast.error(helper.t('site.changed_load_failed'));
+          break;
+        }
         options = {
           name: 'relamanhua',
-          getImgList,
+          getImgList: () => copyApi.getImglistByHtml(),
           onNext: helper.querySelectorClick('.comicContent-next a:not(.prev-null)'),
           onPrev: helper.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)')
         };
@@ -15146,86 +15269,95 @@ const main = require('main');
     default:
       {
         // #[Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
-        if (document.querySelector(`head > meta[content="A manga reader that runs tachiyomi's extensions"]`)) {
-          const jump = (mangaId, chapterId) => {
-            location.pathname = `/manga/${mangaId}/chapter/${chapterId}`;
-          };
-          const getChapters = async (mangaId, chapterId) => {
-            const res = await main.request('/api/graphql', {
-              method: 'POST',
-              data: JSON.stringify({
-                operationName: 'GET_CHAPTERS',
-                query: `query GET_CHAPTERS($mangaId: Int!, $chapterId: Int!) {
+        // #[LANraragi](https://github.com/Difegue/LANraragi)
+const helper = require('helper');
+const request = require('request');
+const Manga = require('components/Manga');
+
+if (document.querySelector(`head > meta[content="A manga reader that runs tachiyomi's extensions"]`)) {
+  const jump = (mangaId, chapterId) => {
+    location.pathname = `/manga/${mangaId}/chapter/${chapterId}`;
+  };
+  const getChapters = async (mangaId, chapterId) => {
+    const res = await request.request('/api/graphql', {
+      method: 'POST',
+      data: JSON.stringify({
+        operationName: 'GET_CHAPTERS',
+        query: `query GET_CHAPTERS($mangaId: Int!, $chapterId: Int!) {
                 chapters(condition: {
                   mangaId: $mangaId, sourceOrder: $chapterId}
                 ) { nodes { pageCount } }
                 manga(id: $mangaId) { chapters { totalCount } }
               }`,
-                variables: {
-                  mangaId,
-                  chapterId
-                }
-              }),
-              responseType: 'json'
-            });
-            // 可能因为 Tachidesk 是在点开指定话数后才去获取数据的
-            // 所以如果有时候会拿不到数据需要等一下
-            if (res.response.data.chapters.nodes[0].pageCount <= 0) {
-              await helper.sleep(200);
-              return getChapters(mangaId, chapterId);
-            }
-            return res.response.data;
-          };
-          options = {
-            name: 'Tachidesk',
-            SPA: {
-              isMangaPage: () => /\/manga\/\d+\/chapter\/\d+/.test(location.pathname)
-            },
-            async getImgList({
-              setState
-            }) {
-              const [,, mangaId,, chapterId] = location.pathname.split('/').map(Number);
-              const data = await getChapters(mangaId, chapterId);
-              const [{
-                pageCount
-              }] = data.chapters.nodes;
-              const chapterCount = data.manga.chapters.totalCount;
-              setState('manga', {
-                onPrev: chapterId > 0 ? () => jump(mangaId, chapterId - 1) : undefined,
-                onNext: chapterId < chapterCount ? () => jump(mangaId, chapterId + 1) : undefined
-              });
-              return helper.range(pageCount, i => `/api/v1/manga/${mangaId}/chapter/${chapterId}/page/${i}`);
-            },
-            // 跟随阅读进度滚动页面，避免确保能触发 Tachidesk 的进度记录
-            onShowImgsChange: helper.debounce((showImgs, imgList) => {
-              const lastImgUrl = imgList[[...showImgs].at(-1)].src;
-              helper.querySelector(`img[src$="${lastImgUrl}"]`)?.scrollIntoView({
-                behavior: 'instant',
-                block: 'end'
-              });
-            }, 500)
-          };
+        variables: {
+          mangaId,
+          chapterId
         }
+      }),
+      responseType: 'json'
+    });
+    // 可能因为 Tachidesk 是在点开指定话数后才去获取数据的
+    // 所以如果有时候会拿不到数据需要等一下
+    if (res.response.data.chapters.nodes[0].pageCount <= 0) {
+      await helper.sleep(200);
+      return getChapters(mangaId, chapterId);
+    }
+    return res.response.data;
+  };
+  options = {
+    name: 'Tachidesk',
+    SPA: {
+      isMangaPage: () => /\/manga\/\d+\/chapter\/\d+/.test(location.pathname)
+    },
+    async getImgList({
+      setState
+    }) {
+      const [,, mangaId,, chapterId] = location.pathname.split('/').map(Number);
+      const data = await getChapters(mangaId, chapterId);
+      const [{
+        pageCount
+      }] = data.chapters.nodes;
+      const chapterCount = data.manga.chapters.totalCount;
+      setState('manga', {
+        onPrev: chapterId > 0 ? () => jump(mangaId, chapterId - 1) : undefined,
+        onNext: chapterId < chapterCount ? () => jump(mangaId, chapterId + 1) : undefined
+      });
+      return helper.range(pageCount, i => `/api/v1/manga/${mangaId}/chapter/${chapterId}/page/${i}`);
+    },
+    // 跟随阅读进度滚动页面，避免确保能触发 Tachidesk 的进度记录
+    onShowImgsChange: helper.debounce((showImgs, imgList) => {
+      const lastImgUrl = imgList[[...showImgs].at(-1)].src;
+      helper.querySelector(`img[src$="${lastImgUrl}"]`)?.scrollIntoView({
+        behavior: 'instant',
+        block: 'end'
+      });
+    }, 500)
+  };
+}
 
-        // #[LANraragi](https://github.com/Difegue/LANraragi)
-        const LANraragiNode = document.querySelector('.ip > a[href="https://github.com/Difegue/LANraragi"]');
-        if (LANraragiNode && LANraragiNode.textContent.trim() === 'LANraragi.') {
-          if (location.pathname !== '/reader') break;
-          const id = new URLSearchParams(location.search).get('id');
-          if (!id) {
-            main.toast.error(helper.t('site.changed_load_failed'));
-            break;
-          }
-          options = {
-            name: 'LANraragi',
-            async getImgList() {
-              const res = await main.request(`/api/archives/${id}/files`, {
-                responseType: 'json'
-              });
-              return res.response.pages;
-            }
-          };
-        }
+if (location.pathname === '/reader' && document.querySelector('.ip > a[href="https://github.com/Difegue/LANraragi"]')?.textContent.trim() === 'LANraragi.') {
+  let initFlag = true;
+  options = {
+    name: 'LANraragi',
+    getImgList: () => helper.wait(() => Reader?.pages),
+    onShowImgsChange: helper.debounce((showImgs, imgList) => {
+      if (!Reader) return;
+
+      // 在刚打开时跳到 LANraragi 记录的进度
+      if (imgList.length > 0 && initFlag) {
+        initFlag = false;
+        Manga.setState(state => {
+          state.activePageIndex = state.pageList.findIndex(page => page.includes(Reader.currentPage));
+        });
+      }
+
+      // 同步更新阅读进度
+      Reader.currentPage = helper.clamp(0, [...showImgs].at(-1), Reader.maxPage);
+      Reader.updateProgress();
+    }, 200)
+  };
+}
+
         if (!options) {
           (async () => {
             if ((await GM.getValue(location.hostname)) !== undefined) return helper.requestIdleCallback(otherSite.otherSite);
