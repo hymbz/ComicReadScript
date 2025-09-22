@@ -34,6 +34,17 @@ const exec = (...commands) => {
       path.join(__dirname, './ComicRead-AdGuard.user.js'),
     );
 
+    shell.cp(
+      '-f',
+      path.join(__dirname, './dist/umd.js'),
+      path.join(__dirname, './ComicReader.umd.js'),
+    );
+    shell.cp(
+      '-f',
+      path.join(__dirname, './dist/umd.d.ts'),
+      path.join(__dirname, './ComicReader.umd.d.ts'),
+    );
+
     const code = readFileSync(
       path.join(__dirname, './ComicRead.user.js'),
       'utf8',
@@ -52,6 +63,7 @@ const exec = (...commands) => {
       `git commit -m "chore: :bookmark: Release ${version}"`,
       `git tag --annotate v${version} --message="Release ${version}"`,
       'git push --follow-tags',
+      'npm publish',
     );
     return;
   }

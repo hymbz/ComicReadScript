@@ -14,12 +14,12 @@ export const getEleSelector = (ele: HTMLElement) => {
     parents.push(getTagText(e));
   }
 
-  return parents.reverse().join('>');
+  return parents.toReversed().join('>');
 };
 
 /** 判断指定元素是否符合选择器 */
 export const isEleSelector = (ele: HTMLElement, selector: string) => {
-  const parents = selector.split('>').reverse();
+  const parents = selector.split('>').toReversed();
   let e = ele;
   for (let i = 0; e && i < parents.length; i++) {
     if (getTagText(e) !== parents[i]) return false;

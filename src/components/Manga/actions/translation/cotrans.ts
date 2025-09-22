@@ -123,14 +123,14 @@ export const cotransTranslation = async (url: string) => {
   } catch (error) {
     log.error(error);
     store.prop.onImgError?.(url);
-    throw new Error(t('translation.tip.download_img_failed'));
+    throw new Error(t('translation.tip.download_img_failed'), { cause: error });
   }
 
   try {
     imgBlob = await resize(imgBlob, img.width!, img.height!);
   } catch (error) {
     log.error(error);
-    throw new Error(t('translation.tip.resize_img_failed'));
+    throw new Error(t('translation.tip.resize_img_failed'), { cause: error });
   }
 
   setMessage(url, t('translation.tip.upload'));
@@ -146,7 +146,7 @@ export const cotransTranslation = async (url: string) => {
     });
   } catch (error) {
     log.error(error);
-    throw new Error(t('translation.tip.upload_error'));
+    throw new Error(t('translation.tip.upload_error'), { cause: error });
   }
 
   let resData:
@@ -159,9 +159,10 @@ export const cotransTranslation = async (url: string) => {
   try {
     resData = JSON.parse(res.responseText);
     log(resData);
-  } catch {
+  } catch (error) {
     throw new Error(
       `${t('translation.tip.upload_return_error')}：${res.responseText}`,
+      { cause: error },
     );
   }
 

@@ -422,7 +422,7 @@ ${code}
     {
       input: './src/umd.tsx',
       output: [{ file: 'dist/umd.d.ts', format: 'es' }],
-      plugins: [dts()],
+      plugins: [dts() as any],
     },
   );
 
