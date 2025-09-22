@@ -1,9 +1,7 @@
 import type { Component } from 'solid-js';
 
-import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdAutoSync from '@material-design-icons/svg/round/sync.svg';
 
-import { IconButton } from 'components/IconButton';
 import {
   Manga,
   store as mangaStore,
@@ -24,7 +22,6 @@ import {
 
 import type { MainContext } from '.';
 
-import { DownloadButton } from '../../components/DownloadButton';
 import { migrationOption } from './migration';
 
 let dom: HTMLDivElement;
@@ -121,27 +118,8 @@ export const useManga = <T extends Record<string, any>>({
     { defer: true },
   );
 
-  const ExitButton = () => (
-    <IconButton
-      tip={t('other.exit')}
-      onClick={() => mangaStore.prop.onExit?.()}
-    >
-      <MdClose />
-    </IconButton>
-  );
-
   setState('manga', {
     onExit: () => setState('manga', 'show', false),
-    editButtonList(list) {
-      // 在设置按钮上方放置下载按钮
-      list.splice(-1, 0, DownloadButton);
-      return [
-        ...list,
-        // 再在最下面添加分隔栏和退出按钮
-        () => <hr />,
-        ExitButton,
-      ];
-    },
     editSettingList(list) {
       const SyncOptions: Component = () => {
         const sync = async () => {

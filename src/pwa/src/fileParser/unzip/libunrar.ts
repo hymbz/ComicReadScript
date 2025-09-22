@@ -107,7 +107,9 @@ export const libunrar = async (
 
       default: {
         const e = error as Error | string;
-        throw new Error(typeof e === 'object' ? e.message : e);
+        throw new Error(typeof e === 'object' ? e.message : e, {
+          cause: error,
+        });
       }
     }
   }

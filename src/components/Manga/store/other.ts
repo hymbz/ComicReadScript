@@ -1,4 +1,5 @@
 export const otherState = {
+  /** 漫画标题 */
   title: '',
 
   /**

@@ -20,8 +20,12 @@ export const getImgIndexs = (url: string) => {
 };
 
 /** 找到指定 url 图片的 dom */
-export const getImgEle = (url: string) =>
-  refs.mangaFlow.querySelector<HTMLImageElement>(`img[data-src="${url}"]`);
+export const getImgEle = (target: string | number) => {
+  const index =
+    typeof target === 'number' ? target : store.imgList.indexOf(target);
+  if (index === -1) return;
+  return refs.mangaFlow.querySelector<HTMLImageElement>(`#_${index}_0 img`);
+};
 
 /** 找到指定页面所处的图片流 */
 export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {

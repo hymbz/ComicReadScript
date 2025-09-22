@@ -22,7 +22,7 @@ const readCode = (path: string, isTmpl: boolean) => {
 };
 
 /** 转义字符串以便能放进模板字符串内 */
-const escapeTmplText = (text: string) =>
+export const escapeTmplText = (text: string) =>
   text.replaceAll('\\', '\\\\').replaceAll('`', '\\`').replaceAll('${', '\\${');
 
 export const outputPlugins: OutputPluginOption[] = [

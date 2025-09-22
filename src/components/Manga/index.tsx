@@ -35,7 +35,7 @@ export type ComicImgData = Partial<ComicImg> & { src: string };
 
 export type MangaProps = {
   class?: string;
-  classList?: ClassList;
+  classList?: Record<string, boolean | undefined>;
 
   /** 图片url列表 */
   imgList: (ComicImgData | string)[];

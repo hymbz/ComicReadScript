@@ -10,23 +10,33 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
-import terser from '@rollup/plugin-terser';
 import { parse as parseMd } from 'marked';
 import fs from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { dts } from 'rollup-plugin-dts';
 import styles from 'rollup-plugin-styles';
 import { watchExternal } from 'rollup-plugin-watch-external';
 import shell from 'shelljs';
+import { minify } from 'terser';
 
-import { inputPlugins, outputPlugins, solidSvg } from './src/rollup-plugin';
+import {
+  escapeTmplText,
+  inputPlugins,
+  outputPlugins,
+  solidSvg,
+} from './src/rollup-plugin';
 import { getMetaData, updateReadme } from './src/rollup-plugin/metaHeader';
 import { siteUrl } from './src/rollup-plugin/siteUrl';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const isDevMode = process.env.NODE_ENV === 'development';
-const isNpmMode = process.env.NODE_ENV === 'npm';
+
+const minifyCode = async (code: string) => {
+  const res = await minify(code, { ecma: 2020, mangle: false });
+  return res.code!;
+};
 
 const latestChangeHtml = await (() => {
   const md = fs
@@ -75,7 +85,7 @@ const packlist = [
   'worker/ImageUpscale',
   'userscript/otherSite',
   'userscript/ehTagRules',
-];
+] as const;
 
 const babelConfig = {
   presets: ['@babel/preset-env', '@babel/preset-typescript', 'solid'],
@@ -123,6 +133,7 @@ const getPlugins = (...otherPlugins: InputPluginOption[]) => [
       isDevMode: `${isDevMode}`,
       'process.env.NODE_ENV': isDevMode ? `'development'` : `'production'`,
       'inject@LatestChange': latestChangeHtml,
+      scriptVersion: `'${meta.version}'`,
     },
     preventAssignment: true,
   }),
@@ -137,8 +148,6 @@ const getPlugins = (...otherPlugins: InputPluginOption[]) => [
   commonjs({ strictRequires: 'auto' }),
   styles({ mode: 'extract', modules: { generateScopedName } }),
   solidSvg(),
-
-  // ts({ transpiler: 'babel', transpileOnly: true, babelConfig }),
 
   babel({
     babelHelpers: 'runtime',
@@ -165,8 +174,6 @@ export const buildOptions = (
   options.plugins = getPlugins(
     watchFiles && isDevMode && watchExternal({ entries: watchFiles }),
   );
-
-  if (isNpmMode) options.plugins.push(terser());
 
   Object.assign(options.output, {
     file: `dist/${path.replace(/(\/index)?\.tsx?/, '')}.js`,
@@ -227,8 +234,7 @@ shell.rm('-rf', resolve(__dirname, 'dist'));
 if (isDevMode)
   shell.exec('serve dist --cors -l 2405', { async: true, silent: true });
 
-// oxlint-disable-next-line no-mutable-exports
-let optionList: RollupOptions[] = [
+const optionList: RollupOptions[] = [
   buildOptions('dev'),
 
   ...packlist.map((path) => buildOptions(path)),
@@ -252,7 +258,8 @@ let optionList: RollupOptions[] = [
             /\s+\/\/ import list/,
             packlist
               .map((path) => {
-                if (path === 'userscript/main') return '';
+                if (path === 'userscript/main')
+                  return `\ncase 'main':\ncode = \`inject('${path}')\`;\nbreak;`;
                 return `\ncase '${path}':\ncode = \`inject('${path}')\`;\nbreak;`;
               })
               .join(''),
@@ -333,6 +340,90 @@ if (!isDevMode)
     }),
   );
 
-if (isNpmMode) optionList = [buildOptions('userscript/dmzjDecrypt')];
+const umdPacklist = [
+  'helper/languages',
+  'helper',
+  'request',
+  'components/Manga',
+  'components/IconButton',
+  'components/Toast',
+  'userscript/detectAd',
+  'worker/detectAd',
+  'worker/ImageRecognition',
+  'worker/ImageUpscale',
+];
+if (!isDevMode)
+  optionList.push(
+    buildOptions(
+      'userscript/import',
+      umdPacklist.map((path) => `dist/${path}.js`),
+      (options) => {
+        options.output.file = 'dist/umd/import.js';
+        options.output.plugins.unshift({
+          name: 'selfImport',
+          async renderChunk(rawCode) {
+            let importListCode = '';
+
+            for (const path of umdPacklist)
+              importListCode += `\ncase '${path}':\ncode = \`inject('${path}')\`;\nbreak;\n`;
+
+            for (const [name, url] of Object.entries(meta.resource)) {
+              const res = await fetch(url);
+              let code = await res.text();
+
+              if (name === '@tensorflow/tfjs-backend-webgpu')
+                code = code.replace(
+                  '@tensorflow/tfjs-core',
+                  '@tensorflow/tfjs',
+                );
+
+              code = await minifyCode(code);
+              importListCode += `\ncase '${name}':\ncode = \`${escapeTmplText(code)}\`;\nbreak;\n`;
+            }
+
+            return rawCode.replace(/\s+\/\/ import list/, () => importListCode);
+          },
+        });
+        return options;
+      },
+    ),
+    buildOptions(
+      'umd',
+      [...umdPacklist.map((path) => `dist/${path}.js`), 'dist/umd/import.js'],
+      (options) => {
+        options.output.plugins.unshift({
+          name: 'selfUMD',
+          async renderChunk(rawCode) {
+            let code = rawCode;
+            const importCode = fs
+              .readFileSync(`dist/umd/import.js`)
+              .toString()
+              .replaceAll('require$1', 'require');
+            code = `${importCode}\n${code}`;
+
+            if (!isDevMode) code = await minifyCode(code);
+
+            const name = 'initComicReader';
+            code = `
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.${name} = global.${name} || {}));
+})(this, (function (exports) {
+${code}
+}));`;
+
+            return code;
+          },
+        });
+        return options;
+      },
+    ),
+    {
+      input: './src/umd.tsx',
+      output: [{ file: 'dist/umd.d.ts', format: 'es' }],
+      plugins: [dts()],
+    },
+  );
 
 export default optionList;

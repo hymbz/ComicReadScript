@@ -4,9 +4,9 @@ import type { Component, JSX } from 'solid-js';
 declare global {
   declare const isDevMode: boolean;
 
-  type EventHandler<T = HTMLElement> = JSX.DOMAttributes<T>;
+  declare const scriptVersion: string;
 
-  type ClassList = Record<string, boolean | undefined>;
+  type EventHandler<T = HTMLElement> = JSX.DOMAttributes<T>;
 
   type TrueValue<T> = Exclude<T, void | false | undefined | null>;
 

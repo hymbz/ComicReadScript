@@ -13,7 +13,6 @@ import { createEffectOn, setInitLang, t } from 'helper';
 
 import { DownloadButton, loadUrl } from './DownloadButton';
 import { supportExtension } from './fileParser';
-import { editButtonList } from './handleButtonList';
 import { handleDrag } from './handleDrag';
 import { FileSystemToFile, setTitle } from './helper';
 import classes from './index.module.css';
@@ -108,7 +107,6 @@ export const Root: Component = () => {
         imgList={store.imgList}
         option={{ alwaysLoadAllImg: true, ...getSaveOption() }}
         onOptionChange={handleOptionChange}
-        editButtonList={editButtonList}
         onExit={handleExit}
       />
 

@@ -1,6 +1,5 @@
 import type { Accessor } from 'solid-js';
 
-import { toast } from 'components/Toast';
 import { createRootMemo, range, singleThreaded, t } from 'helper';
 
 import { setState, store } from '../../store';
@@ -12,11 +11,6 @@ import { selfhostedOptions, selfhostedTranslation } from './selfhosted';
 /** 翻译指定图片 */
 export const translationImage = async (url: string) => {
   try {
-    if (typeof GM_xmlhttpRequest === 'undefined') {
-      toast?.error(t('pwa.alert.userscript_not_installed'));
-      throw new Error(t('pwa.alert.userscript_not_installed'));
-    }
-
     if (!url) return;
     const img = store.imgMap[url];
 

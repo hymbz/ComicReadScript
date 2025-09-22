@@ -34,7 +34,7 @@ const handlePageClick = (e: MouseEvent) => {
   for (const i of showImgList()) {
     const img = getImg(i);
     if (img.loadType !== 'error') continue;
-    const imgEle = getImgEle(img.src);
+    const imgEle = getImgEle(i);
     if (!imgEle || !findClickEle([imgEle], e)) continue;
     return reloadImg(img.src);
   }

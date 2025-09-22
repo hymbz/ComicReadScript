@@ -5,9 +5,12 @@ import { zipSync } from 'fflate';
 import { createMemo } from 'solid-js';
 
 import { IconButton } from 'components/IconButton';
-import { downloadImg, imgList, store } from 'components/Manga';
 import { toast } from 'components/Toast';
 import { createEffectOn, FaviconProgress, saveAs, t, useStore } from 'helper';
+
+import { imgList } from '../actions';
+import { downloadImg } from '../helper';
+import { store } from '../store';
 
 const getExtName = (mime: string) => /.+\/([^;]+)/.exec(mime)?.[1] ?? 'jpg';
 

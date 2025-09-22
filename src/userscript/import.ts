@@ -1,12 +1,14 @@
 let supportWorker = typeof Worker !== 'undefined';
 
 const gmApi = {
-  GM,
+  GM: typeof GM === 'undefined' ? undefined : GM,
   GM_addElement:
     typeof GM_addElement === 'undefined' ? undefined : GM_addElement,
-  GM_getResourceText,
-  GM_xmlhttpRequest,
-  unsafeWindow,
+  GM_getResourceText:
+    typeof GM_getResourceText === 'undefined' ? undefined : GM_getResourceText,
+  GM_xmlhttpRequest:
+    typeof GM_xmlhttpRequest === 'undefined' ? undefined : GM_xmlhttpRequest,
+  unsafeWindow: typeof unsafeWindow === 'undefined' ? window : unsafeWindow,
 };
 const gmApiList = Object.keys(gmApi);
 
@@ -19,7 +21,7 @@ const crsLib: Window['crsLib'] = {
 const tempName = Math.random().toString(36).slice(2);
 
 const getResource = (name: string) => {
-  const text = GM_getResourceText(
+  const text = gmApi.GM_getResourceText?.(
     name.replaceAll('/', '|').replaceAll('@', '_'),
   );
   if (!text) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
@@ -38,7 +40,7 @@ const evalCode = (code: string) => {
   if (gmApi.GM_addElement)
     return GM_addElement('script', { textContent: code })?.remove();
 
-  eval.call(unsafeWindow, code);
+  eval.call(gmApi.unsafeWindow, code);
 };
 
 /**
@@ -52,9 +54,6 @@ const selfImportSync = (name: string) => {
   // 除站点逻辑外的代码会作为字符串存着，要用时再像外部模块一样导入
   switch (name) {
     // import list
-    case 'main':
-      code = `inject('userscript/main')`;
-      break;
 
     default:
       code = getResource(name);
@@ -133,10 +132,10 @@ moduleMap['Comlink'].expose(exports);`;
       `console.timeEnd('导入 ${name}');`,
     ].join('\n');
 
-  unsafeWindow[tempName] = crsLib;
-  unsafeWindow[tempName][name] = {};
+  gmApi.unsafeWindow[tempName] = crsLib;
+  gmApi.unsafeWindow[tempName][name] = {};
   evalCode(runCode);
-  Reflect.deleteProperty(unsafeWindow, tempName);
+  Reflect.deleteProperty(gmApi.unsafeWindow, tempName);
 };
 
 /**
@@ -175,6 +174,13 @@ export const require = (name: string) => {
       const ModuleFunc =
         typeof module.default === 'function' ? module.default : module;
       return new ModuleFunc(...args) as Record<string, unknown>;
+    },
+    ownKeys() {
+      if (!crsLib[name]) selfImportSync(name);
+      return Reflect.ownKeys(crsLib[name]);
+    },
+    getOwnPropertyDescriptor() {
+      return { enumerable: true, configurable: true };
     },
   });
 

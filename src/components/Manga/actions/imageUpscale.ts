@@ -31,12 +31,12 @@ const findUpscaleImage = async (
   for (let i = start; i < end; i++) {
     const img = typeof i === 'number' ? getImg(i) : i;
     if (img.upscaleUrl !== undefined) continue;
-    const imgEle = await wait(() => getImgEle(img.src), 1000);
+    const imgEle = await wait(() => getImgEle(i), 1000);
     if (imgEle) return [img.src, imgEle];
   }
 };
 const handleUpscaleImage = async () => {
-  if (upscaleing || !isUpscale()) return;
+  if (upscaleing || !isUpscale() || store.imgList.length === 0) return;
   // 优先放大 当前显示的图片 > 后面的图片 > 前面的图片
   const targetImg =
     (await findUpscaleImage(activeImgIndex(), store.imgList.length)) ??

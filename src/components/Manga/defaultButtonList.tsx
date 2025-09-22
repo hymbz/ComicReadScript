@@ -1,5 +1,6 @@
 import type { Component } from 'solid-js';
 
+import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdFullscreenExit from '@material-design-icons/svg/round/fullscreen_exit.svg';
 import MdFullscreen from '@material-design-icons/svg/round/fullscreen.svg';
 import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
@@ -34,6 +35,7 @@ import {
   translateToEnd,
 } from './actions';
 import { AutoScrollButton } from './components/autoScroll';
+import { DownloadButton } from './components/DownloadButton';
 import { SettingPanel } from './components/SettingPanel';
 import classes from './index.module.css';
 import { refs, setState, store } from './store';
@@ -174,6 +176,7 @@ export const defaultButtonList: ToolbarButtonList = [
       children={store.fullscreen ? <MdFullscreenExit /> : <MdFullscreen />}
     />
   ),
+  DownloadButton,
   // 设置
   () => {
     const [showPanel, setShowPanel] = createSignal(false);
@@ -216,4 +219,10 @@ export const defaultButtonList: ToolbarButtonList = [
       />
     );
   },
+  () => <hr />,
+  () => (
+    <IconButton tip={t('other.exit')} onClick={() => store.prop.onExit?.()}>
+      <MdClose />
+    </IconButton>
+  ),
 ];

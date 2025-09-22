@@ -10,7 +10,7 @@ export type SettingsItemProps = {
 
   children?: JSX.Element | JSX.Element[];
   class?: string;
-  classList?: ClassList;
+  classList?: Record<string, boolean | undefined>;
   style?: JSX.CSSProperties;
 };
 

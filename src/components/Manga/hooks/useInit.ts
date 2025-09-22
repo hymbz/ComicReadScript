@@ -39,9 +39,14 @@ export const useInit = (props: MangaProps) => {
   watchDomSize('rootSize', refs.root);
 
   const updateOption = (state: State) => {
-    state.option = props.option
-      ? assign(state.defaultOption, props.option as Partial<Option>)
-      : state.defaultOption;
+    state.defaultOption = assign(
+      defaultOption(),
+      (props.defaultOption as Partial<Option>) ?? {},
+    );
+    state.option = assign(
+      state.defaultOption,
+      (props.option as Partial<Option>) ?? {},
+    );
   };
 
   const bindDebounce = (key: keyof MangaProps) => (state: State) => {
@@ -58,10 +63,6 @@ export const useInit = (props: MangaProps) => {
     onShowImgsChange: bindDebounce('onShowImgsChange'),
 
     defaultOption(state) {
-      state.defaultOption = assign(
-        defaultOption(),
-        props.defaultOption as Partial<Option>,
-      );
       updateOption(state);
     },
     fillEffect(state) {

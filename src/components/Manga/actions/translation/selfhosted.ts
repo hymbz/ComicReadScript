@@ -33,7 +33,7 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
   } catch (error) {
     log.error(error, url);
     store.prop.onImgError?.(url);
-    throw new Error(t('translation.tip.download_img_failed'));
+    throw new Error(t('translation.tip.download_img_failed'), { cause: error });
   }
 
   // 支持旧版 manga-image-translator
@@ -54,7 +54,7 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
       ({ task_id } = res.response);
     } catch (error) {
       log.error(error);
-      throw new Error(t('translation.tip.upload_error'));
+      throw new Error(t('translation.tip.upload_error'), { cause: error });
     }
 
     let errorNum = 0;
@@ -75,7 +75,9 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
       } catch (error) {
         log.error(error);
         if (errorNum > 5)
-          throw new Error(t('translation.tip.check_img_status_failed'));
+          throw new Error(t('translation.tip.check_img_status_failed'), {
+            cause: error,
+          });
         errorNum += 1;
       }
     }

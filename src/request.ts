@@ -1,6 +1,25 @@
 import { toast } from 'components/Toast';
 import { log, sleep, t } from 'helper';
 
+export type RequestDetails<T> = Partial<Tampermonkey.Request<T>> & {
+  errorText?: string;
+  noTip?: boolean;
+  noCheckCode?: boolean;
+  retryFetch?: boolean;
+  onload?: (response: Response<T>) => void;
+};
+
+export type Response<T = any> = {
+  readonly responseText: string;
+  readonly response: T;
+  readonly status: number;
+  readonly statusText: string;
+};
+
+export type ErrorResponse = {
+  readonly error: string;
+} & Response;
+
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = <T = any>(
   details: Tampermonkey.Request<T>,
@@ -24,21 +43,6 @@ const xmlHttpRequest = <T = any>(
     details.signal?.addEventListener('abort', abort.abort);
   });
 
-export type RequestDetails<T> = Partial<Tampermonkey.Request<T>> & {
-  errorText?: string;
-  noTip?: boolean;
-  noCheckCode?: boolean;
-  retryFetch?: boolean;
-  onload?: (response: Response<T>) => void;
-};
-
-export type Response<T = any> = {
-  readonly responseText: string;
-  readonly response: T;
-  readonly status: number;
-  readonly statusText: string;
-};
-
 /** 发起请求 */
 export const request = async <T = any>(
   url: string,
@@ -56,7 +60,7 @@ export const request = async <T = any>(
   try {
     // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
     // 为了支持 ios 端只能自己实现一下了
-    if (details.fetch) {
+    if (details.fetch || typeof GM_xmlhttpRequest === 'undefined') {
       const res = await fetch(url, {
         method: 'GET',
         headers,
@@ -91,9 +95,6 @@ export const request = async <T = any>(
       details.onload?.call(_res, _res);
       return _res;
     }
-
-    if (typeof GM_xmlhttpRequest === 'undefined')
-      throw new Error(t('pwa.alert.userscript_not_installed'));
 
     let targetUrl = url;
     // https://github.com/hymbz/ComicReadScript/issues/195
@@ -139,7 +140,7 @@ export const request = async <T = any>(
       (details.noTip ? console.error : toast.error)(
         `${errorText}\nerror: ${(error as Error).message}`,
       );
-      throw new Error(errorText);
+      throw new Error(errorText, { cause: error });
     }
 
     log.error(errorText, error);

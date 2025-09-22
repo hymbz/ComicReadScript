@@ -41,12 +41,12 @@ const resourceList: Record<string, [string, string] | [string]> = {
 };
 
 export const resource = {
-  dev: {} as Record<string, string | undefined>,
-  prod: {} as Record<string, string | undefined>,
+  dev: {} as Record<string, string>,
+  prod: {} as Record<string, string>,
 };
 for (const [k, v] of Object.entries(resourceList)) {
-  resource.prod[k] = v.at(0);
-  resource.dev[k] = v.at(-1);
+  resource.prod[k] = v.at(0)!;
+  resource.dev[k] = v.at(-1)!;
 }
 
 /** 根据 index.ts 的注释获取支持站点列表 */
