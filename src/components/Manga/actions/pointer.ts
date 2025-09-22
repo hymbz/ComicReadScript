@@ -40,7 +40,8 @@ const handlePageClick = (e: MouseEvent) => {
   }
 
   const targetArea = findClickEle(refs.touchArea.children, e);
-  if (!targetArea || targetArea.style.visibility === 'hidden') return;
+  if (!targetArea || getComputedStyle(targetArea).visibility === 'hidden')
+    return;
   const areaName = (targetArea as HTMLElement).dataset.area as Area | undefined;
   if (!areaName) return;
 
