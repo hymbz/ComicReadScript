@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.3.1
+// @version         12.3.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、熱辣漫畫、hitomi、SchaleNetwork、nude-moon、kemono、nekohouse、welovemanga、HentaiZap、最前線、Tachidesk、LANraragi
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nude-moon | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -61,11 +61,11 @@
 
 let supportWorker = typeof Worker !== 'undefined';
 const gmApi = {
-  GM,
+  GM: typeof GM === 'undefined' ? undefined : GM,
   GM_addElement: typeof GM_addElement === 'undefined' ? undefined : GM_addElement,
-  GM_getResourceText,
-  GM_xmlhttpRequest,
-  unsafeWindow
+  GM_getResourceText: typeof GM_getResourceText === 'undefined' ? undefined : GM_getResourceText,
+  GM_xmlhttpRequest: typeof GM_xmlhttpRequest === 'undefined' ? undefined : GM_xmlhttpRequest,
+  unsafeWindow: typeof unsafeWindow === 'undefined' ? window : unsafeWindow
 };
 const gmApiList = Object.keys(gmApi);
 const crsLib = {
@@ -79,7 +79,7 @@ const crsLib = {
 };
 const tempName = Math.random().toString(36).slice(2);
 const getResource = name => {
-  const text = GM_getResourceText(name.replaceAll('/', '|').replaceAll('@', '_'));
+  const text = gmApi.GM_getResourceText?.(name.replaceAll('/', '|').replaceAll('@', '_'));
   if (!text) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
   if (name === '@tensorflow/tfjs-backend-webgpu') return text.replace('@tensorflow/tfjs-core', '@tensorflow/tfjs');
   return text;
@@ -92,7 +92,7 @@ const evalCode = code => {
   if (gmApi.GM_addElement) return GM_addElement('script', {
     textContent: code
   })?.remove();
-  eval.call(unsafeWindow, code);
+  eval.call(gmApi.unsafeWindow, code);
 };
 
 /**
@@ -118,8 +118,8 @@ const getBrowserLang = () => {
     if (matchLang) return matchLang;
   }
 };
-const getSaveLang = () => typeof GM === 'undefined' ? localStorage.getItem('@Languages') : GM.getValue('@Languages');
-const setSaveLang = val => typeof GM === 'undefined' ? localStorage.setItem('@Languages', val) : GM.setValue('@Languages', val);
+const getSaveLang = () => typeof GM === 'undefined' ? 'zh' : GM.getValue('@Languages');
+const setSaveLang = val => typeof GM === 'undefined' || GM.setValue('@Languages', val);
 const getInitLang = async () => {
   const saveLang = await getSaveLang();
   if (isLanguages(saveLang)) return saveLang;
@@ -1309,6 +1309,7 @@ const xmlHttpRequest = details => new Promise((resolve, reject) => {
   });
   details.signal?.addEventListener('abort', abort.abort);
 });
+
 /** 发起请求 */
 const request = async (url, details = {}, retryNum = 0, errorNum = 0) => {
   const headers = {
@@ -1319,7 +1320,7 @@ const request = async (url, details = {}, retryNum = 0, errorNum = 0) => {
   try {
     // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
     // 为了支持 ios 端只能自己实现一下了
-    if (details.fetch) {
+    if (details.fetch || typeof GM_xmlhttpRequest === 'undefined') {
       const res = await fetch(url, {
         method: 'GET',
         headers,
@@ -1352,7 +1353,6 @@ const request = async (url, details = {}, retryNum = 0, errorNum = 0) => {
       details.onload?.call(_res, _res);
       return _res;
     }
-    if (typeof GM_xmlhttpRequest === 'undefined') throw new Error(helper.t('pwa.alert.userscript_not_installed'));
     let targetUrl = url;
     // https://github.com/hymbz/ComicReadScript/issues/195
     // 在某些情况下 Tampermonkey 无法正确处理相对协议的 url
@@ -1389,7 +1389,9 @@ const request = async (url, details = {}, retryNum = 0, errorNum = 0) => {
     }
     if (errorNum >= retryNum) {
       (details.noTip ? console.error : Toast.toast.error)(\`\${errorText}\\nerror: \${error.message}\`);
-      throw new Error(errorText);
+      throw new Error(errorText, {
+        cause: error
+      });
     }
     helper.log.error(errorText, error);
     await helper.sleep(1000);
@@ -1426,6 +1428,8 @@ const request = require('request');
 const Comlink = require('comlink');
 const store$1 = require('solid-js/store');
 const worker = require('worker/ImageRecognition');
+const fflate = require('fflate');
+const IconButton$1 = require('components/IconButton');
 const Toast = require('components/Toast');
 const worker$1 = require('worker/ImageUpscale');
 
@@ -1538,6 +1542,7 @@ const optionState = {
 };
 
 const otherState = {
+  /** 漫画标题 */
   title: '',
   /**
    * 用于防止滚轮连续滚动导致过快触发事件的锁
@@ -1738,7 +1743,11 @@ const getImgIndexs = url => {
 };
 
 /** 找到指定 url 图片的 dom */
-const getImgEle = url => refs.mangaFlow.querySelector(\`img[data-src="\${url}"]\`);
+const getImgEle = target => {
+  const index = typeof target === 'number' ? target : store.imgList.indexOf(target);
+  if (index === -1) return;
+  return refs.mangaFlow.querySelector(\`#_\${index}_0 img\`);
+};
 
 /** 找到指定页面所处的图片流 */
 const findFillIndex = (pageIndex, fillEffect) => {
@@ -2709,13 +2718,17 @@ const cotransTranslation = async url => {
   } catch (error) {
     helper.log.error(error);
     store.prop.onImgError?.(url);
-    throw new Error(helper.t('translation.tip.download_img_failed'));
+    throw new Error(helper.t('translation.tip.download_img_failed'), {
+      cause: error
+    });
   }
   try {
     imgBlob = await resize(imgBlob, img.width, img.height);
   } catch (error) {
     helper.log.error(error);
-    throw new Error(helper.t('translation.tip.resize_img_failed'));
+    throw new Error(helper.t('translation.tip.resize_img_failed'), {
+      cause: error
+    });
   }
   setMessage(url, helper.t('translation.tip.upload'));
   let res;
@@ -2730,14 +2743,18 @@ const cotransTranslation = async url => {
     });
   } catch (error) {
     helper.log.error(error);
-    throw new Error(helper.t('translation.tip.upload_error'));
+    throw new Error(helper.t('translation.tip.upload_error'), {
+      cause: error
+    });
   }
   let resData;
   try {
     resData = JSON.parse(res.responseText);
     helper.log(resData);
-  } catch {
-    throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${res.responseText}\`);
+  } catch (error) {
+    throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${res.responseText}\`, {
+      cause: error
+    });
   }
   if ('error_id' in resData) throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${resData.error_id}\`);
   if (!resData.id) throw new Error(helper.t('translation.tip.id_not_returned'));
@@ -2760,7 +2777,9 @@ const selfhostedTranslation = async url => {
   } catch (error) {
     helper.log.error(error, url);
     store.prop.onImgError?.(url);
-    throw new Error(helper.t('translation.tip.download_img_failed'));
+    throw new Error(helper.t('translation.tip.download_img_failed'), {
+      cause: error
+    });
   }
 
   // 支持旧版 manga-image-translator
@@ -2779,7 +2798,9 @@ const selfhostedTranslation = async url => {
       } = res.response);
     } catch (error) {
       helper.log.error(error);
-      throw new Error(helper.t('translation.tip.upload_error'));
+      throw new Error(helper.t('translation.tip.upload_error'), {
+        cause: error
+      });
     }
     let errorNum = 0;
     let taskState;
@@ -2794,7 +2815,9 @@ const selfhostedTranslation = async url => {
         setMessage(url, \`\${helper.t(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
       } catch (error) {
         helper.log.error(error);
-        if (errorNum > 5) throw new Error(helper.t('translation.tip.check_img_status_failed'));
+        if (errorNum > 5) throw new Error(helper.t('translation.tip.check_img_status_failed'), {
+          cause: error
+        });
         errorNum += 1;
       }
     }
@@ -2905,10 +2928,6 @@ helper.createEffectOn([() => store.option.translation.server, () => store.option
 /** 翻译指定图片 */
 const translationImage = async url => {
   try {
-    if (typeof GM_xmlhttpRequest === 'undefined') {
-      Toast.toast?.error(helper.t('pwa.alert.userscript_not_installed'));
-      throw new Error(helper.t('pwa.alert.userscript_not_installed'));
-    }
     if (!url) return;
     const img = store.imgMap[url];
     if (img.translationType !== 'wait') return;
@@ -3263,12 +3282,12 @@ const findUpscaleImage = async (start, end) => {
   for (let i = start; i < end; i++) {
     const img = typeof i === 'number' ? getImg(i) : i;
     if (img.upscaleUrl !== undefined) continue;
-    const imgEle = await helper.wait(() => getImgEle(img.src), 1000);
+    const imgEle = await helper.wait(() => getImgEle(i), 1000);
     if (imgEle) return [img.src, imgEle];
   }
 };
 const handleUpscaleImage = async () => {
-  if (upscaleing || !isUpscale()) return;
+  if (upscaleing || !isUpscale() || store.imgList.length === 0) return;
   // 优先放大 当前显示的图片 > 后面的图片 > 前面的图片
   const targetImg = (await findUpscaleImage(activeImgIndex(), store.imgList.length)) ?? (await findUpscaleImage(0, activeImgIndex()));
   if (!targetImg) return;
@@ -3918,12 +3937,12 @@ const handlePageClick = e => {
   for (const i of showImgList()) {
     const img = getImg(i);
     if (img.loadType !== 'error') continue;
-    const imgEle = getImgEle(img.src);
+    const imgEle = getImgEle(i);
     if (!imgEle || !findClickEle([imgEle], e)) continue;
     return reloadImg(img.src);
   }
   const targetArea = findClickEle(refs.touchArea.children, e);
-  if (!targetArea || targetArea.style.visibility === 'hidden') return;
+  if (!targetArea || getComputedStyle(targetArea).visibility === 'hidden') return;
   const areaName = targetArea.dataset.area;
   if (!areaName) return;
   if (areaName === 'menu' || areaName === 'MENU') return setState(state => {
@@ -4095,7 +4114,7 @@ const setImgScale = val => {
 const handleScrollModeZoom = dir => {
   if (!store.option.scrollMode.enabled) return;
   if (store.option.scrollMode.adjustToWidth === 'full') return;
-  if (store.option.scrollMode.adjustToWidth === 'disable' || isAbreastMode()) setImgScale(0.05 * (dir === 'add' ? 1 : -1));else setAdjustToWidth(val => val + 100 * (dir === 'add' ? 1 : -1));
+  if (store.option.scrollMode.adjustToWidth === 'disable' || isAbreastMode()) setImgScale(val => val + 0.05 * (dir === 'add' ? 1 : -1));else setAdjustToWidth(val => val + 100 * (dir === 'add' ? 1 : -1));
 };
 
 /** 切换页面填充 */
@@ -5402,6 +5421,12 @@ const Scrollbar = () => {
   })];
 };
 
+const MdClose = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
 const MdFullscreenExit = (props = {}) => (() => {
   var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M6 16h2v2c0 .55.45 1 1 1s1-.45 1-1v-3c0-.55-.45-1-1-1H6c-.55 0-1 .45-1 1s.45 1 1 1m2-8H6c-.55 0-1 .45-1 1s.45 1 1 1h3c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1s-1 .45-1 1zm7 11c.55 0 1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-3c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1m1-11V6c0-.55-.45-1-1-1s-1 .45-1 1v3c0 .55.45 1 1 1h3c.55 0 1-.45 1-1s-.45-1-1-1z">\`)();
   web.spread(_el$, props, true, true);
@@ -5625,6 +5650,128 @@ const AutoScrollButton = () => {
   });
 };
 
+const MdFileDownload = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const getExtName = mime => /.+\\/([^;]+)/.exec(mime)?.[1] ?? 'jpg';
+
+/** 下载按钮 */
+const DownloadButton = () => {
+  const {
+    store: state,
+    setState
+  } = helper.useStore({
+    length: 0,
+    /** undefined 表示未开始下载，等于 length 表示正在打包，-1 表示下载完成 */
+    completedNum: undefined,
+    errorNum: 0,
+    rawTitle: document.title,
+    showRawTitle: true
+  });
+  const progress = new helper.FaviconProgress();
+  const handleDownload = async () => {
+    const fileData = {};
+    setState({
+      errorNum: 0,
+      length: imgList().length
+    });
+    if (state.showRawTitle) setState('rawTitle', document.title);
+    const imgIndexNum = \`\${state.length}\`.length;
+    for (let i = 0; i < state.length; i += 1) {
+      setState('completedNum', i);
+      const img = imgList()[i];
+      if (store.option.translation.onlyDownloadTranslated && img.translationType !== 'show') continue;
+      const index = \`\${i}\`.padStart(imgIndexNum, '0');
+      const url = img.translationType === 'show' ? img.translationUrl : img.src;
+      let data;
+      let fileName;
+      try {
+        data = await downloadImg(url);
+        fileName = img.name || \`\${index}.\${getExtName(data.type)}\`;
+      } catch {
+        fileName = \`\${index} - \${helper.t('alert.download_failed')}\`;
+        setState('errorNum', num => num + 1);
+      }
+      fileData[fileName] = new Uint8Array((await data?.arrayBuffer()) ?? []);
+    }
+    if (Object.keys(fileData).length === 0) {
+      Toast.toast.warn(helper.t('alert.no_img_download'));
+      setState('completedNum', undefined);
+      return;
+    }
+    setState('completedNum', state.length);
+    const zipped = fflate.zipSync(fileData, {
+      level: 0,
+      comment: location.href
+    });
+    helper.saveAs(new Blob([zipped]), \`\${store.title || state.rawTitle}.zip\`);
+    setState('completedNum', -1);
+    Toast.toast(state.errorNum > 0 ? helper.t('button.download_completed_error', {
+      errorNum: state.errorNum
+    }) : helper.t('button.download_completed'), {
+      type: state.errorNum > 0 ? 'warn' : 'success',
+      onDismiss() {
+        document.title = state.rawTitle;
+        setState('showRawTitle', true);
+        progress.recover();
+      }
+    });
+  };
+  const tip = solidJs.createMemo(() => {
+    switch (state.completedNum) {
+      case undefined:
+        return helper.t('other.download');
+      case state.length:
+        return helper.t('button.packaging');
+      case -1:
+        return helper.t('button.download_completed');
+      default:
+        return \`\${helper.t('button.downloading')} - \${state.completedNum}/\${state.length}\`;
+    }
+  });
+
+  // 根据下载进度更新网页标题
+  helper.createEffectOn(() => state.completedNum, num => {
+    let showTip = '';
+    switch (num) {
+      case undefined:
+        return;
+      case state.length:
+        showTip = '📦';
+        break;
+      case -1:
+        showTip = state.errorNum > 0 ? \`❗[\${state.errorNum}]\` : '✅';
+        break;
+      default:
+        showTip = \`\${num}/\${state.length}\`;
+    }
+    document.title = \`\${showTip} - \${state.rawTitle}\`;
+    setState('showRawTitle', false);
+  }, {
+    defer: true
+  });
+
+  // 根据下载进度更新网页图标
+  helper.createEffectOn(() => state.completedNum, num => num && num > 0 && progress.update(num / state.length), {
+    defer: true
+  });
+  return web.createComponent(IconButton$1.IconButton, {
+    get tip() {
+      return tip();
+    },
+    onClick: handleDownload,
+    get enabled() {
+      return state.completedNum !== undefined;
+    },
+    get children() {
+      return web.createComponent(MdFileDownload, {});
+    }
+  });
+};
+
 const MdOutlineFormatTextdirectionLToR = (props = {}) => (() => {
   var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A4 4 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`)();
   web.spread(_el$, props, true, true);
@@ -5639,12 +5786,6 @@ const MdOutlineFormatTextdirectionRToL = (props = {}) => (() => {
 
 const MdAdd = (props = {}) => (() => {
   var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdClose = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`)();
   web.spread(_el$, props, true, true);
   return _el$;
 })();
@@ -6966,7 +7107,7 @@ const defaultButtonList = [
   get children() {
     return web.memo(() => !!store.fullscreen)() ? web.createComponent(MdFullscreenExit, {}) : web.createComponent(MdFullscreen, {});
   }
-}),
+}), DownloadButton,
 // 设置
 () => {
   const [showPanel, setShowPanel] = solidJs.createSignal(false);
@@ -7015,7 +7156,15 @@ const defaultButtonList = [
       return web.createComponent(MdSettings, {});
     }
   });
-}];
+}, () => web.template(\`<hr>\`)(), () => web.createComponent(IconButton, {
+  get tip() {
+    return helper.t('other.exit');
+  },
+  onClick: () => store.prop.onExit?.(),
+  get children() {
+    return web.createComponent(MdClose, {});
+  }
+})];
 
 
 /** 左侧工具栏 */
@@ -7116,7 +7265,8 @@ const useCssVar = () => {
 const useInit = props => {
   watchDomSize('rootSize', refs.root);
   const updateOption = state => {
-    state.option = props.option ? helper.assign(state.defaultOption, props.option) : state.defaultOption;
+    state.defaultOption = helper.assign(defaultOption(), props.defaultOption ?? {});
+    state.option = helper.assign(state.defaultOption, props.option ?? {});
   };
   const bindDebounce = key => state => {
     state.prop[key] = props[key] ? helper.debounce(props[key]) : undefined;
@@ -7128,7 +7278,6 @@ const useInit = props => {
     onHotkeysChange: bindDebounce('onHotkeysChange'),
     onShowImgsChange: bindDebounce('onShowImgsChange'),
     defaultOption(state) {
-      state.defaultOption = helper.assign(defaultOption(), props.defaultOption);
       updateOption(state);
     },
     fillEffect(state) {
@@ -8327,6 +8476,957 @@ exports.getAdPageByFileName = getAdPageByFileName;
 exports.isAdImg = isAdImg;
 `
 break;
+case 'main':
+code =`
+const helper = require('helper');
+const web = require('solid-js/web');
+const Manga = require('components/Manga');
+const Toast = require('components/Toast');
+const solidJs = require('solid-js');
+const Fab = require('components/Fab');
+const IconButton = require('components/IconButton');
+const request = require('request');
+
+const MdSettings = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.3 7.3 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdCloudDownload = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdImageSearch = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0s.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdImportContacts = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdMenuBook = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83s-.42.71-.83.66c-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83s-.42.71-.83.66c-1.62-.19-3.39-.04-4.73.39a1 1 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83s-.42.7-.83.66c-1.62-.19-3.39-.04-4.73.39a1 1 0 0 1-.23.03">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const useFab = mainContext => {
+  const {
+    store,
+    setState,
+    options,
+    setOptions
+  } = mainContext;
+  helper.useStyle(\`
+    #fab {
+      --text-bg: transparent;
+
+      position: fixed;
+      right: calc(3vw - var(--left, 0px));
+      bottom: calc(6vh - var(--top, 0px));
+
+      font-size: clamp(12px, 1.5vw, 16px);
+    }
+  \`);
+  helper.useStyleMemo('#fab', {
+    '--left': () => \`\${options.fabPosition.left}px\`,
+    '--top': () => \`\${options.fabPosition.top}px\`
+  });
+  const FabIcon = () => {
+    switch (store.fab.progress) {
+      case undefined:
+        return MdImportContacts;
+      // 没有内容的书
+      case 1:
+      case 2:
+        return MdMenuBook;
+      // 有内容的书
+      default:
+        return store.fab.progress > 1 ? MdCloudDownload : MdImageSearch;
+    }
+  };
+  const handleMount = ref => {
+    const handleDrag = ({
+      xy: [x, y],
+      last: [lx, ly]
+    }) => {
+      const left = options.fabPosition.left + x - lx;
+      const top = options.fabPosition.top + y - ly;
+      setOptions({
+        fabPosition: {
+          left,
+          top
+        }
+      });
+    };
+    helper.useDrag({
+      ref,
+      handleDrag,
+      setCapture: true
+    });
+
+    // 超出显示范围就恢复原位
+    const observer = new IntersectionObserver(entries => {
+      if (entries.length !== 1 || entries[0].isIntersecting) return;
+      setOptions({
+        fabPosition: {
+          left: 0,
+          top: 0
+        }
+      });
+    }, {
+      threshold: 0.5
+    });
+    observer.observe(ref);
+  };
+  const dom = helper.mountComponents('fab', () => {
+    solidJs.createEffect(() => {
+      setState('fab', {
+        placement: -options.fabPosition.left < window.innerWidth / 2 ? 'left' : 'right',
+        speedDialPlacement: -options.fabPosition.top < window.innerHeight / 2 ? 'top' : 'bottom'
+      });
+    });
+    return web.createComponent(Fab.Fab, web.mergeProps({
+      ref: handleMount
+    }, () => store.fab, {
+      get children() {
+        return store.fab.children ?? web.createComponent(web.Dynamic, {
+          get component() {
+            return FabIcon();
+          }
+        });
+      }
+    }));
+  });
+  dom.style.setProperty('z-index', '2147483646', 'important');
+  useSpeedDial(mainContext);
+};
+
+const MdAutoSync = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 4V2.21c0-.45-.54-.67-.85-.35l-2.8 2.79c-.2.2-.2.51 0 .71l2.79 2.79c.32.31.86.09.86-.36V6c3.31 0 6 2.69 6 6 0 .79-.15 1.56-.44 2.25-.15.36-.04.77.23 1.04.51.51 1.37.33 1.64-.34.37-.91.57-1.91.57-2.95 0-4.42-3.58-8-8-8m0 14c-3.31 0-6-2.69-6-6 0-.79.15-1.56.44-2.25.15-.36.04-.77-.23-1.04-.51-.51-1.37-.33-1.64.34C4.2 9.96 4 10.96 4 12c0 4.42 3.58 8 8 8v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.2.2-.51 0-.71l-2.79-2.79a.5.5 0 0 0-.85.36z">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+/** 判断版本号1是否小于版本号2 */
+const versionLt = (version1, version2) => {
+  const v1 = version1.split('.').map(Number);
+  const v2 = version2.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    const num1 = v1[i] ?? 0;
+    const num2 = v2[i] ?? 0;
+    if (num1 !== num2) return num1 < num2;
+  }
+  return false;
+};
+const migrationOption = async (name, editFn) => {
+  try {
+    const option = await GM.getValue(name);
+    if (!option) throw new Error(\`GM.getValue Error: not found \${name}\`);
+    if (await editFn(option)) return;
+    GM.setValue(name, option);
+  } catch (error) {
+    helper.log.error(\`migration \${name} option error:\`, error);
+  }
+};
+
+/** 重命名配置项 */
+const renameOption = (name, list) => migrationOption(name, option => {
+  for (const itemText of list) {
+    const [path, newName] = itemText.split(' => ');
+    helper.byPath(option, path, (parent, key) => {
+      helper.log('rename Option', itemText);
+      if (newName) Reflect.set(parent, newName, parent[key]);
+      Reflect.deleteProperty(parent, key);
+    });
+  }
+});
+
+/** 旧版本配置迁移 */
+const migration = async version => {
+  // 任何样式修改都得更新 css 才行，干脆直接删了
+  GM.deleteValue('ehTagColorizeCss');
+  GM.deleteValue('ehTagSortCss');
+  const values = await GM.listValues();
+
+  // 6 => 7
+  if (versionLt(version, '7')) for (const key of values) {
+    switch (key) {
+      case 'Version':
+      case 'Languages':
+        continue;
+      case 'HotKeys':
+        {
+          await renameOption(key, ['向上翻页 => turn_page_up', '向下翻页 => turn_page_down', '向右翻页 => turn_page_right', '向左翻页 => turn_page_left', '跳至首页 => jump_to_home', '跳至尾页 => jump_to_end', '退出 => exit', '切换页面填充 => switch_page_fill', '切换卷轴模式 => switch_scroll_mode', '切换单双页模式 => switch_single_double_page_mode', '切换阅读方向 => switch_dir', '进入阅读模式 => enter_read_mode']);
+          break;
+        }
+      default:
+        await renameOption(key, ['option.scrollbar.showProgress => showImgStatus', 'option.clickPage => clickPageTurn', 'option.clickPage.overturn => reverse', 'option.swapTurnPage => swapPageTurnKey', 'option.flipToNext => jumpToNext',
+        // ehentai
+        '匹配nhentai => associate_nhentai', '快捷键翻页 => hotkeys_page_turn',
+        // nhentai
+        '自动翻页 => auto_page_turn', '彻底屏蔽漫画 => block_totally', '在新页面中打开链接 => open_link_new_page',
+        // other
+        '记住当前站点 => remember_current_site']);
+    }
+  }
+
+  // 8 => 9
+  if (versionLt(version, '9')) for (const key of values) {
+    switch (key) {
+      case 'Version':
+      case 'Languages':
+        continue;
+      case 'Hotkeys':
+        {
+          await renameOption(key, [
+          // 原本上下快捷键是混在一起的，现在分开后要迁移太麻烦了，应该也没多少人改，就直接删了
+          'turn_page_up => ', 'turn_page_down => ', 'turn_page_right => scroll_right', 'turn_page_left => scroll_left']);
+          break;
+        }
+      default:
+        await migrationOption(key, option => {
+          if (typeof option.option?.scrollMode !== 'boolean') return true;
+          option.option.scrollMode = {
+            enabled: option.option.scrollMode,
+            spacing: option.option.scrollModeSpacing,
+            imgScale: option.option.scrollModeImgScale,
+            fitToWidth: option.option.scrollModeFitToWidth
+          };
+        });
+    }
+  }
+
+  // 9.3 => 9.4
+  if (versionLt(version, '9.4')) await migrationOption('ehentai', option => {
+    if (!Reflect.has(option, 'hotkeys_page_turn')) return true;
+    option.hotkeys = option.hotkeys_page_turn;
+    Reflect.deleteProperty(option, 'hotkeys_page_turn');
+  });
+
+  // 11.4.2 => 11.5
+  if (versionLt(version, '11.5')) await migrationOption('Hotkeys', option => {
+    for (const [name, hotkeys] of Object.entries(option)) {
+      option[name] = hotkeys.map(key => key.replaceAll(/\\b[A-Z]\\b/g, match => match.toLowerCase()));
+    }
+  });
+  if (versionLt(version, '11.9.1')) for (const key of values) {
+    switch (key) {
+      case 'Version':
+      case 'Languages':
+      case 'Hotkeys':
+        continue;
+      default:
+        await renameOption(key, ['option.translation => ']);
+    }
+  }
+
+  // 11.11 => 11.12
+  if (versionLt(version, '11.12')) for (const key of values) {
+    switch (key) {
+      case 'Version':
+      case 'Languages':
+      case 'Hotkeys':
+        continue;
+      default:
+        await renameOption(key, ['associate_nhentai => cross_site_link']);
+    }
+  }
+  if (versionLt(version, '12')) for (const key of values) {
+    switch (key) {
+      case 'Version':
+      case 'Languages':
+      case 'Hotkeys':
+        {
+          await GM.setValue(\`@\${key}\`, await GM.getValue(key));
+          await GM.deleteValue(key);
+          continue;
+        }
+      default:
+        await renameOption(key, ['hotkeys => add_hotkeys_actions']);
+    }
+  }
+};
+
+let dom;
+
+/**
+ * 显示漫画阅读窗口
+ */
+const useManga = ({
+  store,
+  setState,
+  options,
+  setOptions
+}) => {
+  helper.useStyle(\`
+    #comicRead {
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: scale(0);
+
+      contain: strict;
+
+      width: 100%;
+      height: 100%;
+
+      writing-mode: initial;
+      font-size: 16px;
+
+      opacity: 0;
+
+      transition:
+        opacity 300ms,
+        transform 0s 300ms;
+    }
+
+    #comicRead[show] {
+      transform: scale(1);
+      opacity: 1;
+      transition: opacity 300ms, transform 100ms;
+    }
+
+    /* 防止其他扩展的元素显示到漫画上来 */
+    #comicRead[show] ~ :not(#fab, #toast, .comicread-ignore) {
+      display: none !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      z-index: 1 !important;
+    }
+  \`);
+  setState('manga', {
+    show: false,
+    option: options.option,
+    defaultOption: options.defaultOption,
+    onOptionChange: option => setOptions({
+      option
+    }),
+    hotkeys: store.hotkeys,
+    onHotkeysChange(newValue) {
+      GM.setValue('@Hotkeys', newValue);
+      setState('hotkeys', newValue);
+    }
+  });
+  dom = helper.mountComponents('comicRead', () => web.createComponent(Manga.Manga, web.mergeProps(() => store.manga)));
+  dom.style.setProperty('z-index', '2147483647', 'important');
+
+  // 确保 toast 可以显示在漫画之上
+  const toastDom = helper.querySelector('#toast');
+  if (toastDom) dom.after(toastDom);
+  const htmlStyle = document.documentElement.style;
+  let lastOverflow = htmlStyle.overflow;
+  const wakeLock = new helper.WakeLock();
+  helper.createEffectOn(helper.createRootMemo(() => store.manga.show && store.manga.imgList.length > 0), show => {
+    if (show) {
+      dom.setAttribute('show', '');
+      lastOverflow = htmlStyle.overflow;
+      htmlStyle.setProperty('overflow', 'hidden', 'important');
+      htmlStyle.setProperty('scrollbar-width', 'none', 'important');
+      if (Manga.store.option.autoFullscreen) Manga.refs.root.requestFullscreen();
+      wakeLock.on();
+    } else {
+      dom.removeAttribute('show');
+      htmlStyle.overflow = lastOverflow;
+      htmlStyle.removeProperty('scrollbar-width');
+      wakeLock.off();
+    }
+  }, {
+    defer: true
+  });
+  setState('manga', {
+    onExit: () => setState('manga', 'show', false),
+    editSettingList(list) {
+      const SyncOptions = () => {
+        const sync = async () => {
+          const currentReadOption = helper.difference(Manga.store.option, Manga.store.defaultOption);
+          for (const key of await GM.listValues()) {
+            if (key.startsWith('@')) continue;
+            await migrationOption(key, option => {
+              option.option = currentReadOption;
+            });
+          }
+          Toast.toast.success(helper.t('setting.sync_options_other_site'));
+        };
+        return web.createComponent(Manga.SettingsItemButton, {
+          get name() {
+            return helper.t('setting.sync_options_other_site');
+          },
+          onClick: sync,
+          get children() {
+            return web.createComponent(MdAutoSync, {});
+          }
+        });
+      };
+
+      // 在其他设置里增加同步配置的按钮
+      const otherSetting = list.find(([title]) => title === helper.t('other.other'));
+      if (otherSetting) {
+        const [, FC] = otherSetting;
+        otherSetting[1] = () => [web.createComponent(FC, {}), web.createComponent(SyncOptions, {})];
+      }
+      return list;
+    }
+  });
+};
+
+
+/** 处理版本更新相关 */
+const handleVersionUpdate = async () => {
+  const version = await GM.getValue('@Version');
+  if (!version) return GM.setValue('@Version', GM.info.script.version);
+  if (version === GM.info.script.version) return;
+  await migration(version); // 每次版本更新都执行一遍迁移
+
+  // 只在语言为中文时弹窗提示最新更新内容
+  if (helper.lang() === 'zh') {
+    Toast.toast(() => /* eslint-disable i18next/no-literal-string */[(() => {
+      var _el$ = web.template(\`<h2>🥳 ComicRead 已更新到 v\`)();
+      web.insert(_el$, () => GM.info.script.version, null);
+      return _el$;
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 PWA 上使用卷轴模式时 PDF 显示模糊的 bug </p></li><li><p>修复点击翻页一直启用的 bug </p></li><li><p>修复卷轴模式下放大/缩小操作的异常\`)(), web.createComponent(solidJs.Show, {
+      get when() {
+        return versionLt(version, '12');
+      },
+      get children() {
+        return [web.template(\`<h3>新增\`)(), web.template(\`<ul><li>实现图片放大功能（需要打开「图像识别」功能）</li><li>增加 ehentai 在缩略图列表页里展开标签列表功能\`)()];
+      }
+    })] /* eslint-enable i18next/no-literal-string */, {
+      id: 'Version Tip',
+      type: 'custom',
+      duration: Number.POSITIVE_INFINITY,
+      // 手动点击关掉通知后才不会再次弹出
+      onDismiss: () => GM.setValue('@Version', GM.info.script.version)
+    });
+
+    // 监听储存的版本数据的变动，如果和当前版本一致就关掉弹窗
+    // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
+    const listenerId = await GM.addValueChangeListener('@Version', async (_, __, newVersion) => {
+      if (newVersion !== GM.info.script.version) return;
+      Toast.toast.dismiss('Version Tip');
+      await GM.removeValueChangeListener(listenerId);
+    });
+  } else await GM.setValue('@Version', GM.info.script.version);
+};
+
+/** 对基础的初始化操作的封装 */
+const useInit = async (name, initSiteOptions = {}) => {
+  await helper.setInitLang();
+  await handleVersionUpdate();
+  const defaultOptions = {
+    option: undefined,
+    defaultOption: undefined,
+    autoShow: true,
+    lockOption: false,
+    hiddenFAB: false,
+    fabPosition: {
+      top: 0,
+      left: 0
+    },
+    ...initSiteOptions
+  };
+  const saveOptions = await GM.getValue(name);
+  // 检查清理下已保存配置的多余项
+  if (saveOptions) {
+    for (const key of Object.keys(saveOptions)) {
+      if (Reflect.has(defaultOptions, key)) continue;
+      Reflect.deleteProperty(saveOptions, key);
+    }
+  } else await GM.setValue(name, {});
+  const {
+    store,
+    setState
+  } = helper.useStore({
+    fab: {
+      tip: helper.t('other.read_mode'),
+      show: false
+    },
+    manga: {
+      imgList: []
+    },
+    hotkeys: await GM.getValue('@Hotkeys', {}),
+    name,
+    options: {
+      ...structuredClone(defaultOptions),
+      ...saveOptions
+    },
+    comicMap: {
+      '': {
+        getImgList: function init() {
+          return [];
+        }
+      }
+    },
+    nowComic: '',
+    flag: {
+      isStored: saveOptions !== undefined,
+      needAutoShow: true
+    }
+  });
+  Manga.setDefaultHotkeys(_hotkeys => ({
+    ..._hotkeys,
+    enter_read_mode: ['v']
+  }));
+  const {
+    options
+  } = store;
+  const setOptions = function (newOptions) {
+    if (newOptions) setState(state => Object.assign(state.options, newOptions));
+    if (options.lockOption && newOptions?.lockOption !== false) return;
+    // 只保存和默认设置不同的部分
+    return GM.setValue(store.name, helper.difference(options, defaultOptions));
+  };
+  const loadComic = async (id = store.nowComic) => {
+    if (!Reflect.has(store.comicMap, id)) throw new Error('comic not found');
+    try {
+      setState('comicMap', id, 'imgList', []);
+      const newImgList = await store.comicMap[id].getImgList(main);
+      if (newImgList.length === 0) throw new Error(helper.t('alert.fetch_comic_img_failed'));
+      setState('comicMap', id, 'imgList', newImgList);
+    } catch (error) {
+      setState('comicMap', id, 'imgList', undefined);
+      helper.log.error(error);
+      throw error;
+    }
+  };
+  const showComic = async (id = store.nowComic) => {
+    if (!Reflect.has(store.comicMap, id)) throw new Error('comic not found');
+    if (id !== store.nowComic) setState('nowComic', id);
+    switch (store.comicMap[id].imgList?.length) {
+      case 0:
+        return Toast.toast.warn(helper.t('alert.repeat_load'), {
+          duration: 1500
+        });
+      case undefined:
+        {
+          try {
+            await loadComic(id);
+            setState('flag', 'needAutoShow', false);
+          } catch (error) {
+            return Toast.toast.error(error.message);
+          }
+        }
+    }
+    setState('manga', 'show', true);
+  };
+  let inited = false;
+  const init = () => {
+    if (inited) return;
+    inited = true;
+    setState('fab', {
+      onClick: showComic,
+      show: !options.hiddenFAB && undefined
+    });
+    if (store.flag.needAutoShow && options.autoShow) showComic();
+    (async () => {
+      await GM.registerMenuCommand(helper.t('other.enter_comic_read_mode'), () => store.fab.onClick?.());
+      await updateHideFabMenu();
+    })();
+    Manga.listenHotkey({
+      enter_read_mode: () => store.fab.onClick?.()
+    }, true);
+  };
+
+  // 首次设置默认漫画的加载函数时，进行初始化
+  helper.createEffectOn(() => store.comicMap[''].getImgList, (_, prev) => !prev && init(), {
+    defer: true
+  });
+  const dynamicLoad = async (loadImgFn, length, id = '') => {
+    if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
+    setState('comicMap', id, 'imgList', Array.from({
+      length: typeof length === 'number' ? length : length()
+    }).fill(''));
+    // oxlint-disable-next-line no-async-promise-executor
+    await new Promise(async resolve => {
+      try {
+        await loadImgFn((i, img) => resolve(setState('comicMap', id, 'imgList', list => list.with(i, img))));
+      } catch (error) {
+        Toast.toast.error(error.message);
+      }
+    });
+    return store.comicMap[id].imgList;
+  };
+  const main = {
+    store,
+    setState,
+    options,
+    setOptions,
+    loadComic,
+    showComic,
+    dynamicLoad,
+    init
+  };
+  useFab(main);
+  useManga(main);
+  const nowImgList = helper.createRootMemo(() => {
+    const comic = store.comicMap[store.nowComic];
+    if (!comic?.imgList) return undefined;
+    if (!comic.adList?.size) return comic.imgList;
+    return comic.imgList.filter((_, i) => !comic.adList?.has(i));
+  });
+  helper.createEffectOn(nowImgList, list => list && setState('manga', 'imgList', list));
+
+  /** 当前已取得 url 的图片数量 */
+  const doneImgNum = helper.createRootMemo(() => nowImgList()?.filter(Boolean)?.length);
+
+  /** 已加载完毕的图片数量 */
+  const loadedImgNum = helper.createRootMemo(() => {
+    let i = 0;
+    for (const img of Manga.imgList()) if (img.loadType === 'loaded') i += 1;
+    return i;
+  });
+
+  // 设置 Fab 的显示进度
+  helper.createEffectOn([doneImgNum, loadedImgNum, () => nowImgList()?.length], ([doneNum, loadNum, totalNum]) => {
+    if (!totalNum || doneNum === undefined) return setState('fab', 'progress', undefined);
+    if (totalNum === 0) return setState('fab', {
+      progress: 0,
+      tip: \`\${helper.t('other.loading_img')} - \${doneNum}/\${totalNum}\`
+    });
+
+    // 加载图片 url 阶段的进度
+    if (doneNum < totalNum) return setState('fab', {
+      progress: doneNum / totalNum,
+      tip: \`\${helper.t('other.loading_img')} - \${doneNum}/\${totalNum}\`
+    });
+
+    // 图片加载阶段的进度
+    if (loadNum < totalNum) return setState('fab', {
+      progress: 1 + loadNum / totalNum,
+      tip: \`\${helper.t('other.img_loading')} - \${loadNum}/\${totalNum}\`
+    });
+    return setState('fab', {
+      progress: 1 + loadNum / totalNum,
+      tip: helper.t('other.read_mode'),
+      show: !options.hiddenFAB && undefined
+    });
+  });
+  let menuId;
+  /** 更新显示/隐藏悬浮按钮的菜单项 */
+  const updateHideFabMenu = async () => {
+    await GM.unregisterMenuCommand(menuId);
+    menuId = await GM.registerMenuCommand(options.hiddenFAB ? helper.t('other.fab_show') : helper.t('other.fab_hidden'), async () => {
+      await setOptions({
+        hiddenFAB: !options.hiddenFAB
+      });
+      setState('fab', 'show', !options.hiddenFAB && undefined);
+      await updateHideFabMenu();
+    });
+  };
+  await GM.registerMenuCommand(helper.t('site.show_settings_menu'), () => setState('fab', {
+    show: true,
+    focus: true,
+    tip: helper.t('other.setting'),
+    children: web.createComponent(MdSettings, {}),
+    onBackdropClick: () => setState('fab', {
+      show: false,
+      focus: false
+    })
+  }));
+  return main;
+};
+
+/** 对简单站点的通用解 */
+const universal = async ({
+  name,
+  wait: waitFn,
+  getImgList,
+  onPrev,
+  onNext,
+  onExit,
+  onShowImgsChange,
+  getCommentList,
+  initOptions,
+  SPA
+}) => {
+  if (SPA?.isMangaPage) await helper.waitUrlChange(SPA.isMangaPage);
+  if (waitFn) await helper.wait(waitFn);
+  const mainContext = await useInit(name, initOptions);
+  const {
+    store,
+    setState,
+    showComic
+  } = mainContext;
+  setState('comicMap', '', {
+    getImgList: () => getImgList(mainContext)
+  });
+  setState('manga', {
+    onShowImgsChange
+  });
+  if (onExit) setState('manga', {
+    onExit: isEnd => {
+      onExit?.(isEnd);
+      setState('manga', 'show', false);
+    }
+  });
+  if (!SPA) {
+    if (onNext ?? onPrev) setState('manga', {
+      onNext,
+      onPrev
+    });
+    if (getCommentList) setState('manga', 'commentList', await getCommentList());
+    return;
+  }
+  helper.onUrlChange(async () => {
+    if (SPA.isMangaPage && !(await SPA.isMangaPage())) return setState(state => {
+      state.fab.show = false;
+      state.manga.show = false;
+      state.comicMap[''].imgList = undefined;
+    });
+    if (waitFn) await helper.wait(waitFn);
+    setState(state => {
+      state.fab.show = undefined;
+      state.manga.onPrev = undefined;
+      state.manga.onNext = undefined;
+      state.flag.needAutoShow = state.options.autoShow;
+      state.comicMap[''].imgList = undefined;
+    });
+    if (store.options.autoShow) await showComic('');
+    await Promise.all([(async () => getCommentList && setState('manga', 'commentList', await getCommentList()))(), (async () => SPA.getOnPrev && setState('manga', {
+      onPrev: await helper.wait(SPA.getOnPrev, 5000)
+    }))(), (async () => SPA.getOnNext && setState('manga', {
+      onNext: await helper.wait(SPA.getOnNext, 5000)
+    }))()]);
+  }, SPA?.handleUrl);
+};
+
+const MdAutoFixHigh = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdAutoFixOff = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdFlashOff = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdFlashOn = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdLockOpen = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6-5h-1V6c0-2.76-2.24-5-5-5-2.28 0-4.27 1.54-4.84 3.75-.14.54.18 1.08.72 1.22a1 1 0 0 0 1.22-.72A2.996 2.996 0 0 1 12 3c1.65 0 3 1.35 3 3v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m0 11c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-8c0-.55.45-1 1-1h10c.55 0 1 .45 1 1z">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const MdLock = (props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2M9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2z">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})();
+
+const useSpeedDial = ({
+  store,
+  setState,
+  options,
+  setOptions
+}) => {
+  const DefaultButton = props => web.createComponent(IconButton.IconButton, {
+    get placement() {
+      return store.fab.placement;
+    },
+    showTip: true,
+    get tip() {
+      return props.showName ?? (helper.t(\`site.add_feature.\${props.optionName}\`) || helper.t(\`other.\${props.optionName}\`) || props.optionName);
+    },
+    onClick: () => setOptions({
+      [props.optionName]: !options[props.optionName]
+    }),
+    get children() {
+      return props.children ?? (options[props.optionName] ? web.createComponent(MdAutoFixHigh, {}) : web.createComponent(MdAutoFixOff, {}));
+    }
+  });
+  helper.createEffectOn(() => store.fab.otherSpeedDial, () => {
+    const list = [() => web.createComponent(DefaultButton, {
+      optionName: "autoShow",
+      get showName() {
+        return helper.t('site.add_feature.auto_show');
+      },
+      get children() {
+        return web.memo(() => !!options.autoShow)() ? web.createComponent(MdFlashOn, {}) : web.createComponent(MdFlashOff, {});
+      }
+    }), () => web.createComponent(DefaultButton, {
+      optionName: "lockOption",
+      get showName() {
+        return helper.t('site.add_feature.lock_option');
+      },
+      get children() {
+        return web.memo(() => !!options.lockOption)() ? web.createComponent(MdLock, {}) : web.createComponent(MdLockOpen, {});
+      }
+    })];
+    if (store.fab.otherSpeedDial) {
+      for (const optionName of store.fab.otherSpeedDial) list.push(() => web.createComponent(DefaultButton, {
+        optionName: optionName
+      }));
+    } else {
+      for (const optionName of Object.keys(options)) {
+        switch (optionName) {
+          case 'hiddenFAB':
+          case 'option':
+          case 'autoShow':
+          case 'lockOption':
+            continue;
+          default:
+            if (typeof options[optionName] === 'boolean') list.push(() => web.createComponent(DefaultButton, {
+              optionName: optionName
+            }));
+        }
+      }
+    }
+    setState('fab', 'speedDial', list);
+  });
+};
+
+const triggerOptions = !web.isServer && solidJs.DEV ? { equals: false, name: "trigger" } : { equals: false };
+const triggerCacheOptions = !web.isServer && solidJs.DEV ? { equals: false, internal: true } : triggerOptions;
+class TriggerCache {
+    #map;
+    constructor(mapConstructor = Map) {
+        this.#map = new mapConstructor();
+    }
+    dirty(key) {
+        if (web.isServer)
+            return;
+        this.#map.get(key)?.$$();
+    }
+    dirtyAll() {
+        if (web.isServer)
+            return;
+        for (const trigger of this.#map.values())
+            trigger.$$();
+    }
+    track(key) {
+        if (!solidJs.getListener())
+            return;
+        let trigger = this.#map.get(key);
+        if (!trigger) {
+            const [$, $$] = solidJs.createSignal(undefined, triggerCacheOptions);
+            this.#map.set(key, (trigger = { $, $$, n: 1 }));
+        }
+        else
+            trigger.n++;
+        solidJs.onCleanup(() => {
+            // remove the trigger when no one is listening to it
+            if (--trigger.n === 0)
+                // microtask is to avoid removing the trigger used by a single listener
+                queueMicrotask(() => trigger.n === 0 && this.#map.delete(key));
+        });
+        trigger.$();
+    }
+}
+
+const $KEYS = Symbol("track-keys");
+/**
+ * A reactive version of a Javascript built-in \`Set\` class.
+ * @see https://github.com/solidjs-community/solid-primitives/tree/main/packages/set#ReactiveSet
+ * @example
+ * const set = new ReactiveSet([1,2,3]);
+ * [...set] // reactive on any change
+ * set.has(2) // reactive on change to the result
+ * // apply changes
+ * set.add(4)
+ * set.delete(2)
+ * set.clear()
+ */
+class ReactiveSet extends Set {
+    #triggers = new TriggerCache();
+    constructor(values) {
+        super();
+        if (values)
+            for (const value of values)
+                super.add(value);
+    }
+    [Symbol.iterator]() {
+        return this.values();
+    }
+    get size() {
+        this.#triggers.track($KEYS);
+        return super.size;
+    }
+    has(value) {
+        this.#triggers.track(value);
+        return super.has(value);
+    }
+    keys() {
+        return this.values();
+    }
+    *values() {
+        this.#triggers.track($KEYS);
+        for (const value of super.values()) {
+            yield value;
+        }
+    }
+    *entries() {
+        this.#triggers.track($KEYS);
+        for (const entry of super.entries()) {
+            yield entry;
+        }
+    }
+    forEach(callbackfn, thisArg) {
+        this.#triggers.track($KEYS);
+        super.forEach(callbackfn, thisArg);
+    }
+    add(value) {
+        if (!super.has(value)) {
+            super.add(value);
+            solidJs.batch(() => {
+                this.#triggers.dirty(value);
+                this.#triggers.dirty($KEYS);
+            });
+        }
+        return this;
+    }
+    delete(value) {
+        const result = super.delete(value);
+        if (result) {
+            solidJs.batch(() => {
+                this.#triggers.dirty(value);
+                this.#triggers.dirty($KEYS);
+            });
+        }
+        return result;
+    }
+    clear() {
+        if (!super.size)
+            return;
+        solidJs.batch(() => {
+            this.#triggers.dirty($KEYS);
+            for (const member of super.values()) {
+                this.#triggers.dirty(member);
+            }
+            super.clear();
+        });
+    }
+}
+
+exports.toast = Toast.toast;
+exports.request = request.request;
+exports.ReactiveSet = ReactiveSet;
+exports.handleVersionUpdate = handleVersionUpdate;
+exports.universal = universal;
+exports.useInit = useInit;
+exports.useSpeedDial = useSpeedDial;
+`
+break;
 case 'worker/detectAd':
 code =`
 const jsQR = require('jsqr');
@@ -9154,12 +10254,12 @@ const getEleSelector = ele => {
     e = e.parentNode;
     parents.push(getTagText(e));
   }
-  return parents.reverse().join('>');
+  return parents.toReversed().join('>');
 };
 
 /** 判断指定元素是否符合选择器 */
 const isEleSelector = (ele, selector) => {
-  const parents = selector.split('>').reverse();
+  const parents = selector.split('>').toReversed();
   let e = ele;
   for (let i = 0; e && i < parents.length; i++) {
     if (getTagText(e) !== parents[i]) return false;
@@ -9647,1102 +10747,7 @@ exports.isMissingTags = isMissingTags;
 exports.splitTagNamespace = splitTagNamespace;
 `
 break;
-    case 'main':
-      code =`
-const helper = require('helper');
-const web = require('solid-js/web');
-const Manga = require('components/Manga');
-const Toast = require('components/Toast');
-const solidJs = require('solid-js');
-const Fab = require('components/Fab');
-const IconButton = require('components/IconButton');
-const fflate = require('fflate');
-const request = require('request');
 
-const MdSettings = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.3 7.3 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdCloudDownload = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdImageSearch = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0s.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdImportContacts = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdMenuBook = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83s-.42.71-.83.66c-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83s-.42.71-.83.66c-1.62-.19-3.39-.04-4.73.39a1 1 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83s-.42.7-.83.66c-1.62-.19-3.39-.04-4.73.39a1 1 0 0 1-.23.03">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const useFab = mainContext => {
-  const {
-    store,
-    setState,
-    options,
-    setOptions
-  } = mainContext;
-  helper.useStyle(\`
-    #fab {
-      --text-bg: transparent;
-
-      position: fixed;
-      right: calc(3vw - var(--left, 0px));
-      bottom: calc(6vh - var(--top, 0px));
-
-      font-size: clamp(12px, 1.5vw, 16px);
-    }
-  \`);
-  helper.useStyleMemo('#fab', {
-    '--left': () => \`\${options.fabPosition.left}px\`,
-    '--top': () => \`\${options.fabPosition.top}px\`
-  });
-  const FabIcon = () => {
-    switch (store.fab.progress) {
-      case undefined:
-        return MdImportContacts;
-      // 没有内容的书
-      case 1:
-      case 2:
-        return MdMenuBook;
-      // 有内容的书
-      default:
-        return store.fab.progress > 1 ? MdCloudDownload : MdImageSearch;
-    }
-  };
-  const handleMount = ref => {
-    const handleDrag = ({
-      xy: [x, y],
-      last: [lx, ly]
-    }) => {
-      const left = options.fabPosition.left + x - lx;
-      const top = options.fabPosition.top + y - ly;
-      setOptions({
-        fabPosition: {
-          left,
-          top
-        }
-      });
-    };
-    helper.useDrag({
-      ref,
-      handleDrag,
-      setCapture: true
-    });
-
-    // 超出显示范围就恢复原位
-    const observer = new IntersectionObserver(entries => {
-      if (entries.length !== 1 || entries[0].isIntersecting) return;
-      setOptions({
-        fabPosition: {
-          left: 0,
-          top: 0
-        }
-      });
-    }, {
-      threshold: 0.5
-    });
-    observer.observe(ref);
-  };
-  const dom = helper.mountComponents('fab', () => {
-    solidJs.createEffect(() => {
-      setState('fab', {
-        placement: -options.fabPosition.left < window.innerWidth / 2 ? 'left' : 'right',
-        speedDialPlacement: -options.fabPosition.top < window.innerHeight / 2 ? 'top' : 'bottom'
-      });
-    });
-    return web.createComponent(Fab.Fab, web.mergeProps({
-      ref: handleMount
-    }, () => store.fab, {
-      get children() {
-        return store.fab.children ?? web.createComponent(web.Dynamic, {
-          get component() {
-            return FabIcon();
-          }
-        });
-      }
-    }));
-  });
-  dom.style.setProperty('z-index', '2147483646', 'important');
-  useSpeedDial(mainContext);
-};
-
-const MdClose = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdAutoSync = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 4V2.21c0-.45-.54-.67-.85-.35l-2.8 2.79c-.2.2-.2.51 0 .71l2.79 2.79c.32.31.86.09.86-.36V6c3.31 0 6 2.69 6 6 0 .79-.15 1.56-.44 2.25-.15.36-.04.77.23 1.04.51.51 1.37.33 1.64-.34.37-.91.57-1.91.57-2.95 0-4.42-3.58-8-8-8m0 14c-3.31 0-6-2.69-6-6 0-.79.15-1.56.44-2.25.15-.36.04-.77-.23-1.04-.51-.51-1.37-.33-1.64.34C4.2 9.96 4 10.96 4 12c0 4.42 3.58 8 8 8v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.2.2-.51 0-.71l-2.79-2.79a.5.5 0 0 0-.85.36z">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdFileDownload = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const getExtName = mime => /.+\\/([^;]+)/.exec(mime)?.[1] ?? 'jpg';
-
-/** 下载按钮 */
-const DownloadButton = () => {
-  const {
-    store: state,
-    setState
-  } = helper.useStore({
-    length: 0,
-    /** undefined 表示未开始下载，等于 length 表示正在打包，-1 表示下载完成 */
-    completedNum: undefined,
-    errorNum: 0,
-    rawTitle: document.title,
-    showRawTitle: true
-  });
-  const progress = new helper.FaviconProgress();
-  const handleDownload = async () => {
-    const fileData = {};
-    setState({
-      errorNum: 0,
-      length: Manga.imgList().length
-    });
-    if (state.showRawTitle) setState('rawTitle', document.title);
-    const imgIndexNum = \`\${state.length}\`.length;
-    for (let i = 0; i < state.length; i += 1) {
-      setState('completedNum', i);
-      const img = Manga.imgList()[i];
-      if (Manga.store.option.translation.onlyDownloadTranslated && img.translationType !== 'show') continue;
-      const index = \`\${i}\`.padStart(imgIndexNum, '0');
-      const url = img.translationType === 'show' ? img.translationUrl : img.src;
-      let data;
-      let fileName;
-      try {
-        data = await Manga.downloadImg(url);
-        fileName = img.name || \`\${index}.\${getExtName(data.type)}\`;
-      } catch {
-        fileName = \`\${index} - \${helper.t('alert.download_failed')}\`;
-        setState('errorNum', num => num + 1);
-      }
-      fileData[fileName] = new Uint8Array((await data?.arrayBuffer()) ?? []);
-    }
-    if (Object.keys(fileData).length === 0) {
-      Toast.toast.warn(helper.t('alert.no_img_download'));
-      setState('completedNum', undefined);
-      return;
-    }
-    setState('completedNum', state.length);
-    const zipped = fflate.zipSync(fileData, {
-      level: 0,
-      comment: location.href
-    });
-    helper.saveAs(new Blob([zipped]), \`\${Manga.store.title || state.rawTitle}.zip\`);
-    setState('completedNum', -1);
-    Toast.toast(state.errorNum > 0 ? helper.t('button.download_completed_error', {
-      errorNum: state.errorNum
-    }) : helper.t('button.download_completed'), {
-      type: state.errorNum > 0 ? 'warn' : 'success',
-      onDismiss() {
-        document.title = state.rawTitle;
-        setState('showRawTitle', true);
-        progress.recover();
-      }
-    });
-  };
-  const tip = solidJs.createMemo(() => {
-    switch (state.completedNum) {
-      case undefined:
-        return helper.t('other.download');
-      case state.length:
-        return helper.t('button.packaging');
-      case -1:
-        return helper.t('button.download_completed');
-      default:
-        return \`\${helper.t('button.downloading')} - \${state.completedNum}/\${state.length}\`;
-    }
-  });
-
-  // 根据下载进度更新网页标题
-  helper.createEffectOn(() => state.completedNum, num => {
-    let showTip = '';
-    switch (num) {
-      case undefined:
-        return;
-      case state.length:
-        showTip = '📦';
-        break;
-      case -1:
-        showTip = state.errorNum > 0 ? \`❗[\${state.errorNum}]\` : '✅';
-        break;
-      default:
-        showTip = \`\${num}/\${state.length}\`;
-    }
-    document.title = \`\${showTip} - \${state.rawTitle}\`;
-    setState('showRawTitle', false);
-  }, {
-    defer: true
-  });
-
-  // 根据下载进度更新网页图标
-  helper.createEffectOn(() => state.completedNum, num => num && num > 0 && progress.update(num / state.length), {
-    defer: true
-  });
-  return web.createComponent(IconButton.IconButton, {
-    get tip() {
-      return tip();
-    },
-    onClick: handleDownload,
-    get enabled() {
-      return state.completedNum !== undefined;
-    },
-    get children() {
-      return web.createComponent(MdFileDownload, {});
-    }
-  });
-};
-
-/** 判断版本号1是否小于版本号2 */
-const versionLt = (version1, version2) => {
-  const v1 = version1.split('.').map(Number);
-  const v2 = version2.split('.').map(Number);
-  for (let i = 0; i < 3; i++) {
-    const num1 = v1[i] ?? 0;
-    const num2 = v2[i] ?? 0;
-    if (num1 !== num2) return num1 < num2;
-  }
-  return false;
-};
-const migrationOption = async (name, editFn) => {
-  try {
-    const option = await GM.getValue(name);
-    if (!option) throw new Error(\`GM.getValue Error: not found \${name}\`);
-    if (await editFn(option)) return;
-    GM.setValue(name, option);
-  } catch (error) {
-    helper.log.error(\`migration \${name} option error:\`, error);
-  }
-};
-
-/** 重命名配置项 */
-const renameOption = (name, list) => migrationOption(name, option => {
-  for (const itemText of list) {
-    const [path, newName] = itemText.split(' => ');
-    helper.byPath(option, path, (parent, key) => {
-      helper.log('rename Option', itemText);
-      if (newName) Reflect.set(parent, newName, parent[key]);
-      Reflect.deleteProperty(parent, key);
-    });
-  }
-});
-
-/** 旧版本配置迁移 */
-const migration = async version => {
-  // 任何样式修改都得更新 css 才行，干脆直接删了
-  GM.deleteValue('ehTagColorizeCss');
-  GM.deleteValue('ehTagSortCss');
-  const values = await GM.listValues();
-
-  // 6 => 7
-  if (versionLt(version, '7')) for (const key of values) {
-    switch (key) {
-      case 'Version':
-      case 'Languages':
-        continue;
-      case 'HotKeys':
-        {
-          await renameOption(key, ['向上翻页 => turn_page_up', '向下翻页 => turn_page_down', '向右翻页 => turn_page_right', '向左翻页 => turn_page_left', '跳至首页 => jump_to_home', '跳至尾页 => jump_to_end', '退出 => exit', '切换页面填充 => switch_page_fill', '切换卷轴模式 => switch_scroll_mode', '切换单双页模式 => switch_single_double_page_mode', '切换阅读方向 => switch_dir', '进入阅读模式 => enter_read_mode']);
-          break;
-        }
-      default:
-        await renameOption(key, ['option.scrollbar.showProgress => showImgStatus', 'option.clickPage => clickPageTurn', 'option.clickPage.overturn => reverse', 'option.swapTurnPage => swapPageTurnKey', 'option.flipToNext => jumpToNext',
-        // ehentai
-        '匹配nhentai => associate_nhentai', '快捷键翻页 => hotkeys_page_turn',
-        // nhentai
-        '自动翻页 => auto_page_turn', '彻底屏蔽漫画 => block_totally', '在新页面中打开链接 => open_link_new_page',
-        // other
-        '记住当前站点 => remember_current_site']);
-    }
-  }
-
-  // 8 => 9
-  if (versionLt(version, '9')) for (const key of values) {
-    switch (key) {
-      case 'Version':
-      case 'Languages':
-        continue;
-      case 'Hotkeys':
-        {
-          await renameOption(key, [
-          // 原本上下快捷键是混在一起的，现在分开后要迁移太麻烦了，应该也没多少人改，就直接删了
-          'turn_page_up => ', 'turn_page_down => ', 'turn_page_right => scroll_right', 'turn_page_left => scroll_left']);
-          break;
-        }
-      default:
-        await migrationOption(key, option => {
-          if (typeof option.option?.scrollMode !== 'boolean') return true;
-          option.option.scrollMode = {
-            enabled: option.option.scrollMode,
-            spacing: option.option.scrollModeSpacing,
-            imgScale: option.option.scrollModeImgScale,
-            fitToWidth: option.option.scrollModeFitToWidth
-          };
-        });
-    }
-  }
-
-  // 9.3 => 9.4
-  if (versionLt(version, '9.4')) await migrationOption('ehentai', option => {
-    if (!Reflect.has(option, 'hotkeys_page_turn')) return true;
-    option.hotkeys = option.hotkeys_page_turn;
-    Reflect.deleteProperty(option, 'hotkeys_page_turn');
-  });
-
-  // 11.4.2 => 11.5
-  if (versionLt(version, '11.5')) await migrationOption('Hotkeys', option => {
-    for (const [name, hotkeys] of Object.entries(option)) {
-      option[name] = hotkeys.map(key => key.replaceAll(/\\b[A-Z]\\b/g, match => match.toLowerCase()));
-    }
-  });
-  if (versionLt(version, '11.9.1')) for (const key of values) {
-    switch (key) {
-      case 'Version':
-      case 'Languages':
-      case 'Hotkeys':
-        continue;
-      default:
-        await renameOption(key, ['option.translation => ']);
-    }
-  }
-
-  // 11.11 => 11.12
-  if (versionLt(version, '11.12')) for (const key of values) {
-    switch (key) {
-      case 'Version':
-      case 'Languages':
-      case 'Hotkeys':
-        continue;
-      default:
-        await renameOption(key, ['associate_nhentai => cross_site_link']);
-    }
-  }
-  if (versionLt(version, '12')) for (const key of values) {
-    switch (key) {
-      case 'Version':
-      case 'Languages':
-      case 'Hotkeys':
-        {
-          await GM.setValue(\`@\${key}\`, await GM.getValue(key));
-          await GM.deleteValue(key);
-          continue;
-        }
-      default:
-        await renameOption(key, ['hotkeys => add_hotkeys_actions']);
-    }
-  }
-};
-
-let dom;
-
-/**
- * 显示漫画阅读窗口
- */
-const useManga = ({
-  store,
-  setState,
-  options,
-  setOptions
-}) => {
-  helper.useStyle(\`
-    #comicRead {
-      position: fixed;
-      top: 0;
-      left: 0;
-      transform: scale(0);
-
-      contain: strict;
-
-      width: 100%;
-      height: 100%;
-
-      writing-mode: initial;
-      font-size: 16px;
-
-      opacity: 0;
-
-      transition:
-        opacity 300ms,
-        transform 0s 300ms;
-    }
-
-    #comicRead[show] {
-      transform: scale(1);
-      opacity: 1;
-      transition: opacity 300ms, transform 100ms;
-    }
-
-    /* 防止其他扩展的元素显示到漫画上来 */
-    #comicRead[show] ~ :not(#fab, #toast, .comicread-ignore) {
-      display: none !important;
-      pointer-events: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      z-index: 1 !important;
-    }
-  \`);
-  setState('manga', {
-    show: false,
-    option: options.option,
-    defaultOption: options.defaultOption,
-    onOptionChange: option => setOptions({
-      option
-    }),
-    hotkeys: store.hotkeys,
-    onHotkeysChange(newValue) {
-      GM.setValue('@Hotkeys', newValue);
-      setState('hotkeys', newValue);
-    }
-  });
-  dom = helper.mountComponents('comicRead', () => web.createComponent(Manga.Manga, web.mergeProps(() => store.manga)));
-  dom.style.setProperty('z-index', '2147483647', 'important');
-
-  // 确保 toast 可以显示在漫画之上
-  const toastDom = helper.querySelector('#toast');
-  if (toastDom) dom.after(toastDom);
-  const htmlStyle = document.documentElement.style;
-  let lastOverflow = htmlStyle.overflow;
-  const wakeLock = new helper.WakeLock();
-  helper.createEffectOn(helper.createRootMemo(() => store.manga.show && store.manga.imgList.length > 0), show => {
-    if (show) {
-      dom.setAttribute('show', '');
-      lastOverflow = htmlStyle.overflow;
-      htmlStyle.setProperty('overflow', 'hidden', 'important');
-      htmlStyle.setProperty('scrollbar-width', 'none', 'important');
-      if (Manga.store.option.autoFullscreen) Manga.refs.root.requestFullscreen();
-      wakeLock.on();
-    } else {
-      dom.removeAttribute('show');
-      htmlStyle.overflow = lastOverflow;
-      htmlStyle.removeProperty('scrollbar-width');
-      wakeLock.off();
-    }
-  }, {
-    defer: true
-  });
-  const ExitButton = () => web.createComponent(IconButton.IconButton, {
-    get tip() {
-      return helper.t('other.exit');
-    },
-    onClick: () => Manga.store.prop.onExit?.(),
-    get children() {
-      return web.createComponent(MdClose, {});
-    }
-  });
-  setState('manga', {
-    onExit: () => setState('manga', 'show', false),
-    editButtonList(list) {
-      // 在设置按钮上方放置下载按钮
-      list.splice(-1, 0, DownloadButton);
-      return [...list,
-      // 再在最下面添加分隔栏和退出按钮
-      () => web.template(\`<hr>\`)(), ExitButton];
-    },
-    editSettingList(list) {
-      const SyncOptions = () => {
-        const sync = async () => {
-          const currentReadOption = helper.difference(Manga.store.option, Manga.store.defaultOption);
-          for (const key of await GM.listValues()) {
-            if (key.startsWith('@')) continue;
-            await migrationOption(key, option => {
-              option.option = currentReadOption;
-            });
-          }
-          Toast.toast.success(helper.t('setting.sync_options_other_site'));
-        };
-        return web.createComponent(Manga.SettingsItemButton, {
-          get name() {
-            return helper.t('setting.sync_options_other_site');
-          },
-          onClick: sync,
-          get children() {
-            return web.createComponent(MdAutoSync, {});
-          }
-        });
-      };
-
-      // 在其他设置里增加同步配置的按钮
-      const otherSetting = list.find(([title]) => title === helper.t('other.other'));
-      if (otherSetting) {
-        const [, FC] = otherSetting;
-        otherSetting[1] = () => [web.createComponent(FC, {}), web.createComponent(SyncOptions, {})];
-      }
-      return list;
-    }
-  });
-};
-
-
-/** 处理版本更新相关 */
-const handleVersionUpdate = async () => {
-  const version = await GM.getValue('@Version');
-  if (!version) return GM.setValue('@Version', GM.info.script.version);
-  if (version === GM.info.script.version) return;
-  await migration(version); // 每次版本更新都执行一遍迁移
-
-  // 只在语言为中文时弹窗提示最新更新内容
-  if (helper.lang() === 'zh') {
-    Toast.toast(() => /* eslint-disable i18next/no-literal-string */[(() => {
-      var _el$ = web.template(\`<h2>🥳 ComicRead 已更新到 v\`)();
-      web.insert(_el$, () => GM.info.script.version, null);
-      return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>百合会增加「移动端显示帖子权限」功能 </p></li><li><p>增加卷轴模式下的「自适应宽度」设置，替代删除「图片适合宽度」设置\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 PWA 上 PDF 显示模糊的 bug </p></li><li><p>修复 PWA 上部分 PDF 显示空白图片的 bug </p></li><li><p>修复简易阅读模式在部分网站只能加载出前几张图的 bug </p></li><li><p>将「启用菜单区域」设置项改为「缩小菜单区域」\`)(), web.createComponent(solidJs.Show, {
-      get when() {
-        return versionLt(version, '12');
-      },
-      get children() {
-        return [web.template(\`<h3>新增\`)(), web.template(\`<ul><li>实现图片放大功能（需要打开「图像识别」功能）</li><li>增加 ehentai 在缩略图列表页里展开标签列表功能\`)()];
-      }
-    })] /* eslint-enable i18next/no-literal-string */, {
-      id: 'Version Tip',
-      type: 'custom',
-      duration: Number.POSITIVE_INFINITY,
-      // 手动点击关掉通知后才不会再次弹出
-      onDismiss: () => GM.setValue('@Version', GM.info.script.version)
-    });
-
-    // 监听储存的版本数据的变动，如果和当前版本一致就关掉弹窗
-    // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
-    const listenerId = await GM.addValueChangeListener('@Version', async (_, __, newVersion) => {
-      if (newVersion !== GM.info.script.version) return;
-      Toast.toast.dismiss('Version Tip');
-      await GM.removeValueChangeListener(listenerId);
-    });
-  } else await GM.setValue('@Version', GM.info.script.version);
-};
-
-/** 对基础的初始化操作的封装 */
-const useInit = async (name, initSiteOptions = {}) => {
-  await helper.setInitLang();
-  await handleVersionUpdate();
-  const defaultOptions = {
-    option: undefined,
-    defaultOption: undefined,
-    autoShow: true,
-    lockOption: false,
-    hiddenFAB: false,
-    fabPosition: {
-      top: 0,
-      left: 0
-    },
-    ...initSiteOptions
-  };
-  const saveOptions = await GM.getValue(name);
-  // 检查清理下已保存配置的多余项
-  if (saveOptions) {
-    for (const key of Object.keys(saveOptions)) {
-      if (Reflect.has(defaultOptions, key)) continue;
-      Reflect.deleteProperty(saveOptions, key);
-    }
-  } else await GM.setValue(name, {});
-  const {
-    store,
-    setState
-  } = helper.useStore({
-    fab: {
-      tip: helper.t('other.read_mode'),
-      show: false
-    },
-    manga: {
-      imgList: []
-    },
-    hotkeys: await GM.getValue('@Hotkeys', {}),
-    name,
-    options: {
-      ...structuredClone(defaultOptions),
-      ...saveOptions
-    },
-    comicMap: {
-      '': {
-        getImgList: function init() {
-          return [];
-        }
-      }
-    },
-    nowComic: '',
-    flag: {
-      isStored: saveOptions !== undefined,
-      needAutoShow: true
-    }
-  });
-  Manga.setDefaultHotkeys(_hotkeys => ({
-    ..._hotkeys,
-    enter_read_mode: ['v']
-  }));
-  const {
-    options
-  } = store;
-  const setOptions = function (newOptions) {
-    if (newOptions) setState(state => Object.assign(state.options, newOptions));
-    if (options.lockOption && newOptions?.lockOption !== false) return;
-    // 只保存和默认设置不同的部分
-    return GM.setValue(store.name, helper.difference(options, defaultOptions));
-  };
-  const loadComic = async (id = store.nowComic) => {
-    if (!Reflect.has(store.comicMap, id)) throw new Error('comic not found');
-    try {
-      setState('comicMap', id, 'imgList', []);
-      const newImgList = await store.comicMap[id].getImgList(main);
-      if (newImgList.length === 0) throw new Error(helper.t('alert.fetch_comic_img_failed'));
-      setState('comicMap', id, 'imgList', newImgList);
-    } catch (error) {
-      setState('comicMap', id, 'imgList', undefined);
-      helper.log.error(error);
-      throw error;
-    }
-  };
-  const showComic = async (id = store.nowComic) => {
-    if (!Reflect.has(store.comicMap, id)) throw new Error('comic not found');
-    if (id !== store.nowComic) setState('nowComic', id);
-    switch (store.comicMap[id].imgList?.length) {
-      case 0:
-        return Toast.toast.warn(helper.t('alert.repeat_load'), {
-          duration: 1500
-        });
-      case undefined:
-        {
-          try {
-            await loadComic(id);
-            setState('flag', 'needAutoShow', false);
-          } catch (error) {
-            return Toast.toast.error(error.message);
-          }
-        }
-    }
-    setState('manga', 'show', true);
-  };
-  let inited = false;
-  const init = () => {
-    if (inited) return;
-    inited = true;
-    setState('fab', {
-      onClick: showComic,
-      show: !options.hiddenFAB && undefined
-    });
-    if (store.flag.needAutoShow && options.autoShow) showComic();
-    (async () => {
-      await GM.registerMenuCommand(helper.t('other.enter_comic_read_mode'), () => store.fab.onClick?.());
-      await updateHideFabMenu();
-    })();
-    Manga.listenHotkey({
-      enter_read_mode: () => store.fab.onClick?.()
-    }, true);
-  };
-
-  // 首次设置默认漫画的加载函数时，进行初始化
-  helper.createEffectOn(() => store.comicMap[''].getImgList, (_, prev) => !prev && init(), {
-    defer: true
-  });
-  const dynamicLoad = async (loadImgFn, length, id = '') => {
-    if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
-    setState('comicMap', id, 'imgList', Array.from({
-      length: typeof length === 'number' ? length : length()
-    }).fill(''));
-    // oxlint-disable-next-line no-async-promise-executor
-    await new Promise(async resolve => {
-      try {
-        await loadImgFn((i, img) => resolve(setState('comicMap', id, 'imgList', list => list.with(i, img))));
-      } catch (error) {
-        Toast.toast.error(error.message);
-      }
-    });
-    return store.comicMap[id].imgList;
-  };
-  const main = {
-    store,
-    setState,
-    options,
-    setOptions,
-    loadComic,
-    showComic,
-    dynamicLoad,
-    init
-  };
-  useFab(main);
-  useManga(main);
-  const nowImgList = helper.createRootMemo(() => {
-    const comic = store.comicMap[store.nowComic];
-    if (!comic?.imgList) return undefined;
-    if (!comic.adList?.size) return comic.imgList;
-    return comic.imgList.filter((_, i) => !comic.adList?.has(i));
-  });
-  helper.createEffectOn(nowImgList, list => list && setState('manga', 'imgList', list));
-
-  /** 当前已取得 url 的图片数量 */
-  const doneImgNum = helper.createRootMemo(() => nowImgList()?.filter(Boolean)?.length);
-
-  /** 已加载完毕的图片数量 */
-  const loadedImgNum = helper.createRootMemo(() => {
-    let i = 0;
-    for (const img of Manga.imgList()) if (img.loadType === 'loaded') i += 1;
-    return i;
-  });
-
-  // 设置 Fab 的显示进度
-  helper.createEffectOn([doneImgNum, loadedImgNum, () => nowImgList()?.length], ([doneNum, loadNum, totalNum]) => {
-    if (!totalNum || doneNum === undefined) return setState('fab', 'progress', undefined);
-    if (totalNum === 0) return setState('fab', {
-      progress: 0,
-      tip: \`\${helper.t('other.loading_img')} - \${doneNum}/\${totalNum}\`
-    });
-
-    // 加载图片 url 阶段的进度
-    if (doneNum < totalNum) return setState('fab', {
-      progress: doneNum / totalNum,
-      tip: \`\${helper.t('other.loading_img')} - \${doneNum}/\${totalNum}\`
-    });
-
-    // 图片加载阶段的进度
-    if (loadNum < totalNum) return setState('fab', {
-      progress: 1 + loadNum / totalNum,
-      tip: \`\${helper.t('other.img_loading')} - \${loadNum}/\${totalNum}\`
-    });
-    return setState('fab', {
-      progress: 1 + loadNum / totalNum,
-      tip: helper.t('other.read_mode'),
-      show: !options.hiddenFAB && undefined
-    });
-  });
-  let menuId;
-  /** 更新显示/隐藏悬浮按钮的菜单项 */
-  const updateHideFabMenu = async () => {
-    await GM.unregisterMenuCommand(menuId);
-    menuId = await GM.registerMenuCommand(options.hiddenFAB ? helper.t('other.fab_show') : helper.t('other.fab_hidden'), async () => {
-      await setOptions({
-        hiddenFAB: !options.hiddenFAB
-      });
-      setState('fab', 'show', !options.hiddenFAB && undefined);
-      await updateHideFabMenu();
-    });
-  };
-  await GM.registerMenuCommand(helper.t('site.show_settings_menu'), () => setState('fab', {
-    show: true,
-    focus: true,
-    tip: helper.t('other.setting'),
-    children: web.createComponent(MdSettings, {}),
-    onBackdropClick: () => setState('fab', {
-      show: false,
-      focus: false
-    })
-  }));
-  return main;
-};
-
-/** 对简单站点的通用解 */
-const universal = async ({
-  name,
-  wait: waitFn,
-  getImgList,
-  onPrev,
-  onNext,
-  onExit,
-  onShowImgsChange,
-  getCommentList,
-  initOptions,
-  SPA
-}) => {
-  if (SPA?.isMangaPage) await helper.waitUrlChange(SPA.isMangaPage);
-  if (waitFn) await helper.wait(waitFn);
-  const mainContext = await useInit(name, initOptions);
-  const {
-    store,
-    setState,
-    showComic
-  } = mainContext;
-  setState('comicMap', '', {
-    getImgList: () => getImgList(mainContext)
-  });
-  setState('manga', {
-    onShowImgsChange
-  });
-  if (onExit) setState('manga', {
-    onExit: isEnd => {
-      onExit?.(isEnd);
-      setState('manga', 'show', false);
-    }
-  });
-  if (!SPA) {
-    if (onNext ?? onPrev) setState('manga', {
-      onNext,
-      onPrev
-    });
-    if (getCommentList) setState('manga', 'commentList', await getCommentList());
-    return;
-  }
-  helper.onUrlChange(async () => {
-    if (SPA.isMangaPage && !(await SPA.isMangaPage())) return setState(state => {
-      state.fab.show = false;
-      state.manga.show = false;
-      state.comicMap[''].imgList = undefined;
-    });
-    if (waitFn) await helper.wait(waitFn);
-    setState(state => {
-      state.fab.show = undefined;
-      state.manga.onPrev = undefined;
-      state.manga.onNext = undefined;
-      state.flag.needAutoShow = state.options.autoShow;
-      state.comicMap[''].imgList = undefined;
-    });
-    if (store.options.autoShow) await showComic('');
-    await Promise.all([(async () => getCommentList && setState('manga', 'commentList', await getCommentList()))(), (async () => SPA.getOnPrev && setState('manga', {
-      onPrev: await helper.wait(SPA.getOnPrev, 5000)
-    }))(), (async () => SPA.getOnNext && setState('manga', {
-      onNext: await helper.wait(SPA.getOnNext, 5000)
-    }))()]);
-  }, SPA?.handleUrl);
-};
-
-const MdAutoFixHigh = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdAutoFixOff = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdFlashOff = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdFlashOn = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdLockOpen = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6-5h-1V6c0-2.76-2.24-5-5-5-2.28 0-4.27 1.54-4.84 3.75-.14.54.18 1.08.72 1.22a1 1 0 0 0 1.22-.72A2.996 2.996 0 0 1 12 3c1.65 0 3 1.35 3 3v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m0 11c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-8c0-.55.45-1 1-1h10c.55 0 1 .45 1 1z">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const MdLock = (props = {}) => (() => {
-  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2M9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2z">\`)();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})();
-
-const useSpeedDial = ({
-  store,
-  setState,
-  options,
-  setOptions
-}) => {
-  const DefaultButton = props => web.createComponent(IconButton.IconButton, {
-    get placement() {
-      return store.fab.placement;
-    },
-    showTip: true,
-    get tip() {
-      return props.showName ?? (helper.t(\`site.add_feature.\${props.optionName}\`) || helper.t(\`other.\${props.optionName}\`) || props.optionName);
-    },
-    onClick: () => setOptions({
-      [props.optionName]: !options[props.optionName]
-    }),
-    get children() {
-      return props.children ?? (options[props.optionName] ? web.createComponent(MdAutoFixHigh, {}) : web.createComponent(MdAutoFixOff, {}));
-    }
-  });
-  helper.createEffectOn(() => store.fab.otherSpeedDial, () => {
-    const list = [() => web.createComponent(DefaultButton, {
-      optionName: "autoShow",
-      get showName() {
-        return helper.t('site.add_feature.auto_show');
-      },
-      get children() {
-        return web.memo(() => !!options.autoShow)() ? web.createComponent(MdFlashOn, {}) : web.createComponent(MdFlashOff, {});
-      }
-    }), () => web.createComponent(DefaultButton, {
-      optionName: "lockOption",
-      get showName() {
-        return helper.t('site.add_feature.lock_option');
-      },
-      get children() {
-        return web.memo(() => !!options.lockOption)() ? web.createComponent(MdLock, {}) : web.createComponent(MdLockOpen, {});
-      }
-    })];
-    if (store.fab.otherSpeedDial) {
-      for (const optionName of store.fab.otherSpeedDial) list.push(() => web.createComponent(DefaultButton, {
-        optionName: optionName
-      }));
-    } else {
-      for (const optionName of Object.keys(options)) {
-        switch (optionName) {
-          case 'hiddenFAB':
-          case 'option':
-          case 'autoShow':
-          case 'lockOption':
-            continue;
-          default:
-            if (typeof options[optionName] === 'boolean') list.push(() => web.createComponent(DefaultButton, {
-              optionName: optionName
-            }));
-        }
-      }
-    }
-    setState('fab', 'speedDial', list);
-  });
-};
-
-const triggerOptions = !web.isServer && solidJs.DEV ? { equals: false, name: "trigger" } : { equals: false };
-const triggerCacheOptions = !web.isServer && solidJs.DEV ? { equals: false, internal: true } : triggerOptions;
-class TriggerCache {
-    #map;
-    constructor(mapConstructor = Map) {
-        this.#map = new mapConstructor();
-    }
-    dirty(key) {
-        if (web.isServer)
-            return;
-        this.#map.get(key)?.$$();
-    }
-    dirtyAll() {
-        if (web.isServer)
-            return;
-        for (const trigger of this.#map.values())
-            trigger.$$();
-    }
-    track(key) {
-        if (!solidJs.getListener())
-            return;
-        let trigger = this.#map.get(key);
-        if (!trigger) {
-            const [$, $$] = solidJs.createSignal(undefined, triggerCacheOptions);
-            this.#map.set(key, (trigger = { $, $$, n: 1 }));
-        }
-        else
-            trigger.n++;
-        solidJs.onCleanup(() => {
-            // remove the trigger when no one is listening to it
-            if (--trigger.n === 0)
-                // microtask is to avoid removing the trigger used by a single listener
-                queueMicrotask(() => trigger.n === 0 && this.#map.delete(key));
-        });
-        trigger.$();
-    }
-}
-
-const $KEYS = Symbol("track-keys");
-/**
- * A reactive version of a Javascript built-in \`Set\` class.
- * @see https://github.com/solidjs-community/solid-primitives/tree/main/packages/set#ReactiveSet
- * @example
- * const set = new ReactiveSet([1,2,3]);
- * [...set] // reactive on any change
- * set.has(2) // reactive on change to the result
- * // apply changes
- * set.add(4)
- * set.delete(2)
- * set.clear()
- */
-class ReactiveSet extends Set {
-    #triggers = new TriggerCache();
-    constructor(values) {
-        super();
-        if (values)
-            for (const value of values)
-                super.add(value);
-    }
-    [Symbol.iterator]() {
-        return this.values();
-    }
-    get size() {
-        this.#triggers.track($KEYS);
-        return super.size;
-    }
-    has(value) {
-        this.#triggers.track(value);
-        return super.has(value);
-    }
-    keys() {
-        return this.values();
-    }
-    *values() {
-        this.#triggers.track($KEYS);
-        for (const value of super.values()) {
-            yield value;
-        }
-    }
-    *entries() {
-        this.#triggers.track($KEYS);
-        for (const entry of super.entries()) {
-            yield entry;
-        }
-    }
-    forEach(callbackfn, thisArg) {
-        this.#triggers.track($KEYS);
-        super.forEach(callbackfn, thisArg);
-    }
-    add(value) {
-        if (!super.has(value)) {
-            super.add(value);
-            solidJs.batch(() => {
-                this.#triggers.dirty(value);
-                this.#triggers.dirty($KEYS);
-            });
-        }
-        return this;
-    }
-    delete(value) {
-        const result = super.delete(value);
-        if (result) {
-            solidJs.batch(() => {
-                this.#triggers.dirty(value);
-                this.#triggers.dirty($KEYS);
-            });
-        }
-        return result;
-    }
-    clear() {
-        if (!super.size)
-            return;
-        solidJs.batch(() => {
-            this.#triggers.dirty($KEYS);
-            for (const member of super.values()) {
-                this.#triggers.dirty(member);
-            }
-            super.clear();
-        });
-    }
-}
-
-exports.toast = Toast.toast;
-exports.request = request.request;
-exports.ReactiveSet = ReactiveSet;
-exports.handleVersionUpdate = handleVersionUpdate;
-exports.universal = universal;
-exports.useInit = useInit;
-exports.useSpeedDial = useSpeedDial;
-`
-      break;
     default:
       code = getResource(name);
   }
@@ -10803,10 +10808,10 @@ moduleMap['Comlink'].expose(exports);`;
       ${gmApiList.map(apiName => `window['${tempName}'].${apiName}`).join(', ')}
     );
   `;
-  unsafeWindow[tempName] = crsLib;
-  unsafeWindow[tempName][name] = {};
+  gmApi.unsafeWindow[tempName] = crsLib;
+  gmApi.unsafeWindow[tempName][name] = {};
   evalCode(runCode);
-  Reflect.deleteProperty(unsafeWindow, tempName);
+  Reflect.deleteProperty(gmApi.unsafeWindow, tempName);
 };
 
 /**
@@ -10839,6 +10844,16 @@ const require = name => {
       const module = crsLib[name];
       const ModuleFunc = typeof module.default === 'function' ? module.default : module;
       return new ModuleFunc(...args);
+    },
+    ownKeys() {
+      if (!crsLib[name]) selfImportSync(name);
+      return Reflect.ownKeys(crsLib[name]);
+    },
+    getOwnPropertyDescriptor() {
+      return {
+        enumerable: true,
+        configurable: true
+      };
     }
   });
   return selfDefault;
@@ -14684,10 +14699,8 @@ const main = require('main');
 
     // #[绅士漫画(wnacg)](https://www.wnacg.com)
     // test: https://www.wnacg.com/photos-slide-aid-284931.html
+    case 'www.wnacg05.cc':
     case 'www.wnacg03.cc':
-    case 'www.wnacg02.cc':
-    case 'www.wnacg01.cc':
-    case 'www.wn03.ru':
     case 'www.wnacg.com':
     case 'wnacg.com':
       {
@@ -14842,7 +14855,7 @@ const main = require('main');
 
     // #[NoyAcg](https://noy1.top)
     // test: https://noy1.top/#/read/13349
-
+    
     case 'noy1.top':
       {
         options = {
