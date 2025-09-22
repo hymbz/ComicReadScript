@@ -36,14 +36,11 @@ export const handlePdf = async (file: File): Promise<ImgFile[]> => {
       plimit(
         range(pdf.numPages, (i) => async () => {
           const page = await pdf.getPage(i + 1);
-          const [, , width, height] = page.view;
+          const [, , width] = page.view;
           let scale = 1;
 
-          // 缩放图片适应屏幕
-          if (height > width) {
-            if (height < document.body.clientHeight)
-              scale = document.body.clientHeight / height;
-          } else if (width < document.body.clientWidth)
+          // 缩放图片适应页宽
+          if (width < document.body.clientWidth)
             scale = document.body.clientWidth / width;
 
           const viewport = page.getViewport({ scale });
