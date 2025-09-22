@@ -64,6 +64,6 @@ export const handleScrollModeZoom = (dir: 'add' | 'sub') => {
   if (store.option.scrollMode.adjustToWidth === 'full') return;
 
   if (store.option.scrollMode.adjustToWidth === 'disable' || isAbreastMode())
-    setImgScale(0.05 * (dir === 'add' ? 1 : -1));
+    setImgScale((val) => val + 0.05 * (dir === 'add' ? 1 : -1));
   else setAdjustToWidth((val) => val + 100 * (dir === 'add' ? 1 : -1));
 };
