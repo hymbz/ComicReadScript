@@ -346,7 +346,7 @@ export const handleWheel = (e: WheelEvent) => {
   // 卷轴模式下的图片缩放
   if (
     (e.ctrlKey || e.altKey) &&
-    isScrollMode() &&
+    store.option.scrollMode.enabled &&
     store.option.zoom.ratio === 100
   ) {
     e.preventDefault();
