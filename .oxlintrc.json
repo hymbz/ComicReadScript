@@ -26,7 +26,8 @@
     "**/public/**",
     "**/dev-dist/**",
     "**/assets/**",
-    "**/**.js"
+    "**/**.js",
+    "ComicReader.umd.d.ts"
   ],
   "rules": {
     // 目前不支持跳过 return new Promise 的，只能暂时关掉

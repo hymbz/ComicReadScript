@@ -30,6 +30,7 @@ export default antfu(
       '**/dev-dist/**',
       '**/assets/**',
       '**/**.js',
+      'ComicReader.umd.d.ts',
     ],
   },
   {

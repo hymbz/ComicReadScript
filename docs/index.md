@@ -33,6 +33,8 @@
 
 > 如果喜欢这种阅读模式，也想用来看**本地漫画**的话，欢迎使用「[ComicRead PWA](https://comic-read.pages.dev/)」，只要打开网页拖入本地漫画即可获得完全一致的体验
 
+> 想要在自己的网站或项目上使用脚本的阅读模式的话，可参看[相关文档](https://github.com/hymbz/ComicReadScript/blob/master/docs/NPM%20模块.md)
+
 <blockquote>
   <p>
     对你有帮助的话就点个⭐Star吧

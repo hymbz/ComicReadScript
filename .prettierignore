@@ -4,3 +4,5 @@
 **/*.json5
 **/public/*
 *.user.js
+*.umd.js
+*.umd.d.ts

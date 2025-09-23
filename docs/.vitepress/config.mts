@@ -34,6 +34,7 @@ export default defineConfig({
       },
 
       { text: '最简单的本地部署翻译服务流程', link: '/本地部署翻译' },
+      { text: 'NPM 模块', link: '/NPM 模块' },
       { text: '无法解决的问题', link: '/无法解决的问题' },
     ],
 

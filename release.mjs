@@ -69,8 +69,8 @@ const exec = (...commands) => {
   }
 
   // 测试
-  exec('pnpm test run');
   exec('pnpm check');
+  exec('pnpm test run');
 
   // 使用 release-it 更新版本，并获得更新日志
   const { changelog } = await release({
