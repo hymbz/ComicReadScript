@@ -8,7 +8,7 @@
   "bugs": {
     "url": "https://github.com/hymbz/ComicReadScript/issues"
   },
-  "main": "ComicReader.umd.js",
+  "main": "./ComicReader.umd.js",
   "scripts": {
     "dev": "rollup --config --watch --environment NODE_ENV:development --configPlugin rollup-plugin-ts --configImportAttributesKey with",
     "build": "rollup --config --configPlugin rollup-plugin-ts --configImportAttributesKey with",

@@ -26,6 +26,7 @@ import {
   outputPlugins,
   solidSvg,
 } from './src/rollup-plugin';
+import { codeEdit } from './src/rollup-plugin/codeEdit';
 import { getMetaData, updateReadme } from './src/rollup-plugin/metaHeader';
 import { siteUrl } from './src/rollup-plugin/siteUrl';
 
@@ -179,45 +180,38 @@ export const buildOptions = (
     file: `dist/${path.replace(/(\/index)?\.tsx?/, '')}.js`,
     plugins: [
       ...outputPlugins,
-      {
-        name: 'selfPlugin',
-        renderChunk(rawCode) {
-          let code = rawCode;
+      codeEdit(
+        'selfPlugin',
+        (code) => {
+          if (path !== 'index') return;
 
-          switch (path) {
-            case 'index': {
-              updateReadme();
-              if (isDevMode)
-                code = `
-                  console.time('脚本启动消耗时间');
-                  ${code}
-                  console.timeEnd('脚本启动消耗时间');
-                `;
+          updateReadme();
+          if (isDevMode)
+            code = `
+console.time('脚本启动消耗时间');
+${code}
+console.timeEnd('脚本启动消耗时间');
+`;
 
-              const importCode = fs
-                .readFileSync(`dist/userscript/import.js`)
-                .toString()
-                .replaceAll('require$1', 'require');
-              code = `${createMetaHeader(meta)}\n${importCode}\n${code}`;
-
-              break;
-            }
-
-            case 'dev':
-              code =
-                createMetaHeader({
-                  ...meta,
-                  name: `${meta.name}Test`,
-                  namespace: `${meta.namespace}Test`,
-                  updateURL: undefined,
-                  downloadURL: undefined,
-                }) + code;
-              break;
-          }
-
-          return code;
+          const importCode = fs
+            .readFileSync(`dist/userscript/import.js`)
+            .toString()
+            .replaceAll('require$1', 'require');
+          return `${createMetaHeader(meta)}\n${importCode}\n${code}`;
         },
-      },
+        (code) => {
+          if (path === 'dev')
+            return (
+              createMetaHeader({
+                ...meta,
+                name: `${meta.name}Test`,
+                namespace: `${meta.namespace}Test`,
+                updateURL: undefined,
+                downloadURL: undefined,
+              }) + code
+            );
+        },
+      ),
     ],
   });
 
@@ -251,10 +245,9 @@ const optionList: RollupOptions[] = [
     'userscript/import',
     packlist.map((path) => `dist/${path}.js`),
     (options) => {
-      options.output.plugins.unshift({
-        name: 'selfImport',
-        renderChunk(rawCode) {
-          return rawCode.replace(
+      options.output.plugins.unshift(
+        codeEdit('selfImport', (code) =>
+          code.replace(
             /\s+\/\/ import list/,
             packlist
               .map((path) => {
@@ -263,9 +256,9 @@ const optionList: RollupOptions[] = [
                 return `\ncase '${path}':\ncode = \`inject('${path}')\`;\nbreak;`;
               })
               .join(''),
-          );
-        },
-      });
+          ),
+        ),
+      );
       return options;
     },
   ),
@@ -282,60 +275,63 @@ if (!isDevMode)
     buildOptions('index', ['dist/**/*', '!dist/index.js'], (options) => {
       options.output.file = 'dist/adguard.js';
       Reflect.deleteProperty(options.output, 'dir');
-      options.output.plugins.push({
-        name: 'selfAdGuardPlugin',
-        async renderChunk(rawCode) {
-          let code = rawCode;
-
+      options.output.plugins.push(
+        codeEdit(
+          'selfAdGuardPlugin',
+          (code) =>
+            code.replaceAll(
+              /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
+              'cdn.jsdelivr.net/npm/$1@$2/$3',
+            ),
           // 不知道为啥俄罗斯访问不了 npmmirror，只能改用 jsdelivr
           // https://github.com/hymbz/ComicReadScript/issues/170
-          code = code.replaceAll(
-            /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
-            'cdn.jsdelivr.net/npm/$1@$2/$3',
-          );
-
+          (code) =>
+            code.replaceAll(
+              /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
+              'cdn.jsdelivr.net/npm/$1@$2/$3',
+            ),
           // AdGuard 无法支持简易阅读模式，所以改为只在支持网站上运行
-          let indexCode = fs.readFileSync(
-            resolve(__dirname, 'src/index.ts'),
-            'utf8',
-          );
-          indexCode = await siteUrl.renderChunk(indexCode);
-          const matchList = [
-            ...indexCode.matchAll(/(?<=\n {4}case ').+?(?=':)/g),
-          ].flatMap(([url]) => `// @match           *://${url}/*`);
-          code = code.replace(
-            /\/\/ @match \s+ \*:\/\/\*\/\*/,
-            matchList.join('\n'),
-          );
-
+          async (code, chunk) => {
+            let indexCode = fs.readFileSync(
+              resolve(__dirname, 'src/index.ts'),
+              'utf8',
+            );
+            indexCode = await siteUrl.renderChunk(indexCode, chunk);
+            const matchList = [
+              ...indexCode.matchAll(/(?<=\n {4}case ').+?(?=':)/g),
+            ].flatMap(([url]) => `// @match           *://${url}/*`);
+            return code.replace(
+              /\/\/ @match \s+ \*:\/\/\*\/\*/,
+              matchList.join('\n'),
+            );
+          },
           // 删掉不支持的菜单 api
-          code = code.replaceAll(
-            /\/\/ @grant \s+ GM\.(registerMenuCommand|unregisterMenuCommand)\n/g,
-            '',
-          );
-
+          (code) =>
+            code.replaceAll(
+              /\/\/ @grant \s+ GM\.(registerMenuCommand|unregisterMenuCommand)\n/g,
+              '',
+            ),
           // 把菜单 api 的调用也改掉
-          code = code.replaceAll(
-            /await GM\.(registerMenuCommand|unregisterMenuCommand)/g,
-            'console.debug',
-          );
-
+          (code) =>
+            code.replaceAll(
+              /await GM\.(registerMenuCommand|unregisterMenuCommand)/g,
+              'console.debug',
+            ),
           // 脚本更新链接也换掉
-          code = code.replaceAll(
-            '/raw/master/ComicRead.user.js',
-            '/raw/master/ComicRead-AdGuard.user.js',
-          );
-
+          (code) =>
+            code.replaceAll(
+              '/raw/master/ComicRead.user.js',
+              '/raw/master/ComicRead-AdGuard.user.js',
+            ),
           // 不知道为啥会提示 'Access to function "GM_getValue" is not allowed.'
           // 明明我用的是 GM.getValue。虽然好像对功能没有影响，但以防万一还是加上吧
-          code = code.replace(
-            /\n(?=\/\/ @grant)/,
-            '\n// @grant           GM_getValue\n// @grant           GM_setValue\n',
-          );
-
-          return code;
-        },
-      });
+          (code) =>
+            code.replace(
+              /\n(?=\/\/ @grant)/,
+              '\n// @grant           GM_getValue\n// @grant           GM_setValue\n',
+            ),
+        ),
+      );
       return options;
     }),
   );
@@ -359,9 +355,8 @@ if (!isDevMode)
       umdPacklist.map((path) => `dist/${path}.js`),
       (options) => {
         options.output.file = 'dist/umd/import.js';
-        options.output.plugins.unshift({
-          name: 'selfImport',
-          async renderChunk(rawCode) {
+        options.output.plugins.unshift(
+          codeEdit('selfImport', async (code) => {
             let importListCode = '';
 
             for (const path of umdPacklist)
@@ -369,21 +364,21 @@ if (!isDevMode)
 
             for (const [name, url] of Object.entries(meta.resource)) {
               const res = await fetch(url);
-              let code = await res.text();
+              let resourceCode = await res.text();
 
               if (name === '@tensorflow/tfjs-backend-webgpu')
-                code = code.replace(
+                resourceCode = resourceCode.replace(
                   '@tensorflow/tfjs-core',
                   '@tensorflow/tfjs',
                 );
 
-              code = await minifyCode(code);
-              importListCode += `\ncase '${name}':\ncode = \`${escapeTmplText(code)}\`;\nbreak;\n`;
+              resourceCode = await minifyCode(resourceCode);
+              importListCode += `\ncase '${name}':\ncode = \`${escapeTmplText(resourceCode)}\`;\nbreak;\n`;
             }
 
-            return rawCode.replace(/\s+\/\/ import list/, () => importListCode);
-          },
-        });
+            return code.replace(/\s+\/\/ import list/, () => importListCode);
+          }),
+        );
         return options;
       },
     ),
@@ -391,20 +386,20 @@ if (!isDevMode)
       'umd',
       [...umdPacklist.map((path) => `dist/${path}.js`), 'dist/umd/import.js'],
       (options) => {
-        options.output.plugins.unshift({
-          name: 'selfUMD',
-          async renderChunk(rawCode) {
-            let code = rawCode;
-            const importCode = fs
-              .readFileSync(`dist/umd/import.js`)
-              .toString()
-              .replaceAll('require$1', 'require');
-            code = `${importCode}\n${code}`;
-
-            if (!isDevMode) code = await minifyCode(code);
-
-            const name = 'initComicReader';
-            code = `
+        options.output.plugins.unshift(
+          codeEdit(
+            'selfUMD',
+            (code) => {
+              const importCode = fs
+                .readFileSync(`dist/umd/import.js`)
+                .toString()
+                .replaceAll('require$1', 'require');
+              return `${importCode}\n${code}`;
+            },
+            (code) => isDevMode || minifyCode(code),
+            (code) => {
+              const name = 'ComicReadScript';
+              return `
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -412,10 +407,9 @@ if (!isDevMode)
 })(this, (function (exports) {
 ${code}
 }));`;
-
-            return code;
-          },
-        });
+            },
+          ),
+        );
         return options;
       },
     ),

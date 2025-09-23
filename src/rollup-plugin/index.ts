@@ -4,6 +4,7 @@ import fs from 'node:fs';
 
 import { langList } from '../helper/languages';
 import { byPath } from '../helper/other';
+import { codeEdit } from './codeEdit';
 import { ehRules } from './ehRules';
 import { siteUrl } from './siteUrl';
 
@@ -45,21 +46,17 @@ export const outputPlugins: OutputPluginOption[] = [
           '',
         ),
   },
-  {
-    // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
-    name: 'self-inject',
-    renderChunk: (code) =>
-      code.replaceAll(/ *(`)?inject\('(.+?)'\)`?;?/g, (_, isTmplStr, path) =>
-        readCode(`dist/${path}.js`, isTmplStr !== undefined),
-      ),
-  },
-  {
-    // 实现 extractI18n 函数，单独提取指定的 i18n 语句出来使用
-    name: 'self-extractI18n',
-    renderChunk: (code) =>
-      code.replaceAll(
-        /extractI18n\('(.+)'\)/g,
-        (_, key) => `((lang) => {
+  // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
+  codeEdit('self-inject', (code) =>
+    code.replaceAll(/ *(`)?inject\('(.+?)'\)`?;?/g, (_, isTmplStr, path) =>
+      readCode(`dist/${path}.js`, isTmplStr !== undefined),
+    ),
+  ),
+  // 实现 extractI18n 函数，单独提取指定的 i18n 语句出来使用
+  codeEdit('self-extractI18n', (code) =>
+    code.replaceAll(
+      /extractI18n\('(.+)'\)/g,
+      (_, key) => `((lang) => {
 switch (lang) {
   ${langList
     .filter((l) => l !== 'zh')
@@ -74,28 +71,23 @@ switch (lang) {
   default: return '${byPath<string>(langMap.zh, key)}';
 }
 })`,
-      ),
-  },
-  {
-    // 不知道为啥，打包出来的 web.template 调用会提前声明，导致 solidjs 也提前导入了
-    name: 'self-tmplMove',
-    renderChunk(rawCode) {
-      let code = rawCode;
+    ),
+  ),
+  // 不知道为啥，打包出来的 web.template 调用会提前声明，导致 solidjs 也提前导入了
+  codeEdit('self-tmplMove', (code) => {
+    const map = new Map<string, string>();
+    code = code.replaceAll(
+      /(\nvar)?\s+(_tmpl.+?) = \/\*#__PURE__\*\/(web.template\(`.+?`\))(,|;)/g,
+      (_, __, name, tmpl) => {
+        map.set(name, tmpl);
+        return '';
+      },
+    );
+    for (const [name, tmpl] of map)
+      code = code.replaceAll(`${name}()`, `${tmpl}()`);
 
-      const map = new Map<string, string>();
-      code = code.replaceAll(
-        /(\nvar)?\s+(_tmpl.+?) = \/\*#__PURE__\*\/(web.template\(`.+?`\))(,|;)/g,
-        (_, __, name, tmpl) => {
-          map.set(name, tmpl);
-          return '';
-        },
-      );
-      for (const [name, tmpl] of map)
-        code = code.replaceAll(`${name}()`, `${tmpl}()`);
-
-      return code;
-    },
-  },
+    return code;
+  }),
   siteUrl,
   ehRules,
 ];

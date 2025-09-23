@@ -1,5 +1,4 @@
 import { Manga, refs, setState, store } from 'components/Manga';
-import 'userscript/import';
 import {
   createEffectOn,
   createRootMemo,
@@ -71,7 +70,7 @@ export const initComicReader = ({
   polyfill,
   modules,
   props: initProps,
-}: InitConfig) => {
+}: InitConfig = {}) => {
   if (polyfill) {
     for (const [key, value] of Object.entries(polyfill)) {
       if (key === 'GM') {

@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { codeEdit } from './codeEdit';
+
 const siteUrlFnMap = {
   async jm() {
     const res = await axios<string>('https://jmcomic6.org');
@@ -34,31 +36,28 @@ const initSiteUrlMap = async () => {
 };
 
 /** 根据发布页自动获取可用网址 */
-export const siteUrl = {
-  name: 'self-siteUrl',
-  renderChunk: async (code: string) => {
-    siteUrlMap ??= await initSiteUrlMap();
+export const siteUrl = codeEdit('self-siteUrl', async (code) => {
+  siteUrlMap ??= await initSiteUrlMap();
 
-    return code.replaceAll(
-      /case 'siteUrl#(.+?)':(.+?)(?=\{)/gs,
-      (_, name, other) => {
-        if (!Reflect.has(siteUrlMap!, name)) {
-          console.error(`未知站点: ${name}`);
-          return other as string;
-        }
-        const list = siteUrlMap![name].filter((url) =>
-          URL.canParse(`https://${url}`),
-        );
+  return code.replaceAll(
+    /case 'siteUrl#(.+?)':(.+?)(?=\{)/gs,
+    (_, name, other) => {
+      if (!Reflect.has(siteUrlMap!, name)) {
+        console.error(`未知站点: ${name}`);
+        return other as string;
+      }
+      const list = siteUrlMap![name].filter((url) =>
+        URL.canParse(`https://${url}`),
+      );
 
-        const otherUrlList = new Set<string>(
-          [...other.matchAll(/(?<=case ').+?(?=':)/g)].flat(),
-        );
+      const otherUrlList = new Set<string>(
+        [...other.matchAll(/(?<=case ').+?(?=':)/g)].flat(),
+      );
 
-        return `${list
-          .filter((url) => !otherUrlList.has(url))
-          .map((url) => `case '${url}':`)
-          .join('\n    ')}${other}`;
-      },
-    );
-  },
-};
+      return `${list
+        .filter((url) => !otherUrlList.has(url))
+        .map((url) => `case '${url}':`)
+        .join('\n    ')}${other}`;
+    },
+  );
+});

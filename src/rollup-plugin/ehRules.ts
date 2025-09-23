@@ -1,10 +1,11 @@
 import type { OutputPluginOption } from 'rollup';
+import { codeEdit } from './codeEdit';
 
 /** 调整 ehRules 结构以减少代码量 */
-export const ehRules: OutputPluginOption = {
-  name: 'self-ehRules',
-  renderChunk(code, chunk) {
-    if (chunk.fileName !== 'ehTagRules.js') return code;
+export const ehRules: OutputPluginOption = codeEdit(
+  'self-ehRules',
+  (code, chunk) => {
+    if (chunk.fileName !== 'ehTagRules.js') return;
 
     return code.replace(/(?<=const \S+ = )\{.+?\}(?=;)/s, (json) => {
       // oxlint-disable-next-line no-eval
@@ -25,4 +26,4 @@ export const ehRules: OutputPluginOption = {
       return JSON.stringify(data);
     });
   },
-};
+);
