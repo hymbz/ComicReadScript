@@ -375,7 +375,7 @@ type InitConfig = {
     props?: Partial<MangaProps>;
 };
 declare const initComicReader: {
-    ({ polyfill, modules, props: initProps, }: InitConfig): {
+    ({ polyfill, modules, props: initProps, }?: InitConfig): {
         version: string;
         helper: typeof helper;
         store: Readonly<{
