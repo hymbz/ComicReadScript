@@ -3,10 +3,10 @@ import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 import { toast } from 'components/Toast';
-import { canvasToBlob, plimit, range, t } from 'helper';
+import { canvasToBlob, t } from 'helper';
 
 import { type ImgFile } from '../store';
-import { setImg } from './helper';
+import { dynamicLazyLoad } from './helper';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
@@ -32,31 +32,24 @@ export const handlePdf = async (file: File): Promise<ImgFile[]> => {
     };
     const pdf = await task.promise;
 
-    setTimeout(() =>
-      plimit(
-        range(pdf.numPages, (i) => async () => {
-          const page = await pdf.getPage(i + 1);
-          const [, , width] = page.view;
-          let scale = 1;
+    return dynamicLazyLoad(async (i) => {
+      const page = await pdf.getPage(i + 1);
+      const [, , width] = page.view;
+      let scale = 1;
 
-          // 缩放图片适应页宽
-          if (width < document.body.clientWidth)
-            scale = document.body.clientWidth / width;
+      // 缩放图片适应页宽
+      if (width < document.body.clientWidth)
+        scale = document.body.clientWidth / width;
 
-          const viewport = page.getViewport({ scale });
-          const canvas = new OffscreenCanvas(
-            Math.floor(viewport.width * outputScale),
-            Math.floor(viewport.height * outputScale),
-          );
-          await page.render({ canvas: canvas as any, viewport, transform })
-            .promise;
-          const src = URL.createObjectURL(await canvasToBlob(canvas));
-          setImg(i, src);
-        }),
-      ),
-    );
-
-    return range(pdf.numPages, (i) => ({ src: '', name: `${i}` }));
+      const viewport = page.getViewport({ scale });
+      const canvas = new OffscreenCanvas(
+        Math.floor(viewport.width * outputScale),
+        Math.floor(viewport.height * outputScale),
+      );
+      await page.render({ canvas: canvas as any, viewport, transform }).promise;
+      const src = URL.createObjectURL(await canvasToBlob(canvas));
+      return { src, name: `${i + 1}` };
+    }, pdf.numPages);
   } catch (error) {
     toast.error(
       `${file.name} ${t('pwa.alert.parse_error')}：${(error as Error).message}`,

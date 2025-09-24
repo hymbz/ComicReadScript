@@ -102,12 +102,11 @@ export const Root: Component = () => {
 
       <Manga
         class={classes.manga}
-        show={store.show}
-        title={store.title}
-        imgList={store.imgList}
-        option={{ alwaysLoadAllImg: true, ...getSaveOption() }}
+        option={getSaveOption()}
+        defaultOption={{ alwaysLoadAllImg: true }}
         onOptionChange={handleOptionChange}
         onExit={handleExit}
+        {...store}
       />
 
       <Toaster />

@@ -1,6 +1,8 @@
 import { toast } from 'components/Toast';
 import { createEffectOn, t, useStore } from 'helper';
 
+import type { MangaProps } from '../../components/Manga';
+
 import { getImgData } from './fileParser';
 
 export type ImgFile = { name: string; src: string };
@@ -18,6 +20,8 @@ export const { store, setState } = useStore({
   /** 是否要隐藏安装提示 */
   hiddenInstallTip:
     (localStorage.getItem('InstallTip') as '' | 'init' | 'TD') ?? 'init',
+
+  onWaitUrlImgs: undefined as MangaProps['onWaitUrlImgs'],
 });
 export type State = typeof store;
 

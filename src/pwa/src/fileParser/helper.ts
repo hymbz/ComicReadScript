@@ -1,6 +1,8 @@
 import type { IterableElement } from 'type-fest';
 
-import { setState } from '../store';
+import { PQueue, range } from 'helper';
+
+import { type ImgFile, setState } from '../store';
 
 export const imgExtension = new Set([
   '.png',
@@ -48,4 +50,26 @@ export const setImg = (i: number, src: string) => {
   setState((state) => {
     state.imgList = state.imgList.with(i, { ...state.imgList[i], src });
   });
+};
+
+export const dynamicLazyLoad = async (
+  loadImg: (i: number) => Promise<ImgFile>,
+  length: number,
+  concurrency = 4,
+) => {
+  let loadNum = 0;
+  const queue = new PQueue<number>(async (i) => {
+    const img = await loadImg(i);
+    setState('imgList', (list) => list!.with(i, img));
+
+    loadNum += 1;
+    if (loadNum === length) {
+      setState({ onWaitUrlImgs: undefined });
+      queue.clear();
+    }
+  }, concurrency);
+
+  setState({ onWaitUrlImgs: (imgs) => queue.set(...imgs) });
+
+  return range(length, (i) => ({ src: '', name: `${i}` }));
 };
