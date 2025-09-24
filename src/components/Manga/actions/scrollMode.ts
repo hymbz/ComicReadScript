@@ -15,10 +15,12 @@ export const setAdjustToWidth = (
     val = val(store.option.scrollMode.adjustToWidth);
   if (Number.isNaN(val)) return;
 
+  const jump = saveScrollProgress();
   setOption((draftOption) => {
     const max = Math.ceil(store.rootSize.width);
     draftOption.scrollMode.adjustToWidth = clamp(200, val, max);
   });
+  jump();
 };
 
 const minImgWidth = createRootMemo(() => {
