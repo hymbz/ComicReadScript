@@ -1,5 +1,3 @@
-import type { Accessor } from 'solid-js';
-
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 
 import { imgList, listenHotkey, setDefaultHotkeys } from 'components/Manga';
@@ -9,12 +7,14 @@ import {
   createRootMemo,
   difference,
   log,
+  PQueue,
+  range,
   setInitLang,
   t,
   useStore,
 } from 'helper';
 
-import type { LoadImgFn, MainContext, MainStore, SiteOptions } from '.';
+import type { MainContext, MainStore, SiteOptions } from '.';
 
 import { useFab } from './useFab';
 import { useManga } from './useManga';
@@ -149,36 +149,6 @@ export const useInit = async <T extends Record<string, any>>(
     { defer: true },
   );
 
-  const dynamicLoad = async (
-    loadImgFn: LoadImgFn,
-    length: number | Accessor<number>,
-    id: string | number = '',
-  ) => {
-    if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
-
-    setState(
-      'comicMap',
-      id,
-      'imgList',
-      Array.from<string>({
-        length: typeof length === 'number' ? length : length(),
-      }).fill(''),
-    );
-    // oxlint-disable-next-line no-async-promise-executor
-    await new Promise(async (resolve) => {
-      try {
-        await loadImgFn((i, img) =>
-          resolve(
-            setState('comicMap', id, 'imgList', (list) => list!.with(i, img)),
-          ),
-        );
-      } catch (error) {
-        toast.error((error as Error).message);
-      }
-    });
-    return store.comicMap[id].imgList!;
-  };
-
   const main: MainContext<T> = {
     store,
     setState,
@@ -186,8 +156,57 @@ export const useInit = async <T extends Record<string, any>>(
     setOptions,
     loadComic,
     showComic,
-    dynamicLoad,
     init,
+
+    dynamicLoad: async (loadImgFn, length, id = '') => {
+      if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
+
+      const imgNum = typeof length === 'number' ? length : length();
+      setState('comicMap', id, 'imgList', range(imgNum, ''));
+      // oxlint-disable-next-line no-async-promise-executor
+      await new Promise<void>(async (resolve) => {
+        try {
+          await loadImgFn((i, img) => {
+            setState('comicMap', id, 'imgList', (list) => list!.with(i, img));
+            resolve();
+          });
+        } catch (error) {
+          toast.error((error as Error).message);
+        }
+      });
+      return store.comicMap[id].imgList!;
+    },
+
+    dynamicLazyLoad: async ({
+      loadImg,
+      length,
+      id = '',
+      concurrency = 4,
+      onEnd,
+    }) => {
+      if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
+
+      const imgNum = typeof length === 'number' ? length : length();
+      let loadNum = 0;
+
+      // oxlint-disable-next-line no-async-promise-executor
+      await new Promise<void>((resolve) => {
+        const queue = new PQueue<number>(async (i) => {
+          const img = await loadImg(i);
+          setState('comicMap', id, 'imgList', (list) => list!.with(i, img));
+          resolve();
+          loadNum += 1;
+          if (loadNum === imgNum) onEnd?.();
+        }, concurrency);
+
+        setState((state) => {
+          state.comicMap[id].imgList = range(imgNum, '');
+          state.manga.onWaitUrlImgs = (imgs) => queue.set(...imgs);
+        });
+      });
+
+      return store.comicMap[id].imgList!;
+    },
   };
 
   useFab(main);

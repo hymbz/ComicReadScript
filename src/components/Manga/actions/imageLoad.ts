@@ -87,15 +87,28 @@ const needLoadImgList = createRootMemo(() => {
   return list;
 });
 
+const waitUrlImgNum = createRootMemo(() => {
+  let num = 0;
+  for (const img of imgList()) if (!img.src) num += 1;
+  return num;
+});
+
 /** 当前加载的图片 */
 const loadImgList = new Set<string>();
 
+/** 加载范围中等待 url 的图片 */
+const waitUrlImgs = new Set<number>();
+
 /** 加载指定图片。返回是否已加载完成 */
-const loadImg = (url: string) => {
-  const img = store.imgMap[url];
+const loadImg = (index: number) => {
+  const img = getImg(index);
+  if (!img.src) {
+    waitUrlImgs.add(index);
+    return true;
+  }
   if (!needLoadImgList().has(img.src)) return true;
   if (img.loadType === 'error') return true;
-  loadImgList.add(url);
+  loadImgList.add(img.src);
   return false;
 };
 
@@ -137,7 +150,7 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
   const step = start <= end ? 1 : -1;
 
   while (condition()) {
-    if (!loadImg(getImg(index).src)) hasUnloadedImg = true;
+    if (!loadImg(index)) hasUnloadedImg = true;
     if (loadImgList.size >= loadNum) return index !== end || hasUnloadedImg;
     index += step;
   }
@@ -164,9 +177,14 @@ export const checkImgSize = (url: string) => {
 };
 
 export const updateImgLoadType = singleThreaded(() => {
-  if (store.showRange[0] < 0 || needLoadImgList().size === 0) return;
+  if (
+    store.showRange[0] < 0 ||
+    (needLoadImgList().size === 0 && waitUrlImgNum() === 0)
+  )
+    return;
 
   loadImgList.clear();
+  waitUrlImgs.clear();
 
   if (store.imgList.length > 0) {
     // 优先加载当前显示的图片
@@ -182,6 +200,8 @@ export const updateImgLoadType = singleThreaded(() => {
       // 加载当前页前面的图片
       loadRangeImg(Number.NEGATIVE_INFINITY, 5);
   }
+
+  store.prop.onWaitUrlImgs?.(waitUrlImgs, imgList());
 
   setState((state) => {
     for (const url of needLoadImgList()) {

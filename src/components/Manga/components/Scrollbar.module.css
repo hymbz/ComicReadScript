@@ -78,11 +78,7 @@
   }
 
   &[data-type='wait'] {
-    opacity: 0.5;
-  }
-
-  &[data-null] {
-    background-color: #fbc02d;
+    opacity: 0.4;
   }
 
   &[data-type='error'] {

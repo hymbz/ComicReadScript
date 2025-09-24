@@ -1,11 +1,9 @@
 import type { ComicImgData } from 'components/Manga';
-import type { LoadImgFn } from 'main';
 
 import {
   canvasToBlob,
   getFileName,
   log,
-  plimit,
   querySelector,
   querySelectorAll,
   querySelectorClick,
@@ -69,13 +67,12 @@ import { request, toast, useInit } from 'main';
     }
   };
 
-  const getImgUrl = async (
-    imgEle: HTMLImageElement,
-  ): Promise<string | ComicImgData> => {
+  const loadImg = async (i: number): Promise<string | ComicImgData> => {
+    const imgEle = imgEleList[i];
     const originalUrl = imgEle.dataset.original!;
     const name = getFileName(originalUrl);
 
-    if (imgEle.src.startsWith('blob:')) return { name, src: imgEle.src };
+    if (imgEle.dataset.imgUrl) return { name, src: imgEle.dataset.imgUrl };
 
     const res = await downloadImg(imgEle.dataset.original!);
     if (res.response.size === 0) {
@@ -105,7 +102,9 @@ import { request, toast, useInit } from 'main';
       );
       URL.revokeObjectURL(imgEle.src);
       if (!blob) throw new Error('转换图片时出错');
-      return { name, src: URL.createObjectURL(blob) };
+      const url = URL.createObjectURL(blob);
+      imgEle.dataset.imgUrl = url;
+      return { name, src: url };
     } catch (error) {
       imgEle.src = originalUrl;
       toast.warn(
@@ -121,14 +120,8 @@ import { request, toast, useInit } from 'main';
     return loadedNum > 0 && querySelectorAll('canvas').length - loadedNum <= 1;
   });
 
-  const loadImgList: LoadImgFn = (setImg) =>
-    plimit(
-      imgEleList.map((img, i) => async () => {
-        setImg(i, await getImgUrl(img));
-      }),
-    );
   setState('comicMap', '', {
-    getImgList: ({ dynamicLoad }) =>
-      dynamicLoad(loadImgList, imgEleList.length),
+    getImgList: ({ dynamicLazyLoad }) =>
+      dynamicLazyLoad({ loadImg, length: imgEleList.length }),
   });
 })().catch((error) => log.error(error));

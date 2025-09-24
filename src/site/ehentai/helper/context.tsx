@@ -123,6 +123,7 @@ export const createEhContext = async (): Promise<EhContext | undefined> => {
     LoadButton(props) {
       const tip = createMemo(() => {
         const _imgList = mainContext.store.comicMap[props.id]?.imgList;
+        if (_imgList?.length === 0) return ` loading - 0/${imgNum}`;
         const progress = _imgList?.filter(Boolean).length;
 
         switch (_imgList?.length) {

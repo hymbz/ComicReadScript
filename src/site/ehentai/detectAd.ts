@@ -59,8 +59,9 @@ export const detectAd = ({
   })();
 
   // 返回在图片加载时检查图片的函数
-  return () => {
-    getAdPageByFileName(fileNameList, comicMap[''].adList!);
-    getAdPageByContent(imgList, comicMap[''].adList!);
+  return {
+    checkFileName: () =>
+      getAdPageByFileName(fileNameList, comicMap[''].adList!),
+    checkContent: () => getAdPageByContent(imgList, comicMap[''].adList!),
   };
 };

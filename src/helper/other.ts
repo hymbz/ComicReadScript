@@ -54,6 +54,7 @@ export const onec = (fn: () => unknown) => {
 /** 创建顺序递增的数组 */
 export function range(a: number, b?: number): number[];
 export function range<T = number>(a: number, b: (K: number) => T): T[];
+export function range<T = number>(a: number, b: T): T[];
 export function range<T = number>(
   a: number,
   b: number,
@@ -79,6 +80,9 @@ export function range<T = number>(
       return Array.from<T, T>({ length: a }, (_, i) =>
         (b as (K: number) => T)(i),
       );
+
+    case 'string':
+      return Array.from<string, string>({ length: a }, () => b);
   }
 }
 
@@ -242,6 +246,59 @@ export const plimit = async <T>(
 
   return resList;
 };
+
+/** Promise 并发队列 */
+export class PQueue<T> {
+  wait = new Set<T>();
+  running = new Set<T>();
+  done = new Set<T>();
+
+  constructor(
+    private handleTask: (item: T) => Promise<unknown>,
+    public concurrency = 1,
+  ) {}
+
+  public has = (item: T): boolean =>
+    this.running.has(item) || this.done.has(item) || this.wait.has(item);
+
+  private async processQueue(): Promise<void> {
+    if (this.running.size >= this.concurrency || this.wait.size === 0) return;
+
+    const [item] = this.wait;
+    if (item === undefined) return;
+    this.wait.delete(item);
+
+    if (!this.running.has(item)) {
+      try {
+        this.running.add(item);
+        await this.handleTask(item);
+        this.done.add(item);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.running.delete(item);
+      }
+    }
+    return this.processQueue();
+  }
+
+  public add(item: T): void {
+    if (this.has(item)) return;
+    this.wait.add(item);
+    this.processQueue();
+  }
+
+  public set(...items: T[]): void {
+    this.wait.clear();
+    this.wait = new Set(items.filter((item) => !this.has(item)));
+    this.processQueue();
+  }
+
+  public clear(): void {
+    this.wait.clear();
+    this.done.clear();
+  }
+}
 
 /**
  * 判断使用参数颜色作为默认值时是否需要切换为黑暗模式

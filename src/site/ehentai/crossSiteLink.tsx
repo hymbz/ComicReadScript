@@ -4,14 +4,7 @@ import { For, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { render } from 'solid-js/web';
 
-import {
-  fileType,
-  hijackFn,
-  plimit,
-  querySelector,
-  querySelectorAll,
-  t,
-} from 'helper';
+import { fileType, hijackFn, querySelector, querySelectorAll, t } from 'helper';
 import { request, toast } from 'main';
 
 import { type GalleryContext, isInCategories } from './helper';
@@ -72,18 +65,12 @@ const nhentai: SiteFn = async ({ setState, galleryTitle }) => {
   return result.map(({ id, title, images, num_pages, media_id }) => {
     const itemId = `@nh:${id}`;
     setState('comicMap', itemId, {
-      getImgList: ({ dynamicLoad }) =>
-        dynamicLoad(
-          (setImg) =>
-            plimit(
-              images.pages.map(
-                (page, i) => async () =>
-                  setImg(i, await downImg(i, media_id, page.t)),
-              ),
-            ),
-          num_pages,
-          itemId,
-        ),
+      getImgList: ({ dynamicLazyLoad }) =>
+        dynamicLazyLoad({
+          loadImg: (i) => downImg(i, media_id, images.pages[i].t),
+          length: num_pages,
+          id: itemId,
+        }),
     });
 
     return {
@@ -135,38 +122,38 @@ const hitomi: SiteFn = async ({ setState, galleryId }) => {
 
   const itemId = `@hitomi:${data.id}`;
   setState('comicMap', itemId, {
-    getImgList: ({ dynamicLoad }) =>
-      dynamicLoad(
-        async (setImg) => {
-          const { responseText: ggScript } = await request(
-            `https://ltn.${domain}/gg.js?_=${Date.now()}`,
-            {
-              errorText: t('site.ehentai.hitomi_error'),
-              noTip: true,
-            },
-          );
-
-          // eslint-disable-next-line prefer-const
-          let gg = {} as {
-            m: (g: number) => number;
-            s: (h: string) => number;
-            b: string;
-          };
-          eval(ggScript); // oxlint-disable-line no-eval
-
-          // 顺序下载避免触发反爬限制
-          for (const [i, { hash, name }] of data.files.entries()) {
-            const imageId = gg.s(hash);
-            const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash)!;
-            const g = Number.parseInt(m[2] + m[1], 16);
-            const url = `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
-            const src = await downImg(url);
-            setImg(i, { src, name });
-          }
+    getImgList: async ({ dynamicLazyLoad }) => {
+      const { responseText: ggScript } = await request(
+        `https://ltn.${domain}/gg.js?_=${Date.now()}`,
+        {
+          errorText: t('site.ehentai.hitomi_error'),
+          noTip: true,
         },
-        data.files.length,
-        itemId,
-      ),
+      );
+
+      // eslint-disable-next-line prefer-const
+      let gg = {} as {
+        m: (g: number) => number;
+        s: (h: string) => number;
+        b: string;
+      };
+      eval(ggScript); // oxlint-disable-line no-eval
+
+      return dynamicLazyLoad({
+        loadImg: async (i: number) => {
+          const { hash, name } = data.files[i];
+          const imageId = gg.s(hash);
+          const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash)!;
+          const g = Number.parseInt(m[2] + m[1], 16);
+          const url = `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
+          const src = await downImg(url);
+          return { src, name };
+        },
+        length: data.files.length,
+        id: itemId,
+        concurrency: 1, // 避免触发反爬限制
+      });
+    },
   });
 
   return [

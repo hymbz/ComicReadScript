@@ -49,6 +49,10 @@ export const useInit = (props: MangaProps) => {
     );
   };
 
+  const bindProp =
+    <K extends keyof State['prop']>(key: K, defaultValue?: State['prop'][K]) =>
+    (state: State) =>
+      Reflect.set(state.prop, key, (props[key] as any) ?? defaultValue);
   const bindDebounce = (key: keyof MangaProps) => (state: State) => {
     state.prop[key] = props[key] ? debounce(props[key] as any) : undefined;
   };
@@ -97,15 +101,10 @@ export const useInit = (props: MangaProps) => {
           }, 1000)
         : undefined;
     },
-    onImgError(state) {
-      state.prop.onImgError = props.onImgError;
-    },
-    editButtonList(state) {
-      state.prop.editButtonList = props.editButtonList ?? ((list) => list);
-    },
-    editSettingList(state) {
-      state.prop.editSettingList = props.editSettingList ?? ((list) => list);
-    },
+    onImgError: bindProp('onImgError'),
+    onWaitUrlImgs: bindProp('onWaitUrlImgs'),
+    editButtonList: bindProp('editButtonList', (list) => list),
+    editSettingList: bindProp('editSettingList', (list) => list),
     commentList(state) {
       state.commentList = props.commentList;
     },

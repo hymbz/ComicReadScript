@@ -2,7 +2,7 @@ import type { Component } from 'solid-js';
 
 import { For } from 'solid-js';
 
-import { boolDataVal, createThrottleMemo } from 'helper';
+import { createThrottleMemo } from 'helper';
 
 import type { ComicImg } from '../store/image';
 
@@ -14,7 +14,6 @@ type ScrollbarPageItem = {
   /** 翻页模式下是图片数量，卷轴模式下是图片长度之和 */
   num: number;
   loadType: ComicImg['loadType'];
-  isNull: boolean;
   translationType: ComicImg['translationType'];
   upscale?: 'loading' | true;
 };
@@ -35,7 +34,6 @@ const getScrollbarPage = (
   return {
     num,
     loadType: img.loadType,
-    isNull: !img.src,
     translationType: img.translationType,
     upscale,
   };
@@ -46,7 +44,6 @@ const ScrollbarPage: Component<ScrollbarPageItem> = (props) => (
     class={classes.scrollbarPage}
     style={{ 'flex-basis': `${(props.num / scrollLength()) * 100}%` }}
     data-type={props.loadType}
-    data-null={boolDataVal(props.isNull)}
     data-translation-type={props.translationType}
     data-upscale={props.upscale}
   />
@@ -54,7 +51,6 @@ const ScrollbarPage: Component<ScrollbarPageItem> = (props) => (
 
 const isSameItem = (a: ScrollbarPageItem, b: ScrollbarPageItem) =>
   a.loadType === b.loadType &&
-  a.isNull === b.isNull &&
   a.translationType === b.translationType &&
   a.upscale === b.upscale;
 

@@ -59,7 +59,7 @@ export type MainStore<T extends Record<string, any>> = {
   };
 };
 
-export type LoadImgFn = (
+export type DynamicLoadFn = (
   setImg: (i: number, url: string | ComicImgData) => void,
 ) => unknown;
 
@@ -72,10 +72,23 @@ export type MainContext<T extends Record<string, any> = Record<string, any>> = {
   setOptions: <K = T>(newOptions: Partial<K & SiteOptions>) => void;
   showComic: (id?: string | number) => Promise<void>;
   loadComic: (id?: string | number) => Promise<void>;
+  init: () => void;
+
+  /** 动态加载图片列表 */
   dynamicLoad: (
-    loadImgFn: LoadImgFn,
+    loadImg: DynamicLoadFn,
     length: number | Accessor<number>,
     id?: string | number,
   ) => Promise<MangaProps['imgList']>;
-  init: () => void;
+
+  /** 动态加载图片列表，但只在加载到对应页面时才加载 */
+  dynamicLazyLoad: (config: {
+    loadImg: (i: number) => Promise<string | ComicImgData>;
+    length: number | Accessor<number>;
+    id?: string | number;
+    /** 并发数 */
+    concurrency?: number;
+    /** 加载完成后触发的回调 */
+    onEnd?: () => void;
+  }) => Promise<MangaProps['imgList']>;
 };

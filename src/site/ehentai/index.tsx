@@ -4,7 +4,6 @@ import { createSignal, For, Show } from 'solid-js';
 import { render } from 'solid-js/web';
 
 import type { MangaProps } from 'components/Manga';
-import type { LoadImgFn } from 'main';
 
 import {
   listenHotkey,
@@ -105,28 +104,21 @@ import { tagLint } from './tagLint';
 
   if (context.type === 'mpv') {
     return setState('comicMap', '', {
-      getImgList({ dynamicLoad }) {
-        const imagelist = unsafeWindow.imagelist as {
-          i: string;
-          xhr: XMLHttpRequest;
-        }[];
-        const loadImgList: LoadImgFn = (setImg) =>
-          plimit(
-            imagelist.map((_, i) => async () => {
-              const url = () => imagelist[i].i;
-              while (!url()) {
-                if (!Reflect.has(imagelist[i], 'xhr')) {
-                  unsafeWindow.load_image(i + 1);
-                  unsafeWindow.next_possible_request = 0;
-                }
-                await wait(url);
-              }
-              setImg(i, url());
-            }),
-            undefined,
-            4,
-          );
-        return dynamicLoad(loadImgList, imagelist.length);
+      getImgList({ dynamicLazyLoad }) {
+        type ImageList = { i: string; xhr: XMLHttpRequest }[];
+        const imagelist = unsafeWindow.imagelist as ImageList;
+        const loadImg = async (i: number) => {
+          const url = () => imagelist[i].i;
+          while (!url()) {
+            if (!Reflect.has(imagelist[i], 'xhr')) {
+              unsafeWindow.load_image(i + 1);
+              unsafeWindow.next_possible_request = 0;
+            }
+            await wait(url);
+          }
+          return url();
+        };
+        return dynamicLazyLoad({ loadImg, length: imagelist.length });
       },
     });
   }
@@ -276,56 +268,52 @@ import { tagLint } from './tagLint';
 
   const [loadImgsText, setLoadImgsText] = createSignal(`1-${context.imgNum}`);
 
+  /** 需要加载的图片的 index */
   const loadImgs = createRootMemo(() =>
     // oxlint-disable-next-line explicit-length-check
-    extractRange(loadImgsText(), context.imgList.length || context.imgNum),
+    [...extractRange(loadImgsText(), context.imgList.length || context.imgNum)],
   );
 
   const totalPageNum = Number(
     querySelector('.ptt td:nth-last-child(2)')!.textContent!,
   );
 
-  const loadImgList: LoadImgFn = async (setImg) => {
-    // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
-    // 所以只能一次性获取所有页数上的图片页地址
-    if (context.pageList.length !== totalPageNum) {
-      const allPageList = await plimit(
-        range(totalPageNum, (pageNum) => () => getImgPageUrl(pageNum)),
-      );
-      context.pageList.length = 0;
-      context.fileNameList.length = 0;
-      for (const pageList of allPageList) {
-        for (const [url, fileName] of pageList) {
-          context.pageList.push(url);
-          context.fileNameList.push(fileName);
-        }
-      }
-    }
-
-    try {
-      await checkMpvKey(context);
-      await checkShowkey(context, context.pageList[0]);
-    } catch (error) {
-      log.warn('checkKey failed', error);
-    }
-
-    await plimit(
-      [...loadImgs()].map((i, order) => async () => {
-        if (i < 0) return;
-        context.imgList[i] ||= await getImgUrl(i);
-        setImg(order, {
-          src: context.imgList[i],
-          name: context.fileNameList[i],
-        });
-      }),
-      undefined,
-      4,
-    );
-    checkAd?.();
-  };
   setState('comicMap', '', {
-    getImgList: ({ dynamicLoad }) =>
-      dynamicLoad(loadImgList, () => loadImgs().size),
+    getImgList: async ({ dynamicLazyLoad }) => {
+      // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
+      // 所以只能一次性获取所有页数上的图片页地址
+      if (context.pageList.length !== totalPageNum) {
+        const allPageList = await plimit(
+          range(totalPageNum, (pageNum) => () => getImgPageUrl(pageNum)),
+        );
+        context.pageList.length = 0;
+        context.fileNameList.length = 0;
+        for (const pageList of allPageList) {
+          for (const [url, fileName] of pageList) {
+            context.pageList.push(url);
+            context.fileNameList.push(fileName);
+          }
+        }
+        checkAd?.checkFileName();
+      }
+
+      try {
+        await checkMpvKey(context);
+        await checkShowkey(context, context.pageList[0]);
+      } catch (error) {
+        log.warn('checkKey failed', error);
+      }
+
+      return dynamicLazyLoad({
+        loadImg: async (index) => {
+          const i = loadImgs()[index];
+          context.imgList[i] ||= await getImgUrl(i);
+          return { src: context.imgList[i], name: context.fileNameList[i] };
+        },
+        length: () => loadImgs().length,
+        onEnd: checkAd?.checkContent,
+      });
+    },
   });
 
   const cache = await useCache<{ pageRange: { id: number; range: string } }>({

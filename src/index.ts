@@ -1,4 +1,4 @@
-import type { InitOptions, LoadImgFn } from 'main';
+import type { InitOptions } from 'main';
 
 import { downloadImgHeaders } from 'components/Manga';
 import {
@@ -54,7 +54,7 @@ try {
         throw new Error(t('site.changed_load_failed'));
 
       /** 获取指定页数的图片 url */
-      const getImg = async (i: number) => {
+      const loadImg = async (i: number) => {
         const res = await request(
           `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
         );
@@ -64,17 +64,10 @@ try {
           .replaceAll('http://', 'https://');
       };
 
-      const loadImgFn: LoadImgFn = (setImg) =>
-        plimit(
-          range(
-            totalPageNum,
-            (i) => async () => setImg(i, await getImg(i + 1)),
-          ),
-        );
-
       options = {
         name: 'newYamibo',
-        getImgList: ({ dynamicLoad }) => dynamicLoad(loadImgFn, totalPageNum),
+        getImgList: ({ dynamicLazyLoad }) =>
+          dynamicLazyLoad({ loadImg, length: totalPageNum }),
         onNext: querySelectorClick('#btnNext'),
         onPrev: querySelectorClick('#btnPrev'),
         onExit: (isEnd) => isEnd && scrollIntoView('#w1'),
@@ -762,7 +755,7 @@ try {
       const crt = localStorage.getItem('clearance');
       options = {
         name: 'schale',
-        async getImgList({ dynamicLoad }) {
+        async getImgList({ dynamicLazyLoad }) {
           const [, , galleryId, galleryKey] = location.pathname.split('/');
 
           type DetailRes = {
@@ -793,16 +786,17 @@ try {
             { fetch: true, responseType: 'json' },
           );
           const { base, entries } = dataRes.response;
-          const totalPageNum = entries.length;
+          const { length } = entries;
 
-          return dynamicLoad(async (setImg) => {
-            for (const [i, { path, dimensions }] of entries.entries()) {
-              if (!isMangaPage) break;
-              const startTime = performance.now();
-              setImg(i, await downloadImg(`${base}${path}?w=${dimensions[0]}`));
-              await sleep(500 - (performance.now() - startTime));
-            }
-          }, totalPageNum);
+          const loadImg = async (i: number) => {
+            const { path, dimensions } = entries[i];
+            const startTime = performance.now();
+            const url = await downloadImg(`${base}${path}?w=${dimensions[0]}`);
+            await sleep(500 - (performance.now() - startTime));
+            return url;
+          };
+
+          return dynamicLazyLoad({ loadImg, length, concurrency: 1 });
         },
         SPA: { isMangaPage },
       };

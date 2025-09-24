@@ -30,7 +30,7 @@ const colorMap = {
 /** 删除 toast */
 const dismissToast = (id: string) =>
   setState((state) => {
-    state.map[id].onDismiss?.({ ...state.map[id] });
+    state.map[id]?.onDismiss?.({ ...state.map[id] });
     const i = state.list.indexOf(id);
     if (i !== -1) state.list.splice(i, 1);
     Reflect.deleteProperty(state.map, id);
