@@ -1,5 +1,7 @@
 import { querySelector, querySelectorAll } from 'helper';
 
+import type { GalleryContext } from './context';
+
 export * from './context';
 
 export const escHandler = new Map(
@@ -80,3 +82,10 @@ export const isInCategories = (...name: (keyof typeof categoriesMap)[]) =>
       `#gdc > .cs:is(${name.map((c) => `.c${categoriesMap[c]}`).join(', ')})`,
     ),
   );
+
+/** 更新 pagelist 里的 nl 参数 */
+export const setNl = (context: GalleryContext, i: number, nl: string) => {
+  const url = new URL(context.pageList[i]);
+  url.searchParams.set('nl', nl);
+  context.pageList[i] = url.href;
+};

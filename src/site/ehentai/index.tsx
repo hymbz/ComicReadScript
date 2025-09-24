@@ -20,7 +20,6 @@ import {
   log,
   plimit,
   querySelector,
-  querySelectorAll,
   range,
   requestIdleCallback,
   scrollIntoView,
@@ -39,7 +38,8 @@ import { crossSiteLink } from './crossSiteLink';
 import { detectAd } from './detectAd';
 import { expandTagList } from './expandTagList';
 import { floatTagList } from './floatTagList';
-import { createEhContext, escHandler, isInCategories } from './helper';
+import { createEhContext, escHandler, isInCategories, setNl } from './helper';
+import { checkMpvKey, checkShowkey, getImgUrlByApi } from './helper/api';
 import { addHotkeysActions } from './hotkeys';
 import { quickFavorite } from './quickFavorite';
 import { quickRating } from './quickRating';
@@ -106,12 +106,11 @@ import { tagLint } from './tagLint';
   if (context.type === 'mpv') {
     return setState('comicMap', '', {
       getImgList({ dynamicLoad }) {
-        const imgEleList = querySelectorAll('.mimg[id]');
-        const loadImgList: LoadImgFn = (setImg) => {
-          const imagelist = unsafeWindow.imagelist as {
-            i: string;
-            xhr: XMLHttpRequest;
-          }[];
+        const imagelist = unsafeWindow.imagelist as {
+          i: string;
+          xhr: XMLHttpRequest;
+        }[];
+        const loadImgList: LoadImgFn = (setImg) =>
           plimit(
             imagelist.map((_, i) => async () => {
               const url = () => imagelist[i].i;
@@ -127,8 +126,7 @@ import { tagLint } from './tagLint';
             undefined,
             4,
           );
-        };
-        return dynamicLoad(loadImgList, imgEleList.length);
+        return dynamicLoad(loadImgList, imagelist.length);
       },
     });
   }
@@ -234,9 +232,15 @@ import { tagLint } from './tagLint';
     });
 
   /** 从图片页获取图片地址 */
-  const getImgUrl = async (imgPageUrl: string): Promise<string> => {
+  const getImgUrl = async (i: number): Promise<string> => {
+    try {
+      return await getImgUrlByApi(context, i);
+    } catch (error) {
+      log.warn('getImgUrlByApi failed', error);
+    }
+
     const res = await request(
-      imgPageUrl,
+      context.pageList[i],
       {
         fetch: true,
         errorText: t('site.ehentai.fetch_img_page_source_failed'),
@@ -298,15 +302,24 @@ import { tagLint } from './tagLint';
       }
     }
 
+    try {
+      await checkMpvKey(context);
+      await checkShowkey(context, context.pageList[0]);
+    } catch (error) {
+      log.warn('checkKey failed', error);
+    }
+
     await plimit(
       [...loadImgs()].map((i, order) => async () => {
         if (i < 0) return;
-        context.imgList[i] ||= await getImgUrl(context.pageList[i]);
+        context.imgList[i] ||= await getImgUrl(i);
         setImg(order, {
           src: context.imgList[i],
           name: context.fileNameList[i],
         });
       }),
+      undefined,
+      4,
     );
     checkAd?.();
   };
@@ -361,33 +374,35 @@ import { tagLint } from './tagLint';
   addHotkeysActions(context);
 
   /** 获取新的图片页地址 */
-  const getNewImgPageUrl = async (url: string) => {
-    const res = await request(url, {
+  const updatePageUrl = async (i: number) => {
+    try {
+      return await getImgUrlByApi(context, i, true);
+    } catch {}
+
+    const res = await request(context.pageList[i], {
       errorText: t('site.ehentai.fetch_img_page_source_failed'),
     });
     checkIpBanned(res.responseText);
     const nl = /nl\('(.+?)'\)/.exec(res.responseText)?.[1];
     if (!nl) throw new Error(t('site.ehentai.fetch_img_url_failed'));
-    const newUrl = new URL(url);
-    newUrl.searchParams.set('nl', nl);
-    return newUrl.href;
+    setNl(context, i, nl);
   };
 
   /** 刷新指定图片 */
   const reloadImg = singleThreaded(async (_, url: string): Promise<void> => {
     const i = context.imgList.indexOf(url);
     if (i === -1) return;
-    context.imgList[i] = await getImgUrl(context.pageList[i]);
+    context.imgList[i] = await getImgUrl(i);
     if (!(await testImgUrl(context.imgList[i]))) {
-      context.pageList[i] = await getNewImgPageUrl(context.pageList[i]);
-      context.imgList[i] = await getImgUrl(context.pageList[i]);
+      await updatePageUrl(i);
+      context.imgList[i] = await getImgUrl(i);
       toast.warn(t('alert.retry_get_img_url', { i }));
       if (!(await testImgUrl(context.imgList[i]))) {
         await sleep(500);
         return reloadImg(url);
       }
     }
-    setState('comicMap', '', 'imgList', context.imgList);
+    setState('comicMap', '', 'imgList', [...context.imgList]);
 
     for (const img of MangaImgList())
       if (img.loadType === 'error') return reloadImg(img.src);

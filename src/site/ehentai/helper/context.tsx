@@ -50,6 +50,9 @@ export type GalleryContext = {
   japanTitle: string | undefined;
   imgNum: number;
 
+  showkey?: string;
+  mpvkey?: string;
+
   imgList: string[];
   pageList: string[];
   fileNameList: string[];

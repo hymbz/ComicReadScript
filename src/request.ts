@@ -121,6 +121,7 @@ export const request = async <T = any>(
     // stay 好像没有正确处理 json，只能再单独判断处理一下
     if (
       details.responseType === 'json' &&
+      res.responseText &&
       (typeof res.response !== 'object' ||
         Object.keys(res.response as object).length === 0)
     ) {
