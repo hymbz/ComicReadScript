@@ -14,6 +14,7 @@ import {
   scrollTop,
 } from './memo';
 import { handleEndTurnPage } from './turnPage';
+import { zoom } from './zoom';
 
 const _scrollTo = (top: number) => {
   const val = clamp(0, top, contentHeight() - store.rootSize.height);
@@ -131,6 +132,7 @@ export const saveScrollProgress = () => {
 /** 在卷轴模式下，滚动到能显示指定图片的位置 */
 export const scrollViewImg = (i: number) => {
   if (!store.option.scrollMode.enabled) return;
+
   let top: number;
   if (store.option.scrollMode.abreastMode) {
     const columnNum = abreastArea().columns.findIndex((column) =>
@@ -143,6 +145,8 @@ export const scrollViewImg = (i: number) => {
 
 /** 跳转到指定图片的显示位置 */
 export const jumpToImg = (index: number) => {
+  zoom(100);
+  setState('gridMode', false);
   if (store.option.scrollMode.enabled) return scrollViewImg(index);
 
   const pageNum = imgPageMap()[index];
