@@ -253,6 +253,8 @@ type PropState = {
         onHotkeysChange?: (hotkeys: Record<string, string[]>) => void | Promise<void>;
         /** 显示图片发生变化时触发的回调 */
         onShowImgsChange?: (showImgs: Set<number>, imgList: ComicImg[]) => void | Promise<void>;
+        /** 每次加载范围改变后触发的回调，返回加载范围中等待 url 的图片的 index */
+        onWaitUrlImgs?: (indexs: Set<number>, imgList: ComicImg[]) => void;
         editButtonList: (list: ToolbarButtonList) => ToolbarButtonList;
         editSettingList: (list: SettingList) => SettingList;
     };
@@ -410,6 +412,7 @@ declare const initComicReader: {
                 onOptionChange?: (option: Partial<Option>) => void | Promise<void>;
                 onHotkeysChange?: (hotkeys: Record<string, string[]>) => void | Promise<void>;
                 onShowImgsChange?: (showImgs: Set<number>, imgList: components_Manga.ComicImg[]) => void | Promise<void>;
+                onWaitUrlImgs?: (indexs: Set<number>, imgList: components_Manga.ComicImg[]) => void;
                 editButtonList: (list: ToolbarButtonList) => ToolbarButtonList;
                 editSettingList: (list: SettingList) => SettingList;
             };
@@ -478,6 +481,7 @@ declare const initComicReader: {
                 onOptionChange?: (option: Partial<Option>) => void | Promise<void>;
                 onHotkeysChange?: (hotkeys: Record<string, string[]>) => void | Promise<void>;
                 onShowImgsChange?: (showImgs: Set<number>, imgList: components_Manga.ComicImg[]) => void | Promise<void>;
+                onWaitUrlImgs?: (indexs: Set<number>, imgList: components_Manga.ComicImg[]) => void;
                 editButtonList: (list: ToolbarButtonList) => ToolbarButtonList;
                 editSettingList: (list: SettingList) => SettingList;
             };

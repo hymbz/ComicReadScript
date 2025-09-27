@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.3.3
+// @version         12.3.4
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、熱辣漫畫、hitomi、SchaleNetwork、nude-moon、kemono、nekohouse、welovemanga、HentaiZap、最前線、Tachidesk、LANraragi
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nude-moon | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -514,6 +514,10 @@ function range(a, b, c) {
       return Array.from({
         length: a
       }, (_, i) => b(i));
+    case 'string':
+      return Array.from({
+        length: a
+      }, () => b);
   }
 }
 
@@ -628,6 +632,50 @@ const plimit = async (fnList, callBack = undefined, limit = 10) => {
   }
   return resList;
 };
+
+/** Promise 并发队列 */
+class PQueue {
+  wait = new Set();
+  running = new Set();
+  done = new Set();
+  constructor(handleTask, concurrency = 1) {
+    this.handleTask = handleTask;
+    this.concurrency = concurrency;
+  }
+  has = item => this.running.has(item) || this.done.has(item) || this.wait.has(item);
+  async processQueue() {
+    if (this.running.size >= this.concurrency || this.wait.size === 0) return;
+    const [item] = this.wait;
+    if (item === undefined) return;
+    this.wait.delete(item);
+    if (!this.running.has(item)) {
+      try {
+        this.running.add(item);
+        await this.handleTask(item);
+        this.done.add(item);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.running.delete(item);
+      }
+    }
+    return this.processQueue();
+  }
+  add(item) {
+    if (this.has(item)) return;
+    this.wait.add(item);
+    this.processQueue();
+  }
+  set(...items) {
+    this.wait.clear();
+    this.wait = new Set(items.filter(item => !this.has(item)));
+    this.processQueue();
+  }
+  clear() {
+    this.wait.clear();
+    this.done.clear();
+  }
+}
 
 /**
  * 判断使用参数颜色作为默认值时是否需要切换为黑暗模式
@@ -1220,6 +1268,7 @@ const useStyleMemo = (selector, styleMapArg, e) => {
 
 exports.AnimationFrame = AnimationFrame;
 exports.FaviconProgress = FaviconProgress;
+exports.PQueue = PQueue;
 exports.WakeLock = WakeLock;
 exports.approx = approx;
 exports.assign = assign;
@@ -1375,7 +1424,7 @@ const request = async (url, details = {}, retryNum = 0, errorNum = 0) => {
     }
 
     // stay 好像没有正确处理 json，只能再单独判断处理一下
-    if (details.responseType === 'json' && (typeof res.response !== 'object' || Object.keys(res.response).length === 0)) {
+    if (details.responseType === 'json' && res.responseText && (typeof res.response !== 'object' || Object.keys(res.response).length === 0)) {
       try {
         Reflect.set(res, 'response', JSON.parse(res.responseText));
       } catch {}
@@ -3099,16 +3148,28 @@ const needLoadImgList = helper.createRootMemo(() => {
   for (const img of imgList()) if (img.loadType !== 'loaded' && img.src) list.add(img.src);
   return list;
 });
+const waitUrlImgNum = helper.createRootMemo(() => {
+  let num = 0;
+  for (const img of imgList()) if (!img.src) num += 1;
+  return num;
+});
 
 /** 当前加载的图片 */
 const loadImgList = new Set();
 
+/** 加载范围中等待 url 的图片 */
+const waitUrlImgs = new Set();
+
 /** 加载指定图片。返回是否已加载完成 */
-const loadImg = url => {
-  const img = store.imgMap[url];
+const loadImg = index => {
+  const img = getImg(index);
+  if (!img.src) {
+    waitUrlImgs.add(index);
+    return true;
+  }
   if (!needLoadImgList().has(img.src)) return true;
   if (img.loadType === 'error') return true;
-  loadImgList.add(url);
+  loadImgList.add(img.src);
   return false;
 };
 
@@ -3146,7 +3207,7 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
   const condition = start <= end ? () => index <= end : () => index >= end;
   const step = start <= end ? 1 : -1;
   while (condition()) {
-    if (!loadImg(getImg(index).src)) hasUnloadedImg = true;
+    if (!loadImg(index)) hasUnloadedImg = true;
     if (loadImgList.size >= loadNum) return index !== end || hasUnloadedImg;
     index += step;
   }
@@ -3168,8 +3229,9 @@ const checkImgSize = url => {
   }, 200);
 };
 const updateImgLoadType = helper.singleThreaded(() => {
-  if (store.showRange[0] < 0 || needLoadImgList().size === 0) return;
+  if (store.showRange[0] < 0 || needLoadImgList().size === 0 && waitUrlImgNum() === 0) return;
   loadImgList.clear();
+  waitUrlImgs.clear();
   if (store.imgList.length > 0) {
     // 优先加载当前显示的图片
     loadRangeImg() ||
@@ -3184,6 +3246,7 @@ const updateImgLoadType = helper.singleThreaded(() => {
     // 加载当前页前面的图片
     loadRangeImg(Number.NEGATIVE_INFINITY, 5);
   }
+  store.prop.onWaitUrlImgs?.(waitUrlImgs, imgList());
   setState(state => {
     for (const url of needLoadImgList()) {
       const img = state.imgMap[url];
@@ -3363,7 +3426,7 @@ const initWorker = helper.onec(() => {
   worker$1.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
 });
 
-var css$1 = ".img____hash_base64_5_ img{display:block;height:100%;object-fit:contain;width:100%}.img____hash_base64_5_{align-content:center;content-visibility:hidden;display:none;height:100%;margin-left:auto;margin-right:auto;position:relative;width:100%}.img____hash_base64_5_[data-show]{content-visibility:visible;display:block}.img____hash_base64_5_>picture{display:block;height:auto;inset:0;margin-bottom:auto;margin-left:inherit;margin-right:inherit;margin-top:auto;max-height:100%;max-width:100%;position:absolute;width:auto}.img____hash_base64_5_>picture,.img____hash_base64_5_>picture:after{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%}.img____hash_base64_5_[data-load-type=error]>picture:after{background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img____hash_base64_5_[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img____hash_base64_5_[data-load-type=loading]>picture) img{animation:show____hash_base64_5_ .1s forwards}.img____hash_base64_5_[data-load-type=error]>picture{cursor:pointer}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"1\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"0\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow____hash_base64_5_{backface-visibility:hidden;color:var(--text);contain:layout;display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;height:100%;overflow:visible;place-items:center;position:absolute;row-gap:0;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;width:100%;will-change:left,top}.mangaFlow____hash_base64_5_[data-disable-zoom] .img____hash_base64_5_>picture{height:fit-content;width:fit-content}.mangaFlow____hash_base64_5_[data-hidden-mouse=true]{cursor:none}.mangaFlow____hash_base64_5_[data-vertical]{grid-auto-flow:row}.mangaBox____hash_base64_5_{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0s;width:100%}.mangaBox____hash_base64_5_[data-animation=page] .mangaFlow____hash_base64_5_,.mangaBox____hash_base64_5_[data-animation=zoom]{transition-duration:.3s}.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_{scrollbar-width:none}:is(.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_)::-webkit-scrollbar{display:none}.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_{align-items:end;box-sizing:border-box;grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;grid-template-rows:unset;overflow:auto;row-gap:1.5em}:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>.gridModeTip____hash_base64_5_{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[data-load-type=wait]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[src=\\"\\"]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_){height:100%}.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_{overflow:auto}:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{height:fit-content;row-gap:calc(var(--scroll-mode-spacing)*7px);touch-action:pan-y}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_){overflow:hidden;touch-action:none}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{align-items:start;column-gap:calc(var(--scroll-mode-spacing)*7px);height:100%}:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_{height:auto;width:100%;will-change:transform}:is(:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}@keyframes show____hash_base64_5_{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPageBody____hash_base64_5_,.endPage____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:center;width:100%;z-index:10}.endPage____hash_base64_5_{background-color:#333d;color:#fff;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s}.endPage____hash_base64_5_[data-show]{opacity:1;pointer-events:all}.endPage____hash_base64_5_[data-type=start] .tip____hash_base64_5_{transform:translateY(-10em)}.endPage____hash_base64_5_[data-type=end] .tip____hash_base64_5_{transform:translateY(10em)}.endPage____hash_base64_5_ .endPageBody____hash_base64_5_{transform:translateY(var(--drag-y,0));transition:transform .2s}:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) button{animation:jello____hash_base64_5_ .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) button){font-size:3em;margin:2em}:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) .tip____hash_base64_5_{margin:auto;position:absolute}.endPage____hash_base64_5_[data-drag] .endPageBody____hash_base64_5_{transition:transform 0s}.root____hash_base64_5_[data-mobile] .endPage____hash_base64_5_>button{width:1em}.comments____hash_base64_5_{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments____hash_base64_5_>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments____hash_base64_5_:hover{opacity:1}.root____hash_base64_5_[data-mobile] .comments____hash_base64_5_{bottom:0;max-height:15em;opacity:.8}@keyframes jello____hash_base64_5_{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel____hash_base64_5_{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.toolbarPanel____hash_base64_5_>hr{border:none;height:1em;margin:0;visibility:hidden}:is(.toolbar____hash_base64_5_[data-show],.toolbar____hash_base64_5_:hover) .toolbarPanel____hash_base64_5_{transform:none}.toolbar____hash_base64_5_[data-close] .toolbarPanel____hash_base64_5_{transform:translateX(-100%);visibility:hidden}.toolbarBg____hash_base64_5_{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_{font-size:1.3em}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_:not([data-show]){pointer-events:none}.root____hash_base64_5_[data-mobile] .toolbarBg____hash_base64_5_{filter:opacity(.8)}.SettingPanelPopper____hash_base64_5_{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel____hash_base64_5_{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel____hash_base64_5_ hr{color:#fff;margin:.5em 0}.SettingPanel____hash_base64_5_>hr{margin:0}.SettingBlock____hash_base64_5_{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div+:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div{margin-top:1em}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_) input,:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_) textarea{margin-top:.3em;width:97%}.SettingBlock____hash_base64_5_[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock____hash_base64_5_[data-show=false] .SettingBlockBody____hash_base64_5_{padding:unset}.SettingBlockSubtitle____hash_base64_5_{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingBlockBody____hash_base64_5_ .SettingBlockSubtitle____hash_base64_5_{height:1em;line-height:1em;position:unset}.SettingsItem____hash_base64_5_{align-items:center;display:flex;justify-content:space-between;position:relative}:is(.SettingsItem____hash_base64_5_,.SettingsShowItem____hash_base64_5_)+.SettingsItem____hash_base64_5_{margin-top:1em}.SettingsItem____hash_base64_5_[data-disabled]{opacity:.5}.SettingsItem____hash_base64_5_[data-disabled] button{cursor:not-allowed}.SettingsItemName____hash_base64_5_{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch____hash_base64_5_{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound____hash_base64_5_{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch____hash_base64_5_[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch____hash_base64_5_[data-checked=true] .SettingsItemSwitchRound____hash_base64_5_{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton____hash_base64_5_{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.5em;height:1em;position:absolute;right:0}.SettingsItemSelect____hash_base64_5_{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover____hash_base64_5_{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem____hash_base64_5_{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_{display:flex;flex-direction:column;overflow:hidden}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>.SettingsItem____hash_base64_5_{margin-top:1em}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>:is(textarea,input){line-height:1.2;margin:.4em .2em 0}[data-only-number]{padding:0 .2em}[data-only-number]+span{margin-left:-.1em}.hotkeys____hash_base64_5_{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys____hash_base64_5_+.hotkeys____hash_base64_5_{margin-top:.5em}.hotkeys____hash_base64_5_:last-child{border-bottom:none}.hotkeysItem____hash_base64_5_{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem____hash_base64_5_>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem____hash_base64_5_>svg):hover{opacity:.9}.hotkeysItem____hash_base64_5_:hover{padding:.2em .5em}.hotkeysItem____hash_base64_5_:hover>svg{display:unset}.hotkeysItem____hash_base64_5_:focus,.hotkeysItem____hash_base64_5_:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader____hash_base64_5_{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader____hash_base64_5_>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader____hash_base64_5_>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader____hash_base64_5_>div[title])>svg{width:1.6em}.hotkeys____hash_base64_5_:hover div[title]{transform:scale(1)}.scrollbar____hash_base64_5_{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar____hash_base64_5_>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage____hash_base64_5_{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage____hash_base64_5_[data-type=loaded]{transform:scaleY(0)}.scrollbarPage____hash_base64_5_[data-upscale]{background-color:#b39ddb;transform:scaleY(1)}.scrollbarPage____hash_base64_5_[data-upscale=loading]{background-color:#d1c4e9}.scrollbarPage____hash_base64_5_[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage____hash_base64_5_[data-translation-type=wait]{background-color:#81c784}.scrollbarPage____hash_base64_5_[data-translation-type=show]{background-color:#4caf50}.scrollbarPage____hash_base64_5_[data-translation-type=error]{background-color:#f005}.scrollbarPage____hash_base64_5_[data-type=wait]{opacity:.5}.scrollbarPage____hash_base64_5_[data-null]{background-color:#fbc02d}.scrollbarPage____hash_base64_5_[data-type=error]{background-color:#f005}.scrollbarSlider____hash_base64_5_{background-color:#fff5;border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper____hash_base64_5_{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_:before{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarPoper____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarSlider____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]):before{opacity:1}.scrollbar____hash_base64_5_[data-drag] .scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag] .scrollbarSlider____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag]:before{transition:opacity .15s}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]) .scrollbarSlider____hash_base64_5_{opacity:0}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider____hash_base64_5_{opacity:1}.scrollbar____hash_base64_5_[data-position=hidden]{display:none}.scrollbar____hash_base64_5_[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar____hash_base64_5_[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar____hash_base64_5_[data-position=top] .scrollbarPoper____hash_base64_5_{top:1.2em}.scrollbar____hash_base64_5_[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar____hash_base64_5_[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar____hash_base64_5_[data-position=bottom] .scrollbarPoper____hash_base64_5_{bottom:1.2em}.scrollbar____hash_base64_5_[data-position=bottom],.scrollbar____hash_base64_5_[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{transform:translateX(var(--poper-top))}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(1)}.scrollbar____hash_base64_5_[data-is-abreast-mode] .scrollbarPoper____hash_base64_5_{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar____hash_base64_5_[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper____hash_base64_5_{writing-mode:vertical-lr}.root____hash_base64_5_[data-scroll-mode] .scrollbar____hash_base64_5_:before,.root____hash_base64_5_[data-scroll-mode] :is(.scrollbarSlider____hash_base64_5_,.scrollbarPoper____hash_base64_5_){transition:opacity .15s}:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover) .scrollbarPoper____hash_base64_5_,:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover):before{opacity:0}.touchAreaRoot____hash_base64_5_{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot____hash_base64_5_[data-show]{opacity:1}.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=prev]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=menu]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=next]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-next)}.touchAreaRoot____hash_base64_5_[data-vert=true]{flex-direction:column!important}.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=NEXT],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=PREV],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=next],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=prev]{visibility:hidden}.touchAreaRoot____hash_base64_5_[data-shrink-menu]{grid-template-columns:1fr 2em 1fr}.touchAreaRoot____hash_base64_5_[data-shrink-menu] .touchArea____hash_base64_5_[data-area=MENU]{letter-spacing:0}.root____hash_base64_5_[data-mobile] .touchAreaRoot____hash_base64_5_{flex-direction:column!important;letter-spacing:0}.root____hash_base64_5_[data-mobile] [data-area]:after{font-size:.8em}.root____hash_base64_5_{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root____hash_base64_5_ a{color:var(--text-secondary)}.root____hash_base64_5_[data-mobile]{font-size:.8em}.hidden____hash_base64_5_{display:none!important}.invisible____hash_base64_5_{visibility:hidden!important}.beautifyScrollbar____hash_base64_5_{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-size:.9em;font-style:italic;line-height:1.2em;margin:.5em 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".img____hash_base64_5_ img{display:block;height:100%;object-fit:contain;width:100%}.img____hash_base64_5_{align-content:center;content-visibility:hidden;display:none;height:100%;margin-left:auto;margin-right:auto;position:relative;width:100%}.img____hash_base64_5_[data-show]{content-visibility:visible;display:block}.img____hash_base64_5_>picture{display:block;height:auto;inset:0;margin-bottom:auto;margin-left:inherit;margin-right:inherit;margin-top:auto;max-height:100%;max-width:100%;position:absolute;width:auto}.img____hash_base64_5_>picture,.img____hash_base64_5_>picture:after{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%}.img____hash_base64_5_[data-load-type=error]>picture:after{background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img____hash_base64_5_[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img____hash_base64_5_[data-load-type=loading]>picture) img{animation:show____hash_base64_5_ .1s forwards}.img____hash_base64_5_[data-load-type=error]>picture{cursor:pointer}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"1\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"0\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow____hash_base64_5_{backface-visibility:hidden;color:var(--text);contain:layout;display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;height:100%;overflow:visible;place-items:center;position:absolute;row-gap:0;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;width:100%;will-change:left,top}.mangaFlow____hash_base64_5_[data-disable-zoom] .img____hash_base64_5_>picture{height:fit-content;width:fit-content}.mangaFlow____hash_base64_5_[data-hidden-mouse=true]{cursor:none}.mangaFlow____hash_base64_5_[data-vertical]{grid-auto-flow:row}.mangaBox____hash_base64_5_{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0s;width:100%}.mangaBox____hash_base64_5_[data-animation=page] .mangaFlow____hash_base64_5_,.mangaBox____hash_base64_5_[data-animation=zoom]{transition-duration:.3s}.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_{scrollbar-width:none}:is(.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_)::-webkit-scrollbar{display:none}.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_{align-items:end;box-sizing:border-box;grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;grid-template-rows:unset;overflow:auto;row-gap:1.5em}:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>.gridModeTip____hash_base64_5_{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[data-load-type=wait]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[src=\\"\\"]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_){height:100%}.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_{overflow:auto}:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{height:fit-content;row-gap:calc(var(--scroll-mode-spacing)*7px);touch-action:pan-y}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_){overflow:hidden;touch-action:none}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{align-items:start;column-gap:calc(var(--scroll-mode-spacing)*7px);height:100%}:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_{height:auto;width:100%;will-change:transform}:is(:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}@keyframes show____hash_base64_5_{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPageBody____hash_base64_5_,.endPage____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:center;width:100%;z-index:10}.endPage____hash_base64_5_{background-color:#333d;color:#fff;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s}.endPage____hash_base64_5_[data-show]{opacity:1;pointer-events:all}.endPage____hash_base64_5_[data-type=start] .tip____hash_base64_5_{transform:translateY(-10em)}.endPage____hash_base64_5_[data-type=end] .tip____hash_base64_5_{transform:translateY(10em)}.endPage____hash_base64_5_ .endPageBody____hash_base64_5_{transform:translateY(var(--drag-y,0));transition:transform .2s}:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) button{animation:jello____hash_base64_5_ .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) button){font-size:3em;margin:2em}:is(.endPage____hash_base64_5_ .endPageBody____hash_base64_5_) .tip____hash_base64_5_{margin:auto;position:absolute}.endPage____hash_base64_5_[data-drag] .endPageBody____hash_base64_5_{transition:transform 0s}.root____hash_base64_5_[data-mobile] .endPage____hash_base64_5_>button{width:1em}.comments____hash_base64_5_{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments____hash_base64_5_>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments____hash_base64_5_:hover{opacity:1}.root____hash_base64_5_[data-mobile] .comments____hash_base64_5_{bottom:0;max-height:15em;opacity:.8}@keyframes jello____hash_base64_5_{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel____hash_base64_5_{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.toolbarPanel____hash_base64_5_>hr{border:none;height:1em;margin:0;visibility:hidden}:is(.toolbar____hash_base64_5_[data-show],.toolbar____hash_base64_5_:hover) .toolbarPanel____hash_base64_5_{transform:none}.toolbar____hash_base64_5_[data-close] .toolbarPanel____hash_base64_5_{transform:translateX(-100%);visibility:hidden}.toolbarBg____hash_base64_5_{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_{font-size:1.3em}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_:not([data-show]){pointer-events:none}.root____hash_base64_5_[data-mobile] .toolbarBg____hash_base64_5_{filter:opacity(.8)}.SettingPanelPopper____hash_base64_5_{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel____hash_base64_5_{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel____hash_base64_5_ hr{color:#fff;margin:.5em 0}.SettingPanel____hash_base64_5_>hr{margin:0}.SettingBlock____hash_base64_5_{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div+:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div{margin-top:1em}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_) input,:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_) textarea{margin-top:.3em;width:97%}.SettingBlock____hash_base64_5_[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock____hash_base64_5_[data-show=false] .SettingBlockBody____hash_base64_5_{padding:unset}.SettingBlockSubtitle____hash_base64_5_{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingBlockBody____hash_base64_5_ .SettingBlockSubtitle____hash_base64_5_{height:1em;line-height:1em;position:unset}.SettingsItem____hash_base64_5_{align-items:center;display:flex;justify-content:space-between;position:relative}:is(.SettingsItem____hash_base64_5_,.SettingsShowItem____hash_base64_5_)+.SettingsItem____hash_base64_5_{margin-top:1em}.SettingsItem____hash_base64_5_[data-disabled]{opacity:.5}.SettingsItem____hash_base64_5_[data-disabled] button{cursor:not-allowed}.SettingsItemName____hash_base64_5_{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch____hash_base64_5_{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound____hash_base64_5_{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch____hash_base64_5_[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch____hash_base64_5_[data-checked=true] .SettingsItemSwitchRound____hash_base64_5_{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton____hash_base64_5_{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.5em;height:1em;position:absolute;right:0}.SettingsItemSelect____hash_base64_5_{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover____hash_base64_5_{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem____hash_base64_5_{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_{display:flex;flex-direction:column;overflow:hidden}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>.SettingsItem____hash_base64_5_{margin-top:1em}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>:is(textarea,input){line-height:1.2;margin:.4em .2em 0}[data-only-number]{padding:0 .2em}[data-only-number]+span{margin-left:-.1em}.hotkeys____hash_base64_5_{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys____hash_base64_5_+.hotkeys____hash_base64_5_{margin-top:.5em}.hotkeys____hash_base64_5_:last-child{border-bottom:none}.hotkeysItem____hash_base64_5_{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem____hash_base64_5_>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem____hash_base64_5_>svg):hover{opacity:.9}.hotkeysItem____hash_base64_5_:hover{padding:.2em .5em}.hotkeysItem____hash_base64_5_:hover>svg{display:unset}.hotkeysItem____hash_base64_5_:focus,.hotkeysItem____hash_base64_5_:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader____hash_base64_5_{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader____hash_base64_5_>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader____hash_base64_5_>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader____hash_base64_5_>div[title])>svg{width:1.6em}.hotkeys____hash_base64_5_:hover div[title]{transform:scale(1)}.scrollbar____hash_base64_5_{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar____hash_base64_5_>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage____hash_base64_5_{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage____hash_base64_5_[data-type=loaded]{transform:scaleY(0)}.scrollbarPage____hash_base64_5_[data-upscale]{background-color:#b39ddb;transform:scaleY(1)}.scrollbarPage____hash_base64_5_[data-upscale=loading]{background-color:#d1c4e9}.scrollbarPage____hash_base64_5_[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage____hash_base64_5_[data-translation-type=wait]{background-color:#81c784}.scrollbarPage____hash_base64_5_[data-translation-type=show]{background-color:#4caf50}.scrollbarPage____hash_base64_5_[data-translation-type=error]{background-color:#f005}.scrollbarPage____hash_base64_5_[data-type=wait]{opacity:.4}.scrollbarPage____hash_base64_5_[data-type=error]{background-color:#f005}.scrollbarSlider____hash_base64_5_{background-color:#fff5;border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper____hash_base64_5_{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_:before{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarPoper____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarSlider____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]):before{opacity:1}.scrollbar____hash_base64_5_[data-drag] .scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag] .scrollbarSlider____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag]:before{transition:opacity .15s}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]) .scrollbarSlider____hash_base64_5_{opacity:0}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider____hash_base64_5_{opacity:1}.scrollbar____hash_base64_5_[data-position=hidden]{display:none}.scrollbar____hash_base64_5_[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar____hash_base64_5_[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar____hash_base64_5_[data-position=top] .scrollbarPoper____hash_base64_5_{top:1.2em}.scrollbar____hash_base64_5_[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar____hash_base64_5_[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar____hash_base64_5_[data-position=bottom] .scrollbarPoper____hash_base64_5_{bottom:1.2em}.scrollbar____hash_base64_5_[data-position=bottom],.scrollbar____hash_base64_5_[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{transform:translateX(var(--poper-top))}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(1)}.scrollbar____hash_base64_5_[data-is-abreast-mode] .scrollbarPoper____hash_base64_5_{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar____hash_base64_5_[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper____hash_base64_5_{writing-mode:vertical-lr}.root____hash_base64_5_[data-scroll-mode] .scrollbar____hash_base64_5_:before,.root____hash_base64_5_[data-scroll-mode] :is(.scrollbarSlider____hash_base64_5_,.scrollbarPoper____hash_base64_5_){transition:opacity .15s}:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover) .scrollbarPoper____hash_base64_5_,:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover):before{opacity:0}.touchAreaRoot____hash_base64_5_{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot____hash_base64_5_[data-show]{opacity:1}.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=prev]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=menu]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=next]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-next)}.touchAreaRoot____hash_base64_5_[data-vert=true]{flex-direction:column!important}.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=NEXT],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=PREV],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=next],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=prev]{visibility:hidden}.touchAreaRoot____hash_base64_5_[data-shrink-menu]{grid-template-columns:1fr 2em 1fr}.touchAreaRoot____hash_base64_5_[data-shrink-menu] .touchArea____hash_base64_5_[data-area=MENU]{letter-spacing:0}.root____hash_base64_5_[data-mobile] .touchAreaRoot____hash_base64_5_{flex-direction:column!important;letter-spacing:0}.root____hash_base64_5_[data-mobile] [data-area]:after{font-size:.8em}.root____hash_base64_5_{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root____hash_base64_5_ a{color:var(--text-secondary)}.root____hash_base64_5_[data-mobile]{font-size:.8em}.hidden____hash_base64_5_{display:none!important}.invisible____hash_base64_5_{visibility:hidden!important}.beautifyScrollbar____hash_base64_5_{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-size:.9em;font-style:italic;line-height:1.2em;margin:.5em 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"img____hash_base64_5_","mangaFlow":"mangaFlow____hash_base64_5_","mangaBox":"mangaBox____hash_base64_5_","root":"root____hash_base64_5_","gridModeTip":"gridModeTip____hash_base64_5_","endPage":"endPage____hash_base64_5_","endPageBody":"endPageBody____hash_base64_5_","tip":"tip____hash_base64_5_","comments":"comments____hash_base64_5_","toolbar":"toolbar____hash_base64_5_","toolbarPanel":"toolbarPanel____hash_base64_5_","toolbarBg":"toolbarBg____hash_base64_5_","SettingPanelPopper":"SettingPanelPopper____hash_base64_5_","SettingPanel":"SettingPanel____hash_base64_5_","SettingBlock":"SettingBlock____hash_base64_5_","SettingBlockBody":"SettingBlockBody____hash_base64_5_","SettingBlockSubtitle":"SettingBlockSubtitle____hash_base64_5_","SettingsItem":"SettingsItem____hash_base64_5_","SettingsShowItem":"SettingsShowItem____hash_base64_5_","SettingsItemName":"SettingsItemName____hash_base64_5_","SettingsItemSwitch":"SettingsItemSwitch____hash_base64_5_","SettingsItemSwitchRound":"SettingsItemSwitchRound____hash_base64_5_","SettingsItemIconButton":"SettingsItemIconButton____hash_base64_5_","SettingsItemSelect":"SettingsItemSelect____hash_base64_5_","closeCover":"closeCover____hash_base64_5_","SettingsShowItemBody":"SettingsShowItemBody____hash_base64_5_","hotkeys":"hotkeys____hash_base64_5_","hotkeysItem":"hotkeysItem____hash_base64_5_","hotkeysHeader":"hotkeysHeader____hash_base64_5_","scrollbar":"scrollbar____hash_base64_5_","scrollbarPage":"scrollbarPage____hash_base64_5_","scrollbarSlider":"scrollbarSlider____hash_base64_5_","scrollbarPoper":"scrollbarPoper____hash_base64_5_","touchAreaRoot":"touchAreaRoot____hash_base64_5_","touchArea":"touchArea____hash_base64_5_","hidden":"hidden____hash_base64_5_","invisible":"invisible____hash_base64_5_","beautifyScrollbar":"beautifyScrollbar____hash_base64_5_"};
 
 let clickTimeout = null;
@@ -3583,126 +3646,6 @@ const getTurnPageDir = (move, total, startTime) => {
   return dir;
 };
 
-const _scrollTo = top => {
-  const val = helper.clamp(0, top, contentHeight() - store.rootSize.height);
-  refs.mangaBox.scrollTo({
-    top: val,
-    behavior: 'instant'
-  });
-  setState(state => {
-    state.scrollTop = val;
-    openScrollLock(state);
-  });
-};
-/** 在卷轴模式下滚动到指定进度 */
-const scrollTo = (x, smooth = false) => {
-  if (!store.option.scrollMode.enabled) return;
-  if (store.option.scrollMode.abreastMode) {
-    _scrollTo(0);
-    const val = helper.clamp(0, x, abreastScrollWidth());
-    return setState('page', 'offset', 'x', 'px', val);
-  }
-  if (!smooth) {
-    scrollStep.cancel();
-    return _scrollTo(x);
-  }
-  if (scrollStep.animationId) {
-    scrollStep.cancel();
-    _scrollTo(x);
-  }
-  scrollStep.start(x);
-};
-
-/** 在卷轴模式下滚动指定进度 */
-const scrollBy = (offset, smooth = false) => {
-  if (!store.option.scrollMode.enabled) return;
-  if (handleEndTurnPage(offset > 0 ? 'next' : 'prev')) return;
-  return scrollTo(scrollTop() + offset, smooth);
-};
-
-/** 实现卷轴模式下的平滑滚动 */
-const scrollStep = new class extends helper.AnimationFrame {
-  /** 动画时长 */
-  duration = 100;
-  /** 要滚动的距离 */
-  distance = 0;
-  /** 滚动开始时间 */
-  startTime = 0;
-  /** 滚动开始位置 */
-  startTop = 0;
-  scrollTo = top => {
-    if (helper.inRange(0, top, scrollLength())) scrollTo(top);else this.cancel();
-  };
-  frame = timestamp => {
-    this.cancel();
-    this.startTime ||= timestamp;
-    /** 已滚动时间 */
-    const elapsed = timestamp - this.startTime;
-    if (elapsed >= this.duration) return this.scrollTo(this.startTop + this.distance);
-    this.scrollTo(this.startTop + elapsed / this.duration * this.distance);
-    this.call();
-  };
-  start = x => {
-    this.startTime = 0;
-    this.startTop = scrollTop();
-    this.distance = x - this.startTop;
-    this.frame(0);
-  };
-}();
-
-/** 实现卷轴模式下的匀速滚动 */
-const constantScroll = new class extends helper.AnimationFrame {
-  speed = 0;
-  lastTime = 0;
-  scrollTo = top => {
-    if (helper.inRange(0, top, scrollLength())) scrollTo(top);else this.cancel();
-  };
-  frame = timestamp => {
-    if (!this.animationId) return;
-    if (this.lastTime) {
-      const scrollDelta = this.speed * (timestamp - this.lastTime);
-      this.scrollTo(scrollTop() + scrollDelta);
-    }
-    this.lastTime = timestamp;
-    this.call();
-  };
-  start = speed => {
-    if (this.animationId && speed === this.speed) return;
-    this.cancel();
-    this.speed = speed;
-    this.lastTime = 0;
-    this.call();
-  };
-}();
-
-/** 保存当前滚动进度，并在之后恢复 */
-const saveScrollProgress = () => {
-  const oldScrollPercentage = scrollPercentage();
-  return () => scrollTo(oldScrollPercentage * scrollLength());
-};
-
-/** 在卷轴模式下，滚动到能显示指定图片的位置 */
-const scrollViewImg = i => {
-  if (!store.option.scrollMode.enabled) return;
-  let top;
-  if (store.option.scrollMode.abreastMode) {
-    const columnNum = abreastArea().columns.findIndex(column => column.includes(i));
-    top = columnNum * abreastColumnWidth() + 1;
-  } else top = pageTopList()[i] + 1;
-  scrollTo(top);
-};
-
-/** 跳转到指定图片的显示位置 */
-const jumpToImg = index => {
-  if (store.option.scrollMode.enabled) return scrollViewImg(index);
-  const pageNum = imgPageMap()[index];
-  if (pageNum === undefined) return;
-  setState(state => {
-    state.activePageIndex = pageNum;
-    state.gridMode = false;
-  });
-};
-
 const touches = new Map();
 const bound = helper.createMemoMap({
   x: () => -store.rootSize.width * (store.option.zoom.ratio / 100 - 1),
@@ -3920,6 +3863,128 @@ const handlePinchZoom = ({
   }
 };
 
+const _scrollTo = top => {
+  const val = helper.clamp(0, top, contentHeight() - store.rootSize.height);
+  refs.mangaBox.scrollTo({
+    top: val,
+    behavior: 'instant'
+  });
+  setState(state => {
+    state.scrollTop = val;
+    openScrollLock(state);
+  });
+};
+/** 在卷轴模式下滚动到指定进度 */
+const scrollTo = (x, smooth = false) => {
+  if (!store.option.scrollMode.enabled) return;
+  if (store.option.scrollMode.abreastMode) {
+    _scrollTo(0);
+    const val = helper.clamp(0, x, abreastScrollWidth());
+    return setState('page', 'offset', 'x', 'px', val);
+  }
+  if (!smooth) {
+    scrollStep.cancel();
+    return _scrollTo(x);
+  }
+  if (scrollStep.animationId) {
+    scrollStep.cancel();
+    _scrollTo(x);
+  }
+  scrollStep.start(x);
+};
+
+/** 在卷轴模式下滚动指定进度 */
+const scrollBy = (offset, smooth = false) => {
+  if (!store.option.scrollMode.enabled) return;
+  if (handleEndTurnPage(offset > 0 ? 'next' : 'prev')) return;
+  return scrollTo(scrollTop() + offset, smooth);
+};
+
+/** 实现卷轴模式下的平滑滚动 */
+const scrollStep = new class extends helper.AnimationFrame {
+  /** 动画时长 */
+  duration = 100;
+  /** 要滚动的距离 */
+  distance = 0;
+  /** 滚动开始时间 */
+  startTime = 0;
+  /** 滚动开始位置 */
+  startTop = 0;
+  scrollTo = top => {
+    if (helper.inRange(0, top, scrollLength())) scrollTo(top);else this.cancel();
+  };
+  frame = timestamp => {
+    this.cancel();
+    this.startTime ||= timestamp;
+    /** 已滚动时间 */
+    const elapsed = timestamp - this.startTime;
+    if (elapsed >= this.duration) return this.scrollTo(this.startTop + this.distance);
+    this.scrollTo(this.startTop + elapsed / this.duration * this.distance);
+    this.call();
+  };
+  start = x => {
+    this.startTime = 0;
+    this.startTop = scrollTop();
+    this.distance = x - this.startTop;
+    this.frame(0);
+  };
+}();
+
+/** 实现卷轴模式下的匀速滚动 */
+const constantScroll = new class extends helper.AnimationFrame {
+  speed = 0;
+  lastTime = 0;
+  scrollTo = top => {
+    if (helper.inRange(0, top, scrollLength())) scrollTo(top);else this.cancel();
+  };
+  frame = timestamp => {
+    if (!this.animationId) return;
+    if (this.lastTime) {
+      const scrollDelta = this.speed * (timestamp - this.lastTime);
+      this.scrollTo(scrollTop() + scrollDelta);
+    }
+    this.lastTime = timestamp;
+    this.call();
+  };
+  start = speed => {
+    if (this.animationId && speed === this.speed) return;
+    this.cancel();
+    this.speed = speed;
+    this.lastTime = 0;
+    this.call();
+  };
+}();
+
+/** 保存当前滚动进度，并在之后恢复 */
+const saveScrollProgress = () => {
+  const oldScrollPercentage = scrollPercentage();
+  return () => scrollTo(oldScrollPercentage * scrollLength());
+};
+
+/** 在卷轴模式下，滚动到能显示指定图片的位置 */
+const scrollViewImg = i => {
+  if (!store.option.scrollMode.enabled) return;
+  let top;
+  if (store.option.scrollMode.abreastMode) {
+    const columnNum = abreastArea().columns.findIndex(column => column.includes(i));
+    top = columnNum * abreastColumnWidth() + 1;
+  } else top = pageTopList()[i] + 1;
+  scrollTo(top);
+};
+
+/** 跳转到指定图片的显示位置 */
+const jumpToImg = index => {
+  zoom(100);
+  setState('gridMode', false);
+  if (store.option.scrollMode.enabled) return scrollViewImg(index);
+  const pageNum = imgPageMap()[index];
+  if (pageNum === undefined) return;
+  setState(state => {
+    state.activePageIndex = pageNum;
+    state.gridMode = false;
+  });
+};
+
 /** 根据坐标找出被点击到的元素 */
 const findClickEle = (eleList, {
   x,
@@ -4074,10 +4139,12 @@ const setAdjustToWidth = val => {
   if (typeof store.option.scrollMode.adjustToWidth !== 'number') return;
   if (typeof val === 'function') val = val(store.option.scrollMode.adjustToWidth);
   if (Number.isNaN(val)) return;
+  const jump = saveScrollProgress();
   setOption(draftOption => {
     const max = Math.ceil(store.rootSize.width);
     draftOption.scrollMode.adjustToWidth = helper.clamp(200, val, max);
   });
+  jump();
 };
 const minImgWidth = helper.createRootMemo(() => {
   let min = Number.POSITIVE_INFINITY;
@@ -5210,7 +5277,6 @@ const getScrollbarPage = (img, i, double = false) => {
   return {
     num,
     loadType: img.loadType,
-    isNull: !img.src,
     translationType: img.translationType,
     upscale
   };
@@ -5221,27 +5287,24 @@ const ScrollbarPage = props => (() => {
     var _v$ = modules_c21c94f2$1.scrollbarPage,
       _v$2 = \`\${props.num / scrollLength() * 100}%\`,
       _v$3 = props.loadType,
-      _v$4 = helper.boolDataVal(props.isNull),
-      _v$5 = props.translationType,
-      _v$6 = props.upscale;
+      _v$4 = props.translationType,
+      _v$5 = props.upscale;
     _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
     _v$2 !== _p$.t && web.setStyleProperty(_el$, "flex-basis", _p$.t = _v$2);
     _v$3 !== _p$.a && web.setAttribute(_el$, "data-type", _p$.a = _v$3);
-    _v$4 !== _p$.o && web.setAttribute(_el$, "data-null", _p$.o = _v$4);
-    _v$5 !== _p$.i && web.setAttribute(_el$, "data-translation-type", _p$.i = _v$5);
-    _v$6 !== _p$.n && web.setAttribute(_el$, "data-upscale", _p$.n = _v$6);
+    _v$4 !== _p$.o && web.setAttribute(_el$, "data-translation-type", _p$.o = _v$4);
+    _v$5 !== _p$.i && web.setAttribute(_el$, "data-upscale", _p$.i = _v$5);
     return _p$;
   }, {
     e: undefined,
     t: undefined,
     a: undefined,
     o: undefined,
-    i: undefined,
-    n: undefined
+    i: undefined
   });
   return _el$;
 })();
-const isSameItem = (a, b) => a.loadType === b.loadType && a.isNull === b.isNull && a.translationType === b.translationType && a.upscale === b.upscale;
+const isSameItem = (a, b) => a.loadType === b.loadType && a.translationType === b.translationType && a.upscale === b.upscale;
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarPageStatus = () => {
@@ -7268,6 +7331,7 @@ const useInit = props => {
     state.defaultOption = helper.assign(defaultOption(), props.defaultOption ?? {});
     state.option = helper.assign(state.defaultOption, props.option ?? {});
   };
+  const bindProp = (key, defaultValue) => state => Reflect.set(state.prop, key, props[key] ?? defaultValue);
   const bindDebounce = key => state => {
     state.prop[key] = props[key] ? helper.debounce(props[key]) : undefined;
   };
@@ -7309,15 +7373,10 @@ const useInit = props => {
         props.onNext?.();
       }, 1000) : undefined;
     },
-    onImgError(state) {
-      state.prop.onImgError = props.onImgError;
-    },
-    editButtonList(state) {
-      state.prop.editButtonList = props.editButtonList ?? (list => list);
-    },
-    editSettingList(state) {
-      state.prop.editSettingList = props.editSettingList ?? (list => list);
-    },
+    onImgError: bindProp('onImgError'),
+    onWaitUrlImgs: bindProp('onWaitUrlImgs'),
+    editButtonList: bindProp('editButtonList', list => list),
+    editSettingList: bindProp('editSettingList', list => list),
     commentList(state) {
       state.commentList = props.commentList;
     },
@@ -7952,7 +8011,7 @@ const colorMap = {
 
 /** 删除 toast */
 const dismissToast = id => setState(state => {
-  state.map[id].onDismiss?.({
+  state.map[id]?.onDismiss?.({
     ...state.map[id]
   });
   const i = state.list.indexOf(id);
@@ -8892,7 +8951,7 @@ const handleVersionUpdate = async () => {
       var _el$ = web.template(\`<h2>🥳 ComicRead 已更新到 v\`)();
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复并排卷轴模式下使用滚轮调整缩放效果异常的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复卷轴模式下网格模式点击跳转失效的 bug </p></li><li><p>修复在 ehentai 上会触发分辨率限制的 bug\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '12');
       },
@@ -9039,21 +9098,6 @@ const useInit = async (name, initSiteOptions = {}) => {
   helper.createEffectOn(() => store.comicMap[''].getImgList, (_, prev) => !prev && init(), {
     defer: true
   });
-  const dynamicLoad = async (loadImgFn, length, id = '') => {
-    if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
-    setState('comicMap', id, 'imgList', Array.from({
-      length: typeof length === 'number' ? length : length()
-    }).fill(''));
-    // oxlint-disable-next-line no-async-promise-executor
-    await new Promise(async resolve => {
-      try {
-        await loadImgFn((i, img) => resolve(setState('comicMap', id, 'imgList', list => list.with(i, img))));
-      } catch (error) {
-        Toast.toast.error(error.message);
-      }
-    });
-    return store.comicMap[id].imgList;
-  };
   const main = {
     store,
     setState,
@@ -9061,8 +9105,51 @@ const useInit = async (name, initSiteOptions = {}) => {
     setOptions,
     loadComic,
     showComic,
-    dynamicLoad,
-    init
+    init,
+    dynamicLoad: async (loadImgFn, length, id = '') => {
+      if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
+      const imgNum = typeof length === 'number' ? length : length();
+      setState('comicMap', id, 'imgList', helper.range(imgNum, ''));
+      // oxlint-disable-next-line no-async-promise-executor
+      await new Promise(async resolve => {
+        try {
+          await loadImgFn((i, img) => {
+            setState('comicMap', id, 'imgList', list => list.with(i, img));
+            resolve();
+          });
+        } catch (error) {
+          Toast.toast.error(error.message);
+        }
+      });
+      return store.comicMap[id].imgList;
+    },
+    dynamicLazyLoad: async ({
+      loadImg,
+      length,
+      id = '',
+      concurrency = 4,
+      onEnd
+    }) => {
+      if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
+      const imgNum = typeof length === 'number' ? length : length();
+      let loadNum = 0;
+
+      // oxlint-disable-next-line no-async-promise-executor
+      await new Promise(resolve => {
+        const queue = new helper.PQueue(async i => {
+          const img = await loadImg(i);
+          setState('comicMap', id, 'imgList', list => list.with(i, img));
+          resolve();
+          loadNum += 1;
+          if (loadNum === imgNum) onEnd?.();
+        }, concurrency);
+        setState(state => {
+          state.comicMap[id].imgList = helper.range(imgNum, '');
+          state.manga.onWaitUrlImgs = imgs => queue.set(...imgs);
+        });
+      });
+      return store.comicMap[id].imgList;
+    }
   };
   useFab(main);
   useManga(main);
@@ -9086,7 +9173,7 @@ const useInit = async (name, initSiteOptions = {}) => {
 
   // 设置 Fab 的显示进度
   helper.createEffectOn([doneImgNum, loadedImgNum, () => nowImgList()?.length], ([doneNum, loadNum, totalNum]) => {
-    if (!totalNum || doneNum === undefined) return setState('fab', 'progress', undefined);
+    if (totalNum === undefined || doneNum === undefined) return setState('fab', 'progress', undefined);
     if (totalNum === 0) return setState('fab', {
       progress: 0,
       tip: \`\${helper.t('other.loading_img')} - \${doneNum}/\${totalNum}\`
@@ -11239,16 +11326,18 @@ web.delegateEvents(["click"]);
         if (Number.isNaN(totalPageNum)) throw new Error(helper.t('site.changed_load_failed'));
 
         /** 获取指定页数的图片 url */
-        const getImg = async i => {
+        const loadImg = async i => {
           const res = await main.request(`https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`);
           return /(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/.exec(res.responseText)[0].replaceAll('&amp;', '&').replaceAll('http://', 'https://');
         };
-        const loadImgFn = setImg => helper.plimit(helper.range(totalPageNum, i => async () => setImg(i, await getImg(i + 1))));
         options = {
           name: 'newYamibo',
           getImgList: ({
-            dynamicLoad
-          }) => dynamicLoad(loadImgFn, totalPageNum),
+            dynamicLazyLoad
+          }) => dynamicLazyLoad({
+            loadImg,
+            length: totalPageNum
+          }),
           onNext: helper.querySelectorClick('#btnNext'),
           onPrev: helper.querySelectorClick('#btnPrev'),
           onExit: isEnd => isEnd && helper.scrollIntoView('#w1')
@@ -11586,6 +11675,7 @@ const helper = require('helper');
 const main = require('main');
 const store = require('solid-js/store');
 const detectAd$1 = require('userscript/detectAd');
+const request = require('request');
 const ehTagRules = require('userscript/ehTagRules');
 
 const getTagSetHtml = async tagset => {
@@ -11801,20 +11891,21 @@ const createEhContext = async () => {
     galleryTitle: helper.querySelector('#gn')?.textContent || undefined,
     japanTitle: helper.querySelector('#gj')?.textContent || undefined,
     imgNum,
-    imgList: [],
+    imgList: helper.range(imgNum, ''),
     pageList: [],
     fileNameList: [],
     LoadButton(props) {
       const tip = solidJs.createMemo(() => {
-        const _imgList = mainContext.store.comicMap[props.id]?.imgList;
-        const progress = _imgList?.filter(Boolean).length;
-        switch (_imgList?.length) {
+        const imgList = mainContext.store.comicMap[props.id]?.imgList;
+        if (imgList?.length === 0) return ` loading - 0/${imgNum}`;
+        const progress = imgList?.filter(Boolean).length;
+        switch (imgList?.length) {
           case undefined:
             return ' Load comic';
           case progress:
             return ' Read';
           default:
-            return ` loading - ${progress}/${_imgList.length}`;
+            return ` loading - ${progress}/${imgNum}`;
         }
       });
       return (() => {
@@ -11881,6 +11972,13 @@ const categoriesMap = {
 /** 判断是否当前画廊是否是指定的分类 */
 const isInCategories = (...name) => Boolean(helper.querySelector(`#gdc > .cs:is(${name.map(c => `.c${categoriesMap[c]}`).join(', ')})`));
 
+/** 更新 pagelist 里的 nl 参数 */
+const setNl = (context, i, nl) => {
+  const url = new URL(context.pageList[i]);
+  url.searchParams.set('nl', nl);
+  context.pageList[i] = url.href;
+};
+
 const nhentai = async ({
   setState,
   galleryTitle
@@ -11924,8 +12022,12 @@ const nhentai = async ({
     const itemId = `@nh:${id}`;
     setState('comicMap', itemId, {
       getImgList: ({
-        dynamicLoad
-      }) => dynamicLoad(setImg => helper.plimit(images.pages.map((page, i) => async () => setImg(i, await downImg(i, media_id, page.t)))), num_pages, itemId)
+        dynamicLazyLoad
+      }) => dynamicLazyLoad({
+        loadImg: i => downImg(i, media_id, images.pages[i].t),
+        length: num_pages,
+        id: itemId
+      })
     });
     return {
       id: itemId,
@@ -11970,9 +12072,9 @@ const hitomi = async ({
   const data = JSON.parse(res.responseText.slice(18));
   const itemId = `@hitomi:${data.id}`;
   setState('comicMap', itemId, {
-    getImgList: ({
-      dynamicLoad
-    }) => dynamicLoad(async setImg => {
+    getImgList: async ({
+      dynamicLazyLoad
+    }) => {
       const {
         responseText: ggScript
       } = await main.request(`https://ltn.${domain}/gg.js?_=${Date.now()}`, {
@@ -11984,22 +12086,27 @@ const hitomi = async ({
       let gg = {};
       eval(ggScript); // oxlint-disable-line no-eval
 
-      // 顺序下载避免触发反爬限制
-      for (const [i, {
-        hash,
-        name
-      }] of data.files.entries()) {
-        const imageId = gg.s(hash);
-        const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash);
-        const g = Number.parseInt(m[2] + m[1], 16);
-        const url = `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
-        const src = await downImg(url);
-        setImg(i, {
-          src,
-          name
-        });
-      }
-    }, data.files.length, itemId)
+      return dynamicLazyLoad({
+        loadImg: async i => {
+          const {
+            hash,
+            name
+          } = data.files[i];
+          const imageId = gg.s(hash);
+          const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash);
+          const g = Number.parseInt(m[2] + m[1], 16);
+          const url = `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
+          const src = await downImg(url);
+          return {
+            src,
+            name
+          };
+        },
+        length: data.files.length,
+        id: itemId,
+        concurrency: 1 // 避免触发反爬限制
+      });
+    }
   });
   return [{
     id: itemId,
@@ -12191,9 +12298,9 @@ const detectAd = ({
   })();
 
   // 返回在图片加载时检查图片的函数
-  return () => {
-    detectAd$1.getAdPageByFileName(fileNameList, comicMap[''].adList);
-    detectAd$1.getAdPageByContent(imgList, comicMap[''].adList);
+  return {
+    checkFileName: () => detectAd$1.getAdPageByFileName(fileNameList, comicMap[''].adList),
+    checkContent: () => detectAd$1.getAdPageByContent(imgList, comicMap[''].adList)
   };
 };
 
@@ -12572,6 +12679,81 @@ const floatTagList = ({
   taglist.addEventListener('dragover', e => e.preventDefault());
   taglist.addEventListener('dragenter', e => e.preventDefault());
   taglist.addEventListener('drop', handleDrop);
+};
+
+const ehApi = async (data, details) => {
+  const res = await request.request(`/api.php`, {
+    fetch: false,
+    method: 'POST',
+    responseType: 'json',
+    cookie: document.cookie,
+    data: JSON.stringify(data),
+    ...details
+  });
+  if (res.response.error) {
+    helper.log.error(res.response.error);
+    throw new Error(res.response.error);
+  }
+  return res.response;
+};
+
+/** 使用 api 获取图片链接 */
+const getImgUrlByApi = async (context, i, nextLink) => {
+  const imgPageUrl = context.pageList[i];
+
+  // api 使用的 nl 只要 - 前面的数字，但通过 url 获取新图地址时需要完整的 nl
+  const [, imgkey, gid, page, nl] = /\/s\/(\S+)\/(\d+)-(\d+)(?=$|\?nl=(\d+))/.exec(imgPageUrl);
+  const data = {
+    gid,
+    page,
+    imgkey
+  };
+  if (nl) data.nl = nl;
+  if (context.mpvkey) {
+    const res = await ehApi({
+      method: 'imagedispatch',
+      ...data,
+      mpvkey: context.mpvkey
+    }, {
+      noTip: true
+    });
+    if (nextLink) setNl(context, i, res.s);
+    return res.i;
+  }
+  const res = await ehApi({
+    method: 'showpage',
+    ...data,
+    showkey: context.showkey
+  }, {
+    noTip: true
+  });
+  if (nextLink) setNl(context, i, /nl\('(\d+-\d+)'\)/.exec(res.i3)[1]);
+  return /src="(\S+)"/.exec(res.i3)[1];
+};
+
+/** 检查 showkey */
+const checkShowkey = async (context, imgPageUrl) => {
+  if (context.showkey) return;
+  const res = await request.request(imgPageUrl, {
+    fetch: true
+  }, 10);
+  const [, showkey] = /showkey="(\S+)"/.exec(res.responseText);
+  context.showkey = showkey;
+};
+
+/** 检查 mpvkey */
+const checkMpvKey = async context => {
+  if (context.mpvkey) return;
+  const mpvUrl = `${location.origin}${location.pathname}`.replace('/g/', '/mpv/');
+  const mpvButton = helper.querySelector(`.g2 a[href="${mpvUrl}"]`);
+  if (!mpvButton) return;
+  const res = await request.request(mpvUrl, {
+    fetch: true
+  });
+  const reRes = /mpvkey = "(\S+)"/.exec(res.responseText);
+  if (!reRes) return;
+  const [, mpvkey] = reRes;
+  context.mpvkey = mpvkey;
 };
 
 const addHotkeysActions = context => {
@@ -13373,24 +13555,24 @@ web.delegateEvents(["click"]);
   if (context.type === 'mpv') {
     return setState('comicMap', '', {
       getImgList({
-        dynamicLoad
+        dynamicLazyLoad
       }) {
-        const imgEleList = helper.querySelectorAll('.mimg[id]');
-        const loadImgList = setImg => {
-          const imagelist = unsafeWindow.imagelist;
-          helper.plimit(imagelist.map((_, i) => async () => {
-            const url = () => imagelist[i].i;
-            while (!url()) {
-              if (!Reflect.has(imagelist[i], 'xhr')) {
-                unsafeWindow.load_image(i + 1);
-                unsafeWindow.next_possible_request = 0;
-              }
-              await helper.wait(url);
+        const imagelist = unsafeWindow.imagelist;
+        const loadImg = async i => {
+          const url = () => imagelist[i].i;
+          while (!url()) {
+            if (!Reflect.has(imagelist[i], 'xhr')) {
+              unsafeWindow.load_image(i + 1);
+              unsafeWindow.next_possible_request = 0;
             }
-            setImg(i, url());
-          }), undefined, 4);
+            await helper.wait(url);
+          }
+          return url();
         };
-        return dynamicLoad(loadImgList, imgEleList.length);
+        return dynamicLazyLoad({
+          loadImg,
+          length: imagelist.length
+        });
       }
     });
   }
@@ -13482,8 +13664,13 @@ web.delegateEvents(["click"]);
   });
 
   /** 从图片页获取图片地址 */
-  const getImgUrl = async imgPageUrl => {
-    const res = await main.request(imgPageUrl, {
+  const getImgUrl = async i => {
+    try {
+      return await getImgUrlByApi(context, i);
+    } catch (error) {
+      helper.log.warn('getImgUrlByApi failed', error);
+    }
+    const res = await main.request(context.pageList[i], {
       fetch: true,
       errorText: helper.t('site.ehentai.fetch_img_page_source_failed')
     }, 10);
@@ -13510,38 +13697,49 @@ web.delegateEvents(["click"]);
     return pageList;
   };
   const [loadImgsText, setLoadImgsText] = solidJs.createSignal(`1-${context.imgNum}`);
+
+  /** 需要加载的图片的 index */
   const loadImgs = helper.createRootMemo(() =>
   // oxlint-disable-next-line explicit-length-check
-  helper.extractRange(loadImgsText(), context.imgList.length || context.imgNum));
+  [...helper.extractRange(loadImgsText(), context.imgList.length || context.imgNum)]);
   const totalPageNum = Number(helper.querySelector('.ptt td:nth-last-child(2)').textContent);
-  const loadImgList = async setImg => {
-    // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
-    // 所以只能一次性获取所有页数上的图片页地址
-    if (context.pageList.length !== totalPageNum) {
-      const allPageList = await helper.plimit(helper.range(totalPageNum, pageNum => () => getImgPageUrl(pageNum)));
-      context.pageList.length = 0;
-      context.fileNameList.length = 0;
-      for (const pageList of allPageList) {
-        for (const [url, fileName] of pageList) {
-          context.pageList.push(url);
-          context.fileNameList.push(fileName);
-        }
-      }
-    }
-    await helper.plimit([...loadImgs()].map((i, order) => async () => {
-      if (i < 0) return;
-      context.imgList[i] ||= await getImgUrl(context.pageList[i]);
-      setImg(order, {
-        src: context.imgList[i],
-        name: context.fileNameList[i]
-      });
-    }));
-    checkAd?.();
-  };
   setState('comicMap', '', {
-    getImgList: ({
-      dynamicLoad
-    }) => dynamicLoad(loadImgList, () => loadImgs().size)
+    getImgList: async ({
+      dynamicLazyLoad
+    }) => {
+      // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
+      // 所以只能一次性获取所有页数上的图片页地址
+      if (context.pageList.length !== totalPageNum) {
+        const allPageList = await helper.plimit(helper.range(totalPageNum, pageNum => () => getImgPageUrl(pageNum)));
+        context.pageList.length = 0;
+        context.fileNameList.length = 0;
+        for (const pageList of allPageList) {
+          for (const [url, fileName] of pageList) {
+            context.pageList.push(url);
+            context.fileNameList.push(fileName);
+          }
+        }
+        checkAd?.checkFileName();
+      }
+      try {
+        await checkMpvKey(context);
+        await checkShowkey(context, context.pageList[0]);
+      } catch (error) {
+        helper.log.warn('checkKey failed', error);
+      }
+      return dynamicLazyLoad({
+        loadImg: async index => {
+          const i = loadImgs()[index];
+          context.imgList[i] ||= await getImgUrl(i);
+          return {
+            src: context.imgList[i],
+            name: context.fileNameList[i]
+          };
+        },
+        length: () => loadImgs().length,
+        onEnd: checkAd?.checkContent
+      });
+    }
   });
   const cache = await helper.useCache({
     pageRange: 'id'
@@ -13579,26 +13777,27 @@ web.delegateEvents(["click"]);
   addHotkeysActions(context);
 
   /** 获取新的图片页地址 */
-  const getNewImgPageUrl = async url => {
-    const res = await main.request(url, {
+  const updatePageUrl = async i => {
+    try {
+      return await getImgUrlByApi(context, i, true);
+    } catch {}
+    const res = await main.request(context.pageList[i], {
       errorText: helper.t('site.ehentai.fetch_img_page_source_failed')
     });
     checkIpBanned(res.responseText);
     const nl = /nl\('(.+?)'\)/.exec(res.responseText)?.[1];
     if (!nl) throw new Error(helper.t('site.ehentai.fetch_img_url_failed'));
-    const newUrl = new URL(url);
-    newUrl.searchParams.set('nl', nl);
-    return newUrl.href;
+    setNl(context, i, nl);
   };
 
   /** 刷新指定图片 */
   const reloadImg = helper.singleThreaded(async (_, url) => {
     const i = context.imgList.indexOf(url);
     if (i === -1) return;
-    context.imgList[i] = await getImgUrl(context.pageList[i]);
+    context.imgList[i] = await getImgUrl(i);
     if (!(await helper.testImgUrl(context.imgList[i]))) {
-      context.pageList[i] = await getNewImgPageUrl(context.pageList[i]);
-      context.imgList[i] = await getImgUrl(context.pageList[i]);
+      await updatePageUrl(i);
+      context.imgList[i] = await getImgUrl(i);
       main.toast.warn(helper.t('alert.retry_get_img_url', {
         i
       }));
@@ -13607,7 +13806,7 @@ web.delegateEvents(["click"]);
         return reloadImg(url);
       }
     }
-    setState('comicMap', '', 'imgList', context.imgList);
+    setState('comicMap', '', 'imgList', [...context.imgList]);
     for (const img of Manga.imgList()) if (img.loadType === 'error') return reloadImg(img.src);
   });
   setState(state => {
@@ -14528,12 +14727,13 @@ const main = require('main');
       }, 3);
     }
   };
-  const getImgUrl = async imgEle => {
+  const loadImg = async i => {
+    const imgEle = imgEleList[i];
     const originalUrl = imgEle.dataset.original;
     const name = helper.getFileName(originalUrl);
-    if (imgEle.src.startsWith('blob:')) return {
+    if (imgEle.dataset.imgUrl) return {
       name,
-      src: imgEle.src
+      src: imgEle.dataset.imgUrl
     };
     const res = await downloadImg(imgEle.dataset.original);
     if (res.response.size === 0) {
@@ -14556,9 +14756,11 @@ const main = require('main');
       const blob = await helper.canvasToBlob(imgEle.nextElementSibling, 'image/webp', 1);
       URL.revokeObjectURL(imgEle.src);
       if (!blob) throw new Error('转换图片时出错');
+      const url = URL.createObjectURL(blob);
+      imgEle.dataset.imgUrl = url;
       return {
         name,
-        src: URL.createObjectURL(blob)
+        src: url
       };
     } catch (error) {
       imgEle.src = originalUrl;
@@ -14572,13 +14774,13 @@ const main = require('main');
     const loadedNum = helper.querySelectorAll('.lazy-loaded').length;
     return loadedNum > 0 && helper.querySelectorAll('canvas').length - loadedNum <= 1;
   });
-  const loadImgList = setImg => helper.plimit(imgEleList.map((img, i) => async () => {
-    setImg(i, await getImgUrl(img));
-  }));
   setState('comicMap', '', {
     getImgList: ({
-      dynamicLoad
-    }) => dynamicLoad(loadImgList, imgEleList.length)
+      dynamicLazyLoad
+    }) => dynamicLazyLoad({
+      loadImg,
+      length: imgEleList.length
+    })
   });
 })().catch(error => helper.log.error(error));
 
@@ -14949,7 +15151,7 @@ const main = require('main');
         options = {
           name: 'schale',
           async getImgList({
-            dynamicLoad
+            dynamicLazyLoad
           }) {
             const [,, galleryId, galleryKey] = location.pathname.split('/');
             const detailRes = await main.request(`https://api.schale.network/books/detail/${galleryId}/${galleryKey}?crt=${crt}`, {
@@ -14969,18 +15171,24 @@ const main = require('main');
               base,
               entries
             } = dataRes.response;
-            const totalPageNum = entries.length;
-            return dynamicLoad(async setImg => {
-              for (const [i, {
+            const {
+              length
+            } = entries;
+            const loadImg = async i => {
+              const {
                 path,
                 dimensions
-              }] of entries.entries()) {
-                if (!isMangaPage) break;
-                const startTime = performance.now();
-                setImg(i, await downloadImg(`${base}${path}?w=${dimensions[0]}`));
-                await helper.sleep(500 - (performance.now() - startTime));
-              }
-            }, totalPageNum);
+              } = entries[i];
+              const startTime = performance.now();
+              const url = await downloadImg(`${base}${path}?w=${dimensions[0]}`);
+              await helper.sleep(500 - (performance.now() - startTime));
+              return url;
+            };
+            return dynamicLazyLoad({
+              loadImg,
+              length,
+              concurrency: 1
+            });
           },
           SPA: {
             isMangaPage

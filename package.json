@@ -1,6 +1,6 @@
 {
   "name": "@hymbz/comic-read-script",
-  "version": "12.3.3",
+  "version": "12.3.4",
   "description": "为漫画站增加双页阅读、翻译等优化体验的增强功能的油猴脚本",
   "author": "hymbz",
   "license": "AGPL-3.0-or-later",
