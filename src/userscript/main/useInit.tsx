@@ -240,7 +240,7 @@ export const useInit = async <T extends Record<string, any>>(
   createEffectOn(
     [doneImgNum, loadedImgNum, () => nowImgList()?.length],
     ([doneNum, loadNum, totalNum]) => {
-      if (!totalNum || doneNum === undefined)
+      if (totalNum === undefined || doneNum === undefined)
         return setState('fab', 'progress', undefined);
 
       if (totalNum === 0)

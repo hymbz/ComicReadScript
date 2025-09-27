@@ -2,7 +2,7 @@ import type { Component } from 'solid-js';
 
 import { createMemo } from 'solid-js';
 
-import { querySelector } from 'helper';
+import { querySelector, range } from 'helper';
 import { request, useInit } from 'main';
 
 const defaultOptions = {
@@ -116,23 +116,23 @@ export const createEhContext = async (): Promise<EhContext | undefined> => {
     japanTitle: querySelector('#gj')?.textContent || undefined,
     imgNum,
 
-    imgList: [],
+    imgList: range(imgNum, ''),
     pageList: [],
     fileNameList: [],
 
     LoadButton(props) {
       const tip = createMemo(() => {
-        const _imgList = mainContext.store.comicMap[props.id]?.imgList;
-        if (_imgList?.length === 0) return ` loading - 0/${imgNum}`;
-        const progress = _imgList?.filter(Boolean).length;
+        const imgList = mainContext.store.comicMap[props.id]?.imgList;
+        if (imgList?.length === 0) return ` loading - 0/${imgNum}`;
+        const progress = imgList?.filter(Boolean).length;
 
-        switch (_imgList?.length) {
+        switch (imgList?.length) {
           case undefined:
             return ' Load comic';
           case progress:
             return ' Read';
           default:
-            return ` loading - ${progress}/${_imgList!.length}`;
+            return ` loading - ${progress}/${imgNum}`;
         }
       });
       return (
