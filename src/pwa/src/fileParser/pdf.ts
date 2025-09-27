@@ -23,6 +23,7 @@ export const handlePdf = async (file: File): Promise<ImgFile[]> => {
     const task = pdfjsLib.getDocument({
       data: await file.arrayBuffer(),
       wasmUrl: '/pdfJsWasm/',
+      enableHWA: true,
     });
     task.onPassword = (updatePassword: (password: string) => void) => {
       // eslint-disable-next-line no-alert
