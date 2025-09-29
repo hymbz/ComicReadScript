@@ -83,6 +83,7 @@ const sortTagList = (tagList: Tag[]) => {
 
   // order 设为负数是为了在排列时能排在没有 order 值的元素前
   let i = -tagList.length;
+  // oxlint-disable-next-line no-array-sort
   for (const tag of tagList.sort(sortFn)) tag.order = i++;
   return tagList;
 };

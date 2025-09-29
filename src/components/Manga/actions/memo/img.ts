@@ -36,7 +36,7 @@ const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
   const list = imgList()
     .filter((img) => img.loadType === 'loaded' && img.width)
     .map(sizeFn)
-    .sort((a, b) => a - b);
+    .toSorted((a, b) => a - b);
   // 因为涉及到图片默认类型的计算，所以至少等到加载完三张图片再计算，避免被首页大图干扰
   if (list.length < 3) return null;
   return list[Math.floor(list.length / 2)];

@@ -74,6 +74,7 @@
     "import/no-unassigned-import": "off",
     "import/no-anonymous-default-export": "off",
     "import/no-named-as-default": "off",
+    "import/no-named-export": "off",
 
     "jsdoc/require-param": "off",
     "jsdoc/require-returns": "off",
@@ -92,6 +93,7 @@
     "unicorn/no-anonymous-default-export": "off",
     "unicorn/no-unreadable-array-destructuring": "off",
     "unicorn/no-negation-in-equality-check": "off",
+    "unicorn/no-array-callback-reference": "off",
 
     "typescript/consistent-indexed-object-style": "error",
     "typescript/prefer-as-const": "error",
@@ -103,6 +105,8 @@
 
     "promise/prefer-await-to-callbacks": "off",
     "promise/prefer-await-to-then": "off",
+    // 因为无法识别三元表达式，所以暂时关闭
+    "promise/no-multiple-resolved": "off",
 
     "jest/require-hook": "off",
     "jest/prefer-lowercase-title": "off",

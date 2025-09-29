@@ -187,18 +187,13 @@ export const updateImgLoadType = singleThreaded(() => {
   waitUrlImgs.clear();
 
   if (store.imgList.length > 0) {
-    // 优先加载当前显示的图片
-    loadRangeImg() ||
-      // 再加载后面几页
-      loadRangeImg(preloadNum().back) ||
-      // 再加载前面几页
-      loadRangeImg(-preloadNum().front) ||
-      // 根据设置决定是否要继续加载其余图片
-      !store.option.alwaysLoadAllImg ||
-      // 加载当前页后面的图片
-      loadRangeImg(Number.POSITIVE_INFINITY, 5) ||
-      // 加载当前页前面的图片
-      loadRangeImg(Number.NEGATIVE_INFINITY, 5);
+    // oxlint-disable-next-line no-unused-expressions
+    loadRangeImg() || // 优先加载当前显示的图片
+      loadRangeImg(preloadNum().back) || // 再加载后面几页
+      loadRangeImg(-preloadNum().front) || // 再加载前面几页
+      !store.option.alwaysLoadAllImg || // 根据设置决定是否要继续加载其余图片
+      loadRangeImg(Number.POSITIVE_INFINITY, 5) || // 加载当前页后面的图片
+      loadRangeImg(Number.NEGATIVE_INFINITY, 5); // 加载当前页前面的图片
   }
 
   store.prop.onWaitUrlImgs?.(waitUrlImgs, imgList());

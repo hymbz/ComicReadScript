@@ -178,7 +178,7 @@ export const otherSite = async () => {
         } else if (expectImgs?.has(e) && needTrigged(e))
           newImgList.push(undefined);
       }
-      return imgNum >= 2 && newImgList.sort(eleSortFn);
+      return imgNum >= 2 && newImgList.toSorted(eleSortFn);
     });
 
     if (imgEleList.length === 0)
@@ -250,7 +250,7 @@ export const otherSite = async () => {
       await triggerExpectImg();
     }
     await triggerLazyLoad(
-      getAllImg().filter(needTrigged).sort(eleSortFn),
+      getAllImg().filter(needTrigged).toSorted(eleSortFn),
       runCondition,
     );
 

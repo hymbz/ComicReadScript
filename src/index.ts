@@ -773,7 +773,7 @@ try {
           );
           const [[w, { id, key }]] = Object.entries(detailRes.response.data)
             .filter(([, data]) => data.id && data.key)
-            .sort(([, a], [, b]) => b.size - a.size);
+            .toSorted(([, a], [, b]) => b.size - a.size);
 
           type DataRes = {
             base: string;
