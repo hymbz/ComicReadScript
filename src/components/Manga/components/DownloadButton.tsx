@@ -8,7 +8,7 @@ import { IconButton } from 'components/IconButton';
 import { toast } from 'components/Toast';
 import { createEffectOn, FaviconProgress, saveAs, t, useStore } from 'helper';
 
-import { imgList } from '../actions';
+import { imgList, isUpscale } from '../actions';
 import { downloadImg } from '../helper';
 import { store } from '../store';
 
@@ -44,12 +44,14 @@ export const DownloadButton = () => {
       )
         continue;
 
-      const index = `${i}`.padStart(imgIndexNum, '0');
-      const url =
-        img.translationType === 'show' ? img.translationUrl! : img.src;
+      let url: string;
+      if (img.translationType === 'show') url = img.translationUrl!;
+      else if (img.upscaleUrl && isUpscale()) url = img.upscaleUrl;
+      else url = img.src;
 
       let data: Blob | undefined;
       let fileName: string;
+      const index = `${i}`.padStart(imgIndexNum, '0');
       try {
         data = await downloadImg(url);
         fileName = img.name || `${index}.${getExtName(data.type)}`;
