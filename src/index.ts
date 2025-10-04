@@ -1,6 +1,6 @@
 import type { InitOptions } from 'main';
 
-import { downloadImgHeaders } from 'components/Manga';
+import { downloadImgHeaders, type MangaProps } from 'components/Manga';
 import {
   fileType,
   isUrl,
@@ -889,6 +889,33 @@ try {
             (i) =>
               `${baseUrl}/${i + 1}.${fileType[unsafeWindow.g_th[i + 1].slice(0, 1)]}`,
           );
+        },
+      };
+      break;
+    }
+
+    // #[IMHentai](https://imhentai.xxx)
+    // test: https://imhentai.xxx/gallery/1526168/
+    case 'imhentai.xxx': {
+      if (!location.pathname.startsWith('/gallery/')) break;
+
+      options = {
+        name: 'IMHentai',
+        getImgList() {
+          const [baseUrl] = querySelector(
+            '#append_thumbs a img',
+          )!.dataset.src!.match(/.+\//)!;
+
+          const imgList: MangaProps['imgList'] = [];
+          for (const [i, th] of Object.entries<string>(unsafeWindow.g_th)) {
+            const [t, w, h] = th.split(',');
+            imgList[Number(i) - 1] = {
+              src: `${baseUrl}${i}.${fileType[t]}`,
+              width: Number(w),
+              height: Number(h),
+            };
+          }
+          return imgList;
         },
       };
       break;

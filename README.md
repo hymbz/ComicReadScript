@@ -217,6 +217,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [nekohouse](https://nekohouse.su)
 - [welovemanga](https://welovemanga.one)
 - [HentaiZap](https://hentaizap.com)
+- [IMHentai](https://imhentai.xxx)
 - [最前線](https://sai-zen-sen.jp)
 - [Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
 - [LANraragi](https://github.com/Difegue/LANraragi)
