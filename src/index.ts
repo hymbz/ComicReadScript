@@ -585,7 +585,7 @@ try {
       const handlePrevNext = (text: string) => async () => {
         await waitDom('.v-bottom-navigation__content');
         return querySelectorClick(
-          '.v-bottom-navigation__content > button:not([disabled])',
+          '.v-bottom-navigation__content button:not([disabled])',
           text,
         );
       };
@@ -598,6 +598,7 @@ try {
             /comic\/\d+\/chapter\/\d+\/images\//.test(location.href),
           getOnPrev: handlePrevNext('上一'),
           getOnNext: handlePrevNext('下一'),
+          handleUrl: (location) => location.pathname,
         },
       };
       break;
