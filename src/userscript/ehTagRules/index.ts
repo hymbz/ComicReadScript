@@ -80,6 +80,7 @@ const rules = {
       'f:fft_threesome',
       'f:ttf_threesome',
       'f:full-packaged_futanari',
+      'f:futanarization',
     ],
     'f:shemale': ['f:ball-less_shemale'],
     'f:lolicon': [
@@ -128,9 +129,11 @@ const rules = {
     ],
     'f:rape': ['f:gang_rape'],
     'm:rape': ['m:gang_rape'],
+    '(f|m):corpse': ['f:necrophilia', 'm:necrophilia'],
+    '(f|m):masturbation': ['f:phone_sex', 'm:phone_sex'],
 
-    'f:bondage': ['f:fanny_packing', 'f:shibari'],
-    'm:bondage': ['m:fanny_packing', 'm:shibari'],
+    'f:bondage': ['f:fanny_packing', 'f:shibari', 'f:straitjacket'],
+    'm:bondage': ['m:fanny_packing', 'm:shibari', 'm:straitjacket'],
     'f:inflation': ['f:cumflation'],
     'm:inflation': ['m:cumflation'],
     'f:lactation': ['f:milking'],
@@ -141,16 +144,17 @@ const rules = {
     'f:big_breasts': ['f:huge_breasts', 'f:gigantic_breasts'],
     'f:huge_breasts': ['f:gigantic_breasts'],
 
-    'f:sex_toys': ['f:tail_plug', 'f:butt_plug'],
-    'm:sex_toys': ['m:tail_plug', 'm:butt_plug'],
+    'f:sex_toys': ['f:tail_plug', 'f:butt_plug', 'f:unusual_insertions'],
+    'm:sex_toys': ['m:tail_plug', 'm:butt_plug', 'm:unusual_insertions'],
 
     'f:swimsuit': ['f:bikini'],
     'm:swimsuit': ['m:bikini'],
-
     'f:crossdressing': ['f:schoolboy_uniform'],
+    'f:bandages': ['f:sarashi'],
 
-    'f:monster_girl': ['f:zombie'],
+    'f:monster_girl': ['f:zombie', 'f:skeleton'],
     'f:tail': ['f:multiple_tails'],
+    '(f|m):robot': ['f:dismantling', 'm:dismantling'],
   },
 
   // 存在第一个标签时，就不应该存在其他标签
@@ -275,6 +279,8 @@ const rules = {
     'c:mizuki_akiyama': ['m:crossdressing'],
     'c:nagisa_kirifuji': ['f:angel', 'f:halo', 'f:very_long_hair', 'f:wings'],
     'c:mika_misono': ['f:angel', 'f:halo', 'f:very_long_hair', 'f:wings'],
+    'c:kanade_yoisaki': ['f:very_long_hair'],
+    'c:mafuyu_asahina': ['f:ponytail'],
   },
 };
 

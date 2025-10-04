@@ -8,6 +8,7 @@ import type { MainFn } from '../worker/detectAd/workHelper';
 
 import { showCanvas, showGrayList } from '../worker/helper';
 
+/** 用常识逻辑进行判断，以期能在检测失误时减小影响范围和遗漏 */
 const getAdPage = async <T>(
   list: (T | undefined)[],
   isAdPage: (item: T) => boolean | Promise<boolean>,
