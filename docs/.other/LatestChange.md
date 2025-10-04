@@ -1,6 +1,10 @@
-## [12.3.4](https://github.com/hymbz/ComicReadScript/compare/v12.3.3...v12.3.4) (2025-09-27)
+## [12.3.5](https://github.com/hymbz/ComicReadScript/compare/v12.3.4...v12.3.5) (2025-10-04)
+
+### Features
+
+* :sparkles: 支持 IMHentai ([2a54d3b](https://github.com/hymbz/ComicReadScript/commit/2a54d3b5d83b7ddb40a3c2e010b823ed71edc8a9))
 
 ### Bug Fixes
 
-* :bug: 修复卷轴模式下网格模式点击跳转失效的 bug ([dc4245c](https://github.com/hymbz/ComicReadScript/commit/dc4245cb398d94a733395d372e953ea4f9c0d3b1)), closes [#290](https://github.com/hymbz/ComicReadScript/issues/290)
-* :bug: 修复在 ehentai 上会触发分辨率限制的 bug ([db72138](https://github.com/hymbz/ComicReadScript/commit/db7213881046681f104af2898e089dcaebdfbf57))
+* :bug: 修复 komiic 上/下话切换失效的 bug ([e8d8f83](https://github.com/hymbz/ComicReadScript/commit/e8d8f834bd92d84917d312138fde1128c7c175c5)), closes [#299](https://github.com/hymbz/ComicReadScript/issues/299)
+* :bug: 修复开启了图像无损放大后只能下载到原图的 bug ([0195e4e](https://github.com/hymbz/ComicReadScript/commit/0195e4e9c82ea97fb42337872c0d6ff5dbf0bce9))

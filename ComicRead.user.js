@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.3.4
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、熱辣漫畫、hitomi、SchaleNetwork、nude-moon、kemono、nekohouse、welovemanga、HentaiZap、最前線、Tachidesk、LANraragi
+// @version         12.3.5
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、熱辣漫畫、hitomi、SchaleNetwork、nude-moon、kemono、nekohouse、welovemanga、HentaiZap、IMHentai、最前線、Tachidesk、LANraragi
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nude-moon | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -2100,7 +2100,7 @@ const preloadNum = helper.createRootMemo(() => ({
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = sizeFn => {
-  const list = imgList().filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort((a, b) => a - b);
+  const list = imgList().filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).toSorted((a, b) => a - b);
   // 因为涉及到图片默认类型的计算，所以至少等到加载完三张图片再计算，避免被首页大图干扰
   if (list.length < 3) return null;
   return list[Math.floor(list.length / 2)];
@@ -3233,18 +3233,18 @@ const updateImgLoadType = helper.singleThreaded(() => {
   loadImgList.clear();
   waitUrlImgs.clear();
   if (store.imgList.length > 0) {
-    // 优先加载当前显示的图片
+    // oxlint-disable-next-line no-unused-expressions
     loadRangeImg() ||
-    // 再加载后面几页
+    // 优先加载当前显示的图片
     loadRangeImg(preloadNum().back) ||
-    // 再加载前面几页
+    // 再加载后面几页
     loadRangeImg(-preloadNum().front) ||
-    // 根据设置决定是否要继续加载其余图片
+    // 再加载前面几页
     !store.option.alwaysLoadAllImg ||
-    // 加载当前页后面的图片
+    // 根据设置决定是否要继续加载其余图片
     loadRangeImg(Number.POSITIVE_INFINITY, 5) ||
-    // 加载当前页前面的图片
-    loadRangeImg(Number.NEGATIVE_INFINITY, 5);
+    // 加载当前页后面的图片
+    loadRangeImg(Number.NEGATIVE_INFINITY, 5); // 加载当前页前面的图片
   }
   store.prop.onWaitUrlImgs?.(waitUrlImgs, imgList());
   setState(state => {
@@ -5747,10 +5747,11 @@ const DownloadButton = () => {
       setState('completedNum', i);
       const img = imgList()[i];
       if (store.option.translation.onlyDownloadTranslated && img.translationType !== 'show') continue;
-      const index = \`\${i}\`.padStart(imgIndexNum, '0');
-      const url = img.translationType === 'show' ? img.translationUrl : img.src;
+      let url;
+      if (img.translationType === 'show') url = img.translationUrl;else if (img.upscaleUrl && isUpscale()) url = img.upscaleUrl;else url = img.src;
       let data;
       let fileName;
+      const index = \`\${i}\`.padStart(imgIndexNum, '0');
       try {
         data = await downloadImg(url);
         fileName = img.name || \`\${index}.\${getExtName(data.type)}\`;
@@ -8463,6 +8464,7 @@ const helper = require('helper');
 const main = require('main');
 const worker = require('worker/detectAd');
 
+/** 用常识逻辑进行判断，以期能在检测失误时减小影响范围和遗漏 */
 const getAdPage = async (list, isAdPage, adList) => {
   let i = list.length - 1;
   let normalNum = 0;
@@ -8951,7 +8953,7 @@ const handleVersionUpdate = async () => {
       var _el$ = web.template(\`<h2>🥳 ComicRead 已更新到 v\`)();
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复卷轴模式下网格模式点击跳转失效的 bug </p></li><li><p>修复在 ehentai 上会触发分辨率限制的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>支持 IMHentai\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 komiic 上/下话切换失效的 bug </p></li><li><p>修复开启了图像无损放大后只能下载到原图的 bug\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '12');
       },
@@ -10613,7 +10615,7 @@ const otherSite = async () => {
           imgNum += 1;
         } else if (expectImgs?.has(e) && needTrigged(e)) newImgList.push(undefined);
       }
-      return imgNum >= 2 && newImgList.sort(eleSortFn);
+      return imgNum >= 2 && newImgList.toSorted(eleSortFn);
     });
     if (imgEleList.length === 0) return setState(state => {
       state.fab.show = false;
@@ -10661,7 +10663,7 @@ const otherSite = async () => {
       await triggerExpectImg(3, 1000 * 5);
       await triggerExpectImg();
     }
-    await triggerLazyLoad(getAllImg().filter(needTrigged).sort(eleSortFn), runCondition);
+    await triggerLazyLoad(getAllImg().filter(needTrigged).toSorted(eleSortFn), runCondition);
 
     // 针对不使用 img 来触发懒加载的网站，要找到图片容器元素再尝试触发懒加载
     // https://www.twmanga.com/comic/chapter/sanjiaoguanxirumen-founai/0_0.html
@@ -10769,7 +10771,7 @@ code =`
 // - 根据条件将「大概率」限定为「必须」
 //   - 单萝莉 + 贫乳 + (单女主) = 肯定无法共存
 // - 把画廊类型也加进标签，方便过滤 CG 集等图库
-const rules = {"prerequisite":{"(x|f):incest":["f:cousin","f:aunt","f:daughter","f:mother","f:granddaughter","f:sister","f:grandmother","f:niece"],"(x|m):incest":["m:cousin"],"f:incest":["f:inseki","f:low_incest"],"m:incest":["m:inseki","m:low_incest"],"x:incest":["x:inseki","x:low_incest"],"f:group":["f:fff_threesome","f:ttt_threesome","f:fft_threesome","f:ttf_threesome"],"m:group":["m:mmm_threesome"],"x:group":["x:mmf_threesome","x:mmt_threesome","x:ttm_threesome","x:ffm_threesome","x:mtf_threesome","x:oyakodon","x:shimaidon","x:gang_rape"],"(x|f):group":["f:oyakodon","f:shimaidon","f:multiple_straddling","f:gang_rape","f:layer_cake","f:harem"],"(x|m):group":["m:oyakodon","m:shimaidon","m:multiple_straddling","m:gang_rape","m:layer_cake","m:harem"],"f:yuri":["f:fff_threesome"],"m:yaoi":["m:group","m:mmm_threesome"],"f:futanari":["f:ttt_threesome","f:fft_threesome","f:ttf_threesome","f:full-packaged_futanari"],"f:shemale":["f:ball-less_shemale"],"f:lolicon":["f:kodomo_doushi","x:kodomo_doushi","f:oppai_loli","f:mesugaki","f:low_lolicon"],"m:shotacon":["m:kodomo_doushi","x:kodomo_doushi"],"f:blowjob":["f:multimouth_blowjob","f:blowjob_face","f:deepthroat","f:focus_blowjob"],"m:blowjob":["m:multimouth_blowjob","m:blowjob_face","m:deepthroat","m:focus_blowjob"],"f:handjob":["f:multiple_handjob"],"m:handjob":["m:multiple_handjob"],"f:assjob":["f:multiple_assjob"],"m:assjob":["m:multiple_assjob"],"f:footjob":["f:multiple_footjob"],"m:footjob":["m:multiple_footjob"],"f:paizuri":["f:focus_paizuri"],"m:paizuri":["m:focus_paizuri"],"f:rimjob":["f:focus_rimjob"],"m:rimjob":["m:focus_rimjob"],"f:cunnilingus":["f:focus_cunnilingus"],"f:anal":["f:focus_anal","f:anal_intercourse","f:tail_plug","f:butt_plug"],"m:anal":["m:focus_anal","m:anal_intercourse","m:tail_plug","m:butt_plug"],"f:rape":["f:gang_rape"],"m:rape":["m:gang_rape"],"f:bondage":["f:fanny_packing","f:shibari"],"m:bondage":["m:fanny_packing","m:shibari"],"f:inflation":["f:cumflation"],"m:inflation":["m:cumflation"],"f:lactation":["f:milking"],"m:lactation":["m:milking"],"f:piercing":["f:nipple_piercing","f:genital_piercing"],"m:piercing":["m:nipple_piercing","m:genital_piercing"],"f:big_breasts":["f:huge_breasts","f:gigantic_breasts"],"f:huge_breasts":["f:gigantic_breasts"],"f:sex_toys":["f:tail_plug","f:butt_plug"],"m:sex_toys":["m:tail_plug","m:butt_plug"],"f:swimsuit":["f:bikini"],"m:swimsuit":["m:bikini"],"f:crossdressing":["f:schoolboy_uniform"],"f:monster_girl":["f:zombie"],"f:tail":["f:multiple_tails"]},"conflict":{"f:females_only":["f:futanari","f:bisexual","f:ttt_threesome","f:fft_threesome","f:ttf_threesome","x:mmf_threesome","x:mmt_threesome","x:ttm_threesome","x:mtf_threesome","x:group","m:*","x:*"],"f:sole_female":["f:ttt_threesome","f:fft_threesome","x:mmt_threesome","x:ttm_threesome","m:mmm_threesome"],"f:sole_dickgirl":["f:fff_threesome","f:ttt_threesome","f:ttf_threesome","x:mmf_threesome","x:ttm_threesome","m:mmm_threesome"]},"possibleConflict":{"f:dark_skin":["f:tanlines"],"m:dark_skin":["m:tanlines"],"f:lolicon":["f:small_breasts"],"f:breast_feeding":["f:nipple_stimulation"]},"combo":{"f:kemonomimi":["f:horse_girl","f:dog_girl","f:mouse_girl","f:bunny_girl","f:catgirl","f:cowgirl","c:amiya","c:rosmontis","c:suzuran","c:shamare","c:schwarz"],"f:tail":["f:horse_girl","c:suzuran","c:schwarz","c:yuko_yoshida"],"f:leotard":["f:bunny_girl"],"f:horns":["f:oni","c:yuko_yoshida"],"f:horse_girl":["p:uma_musume_pretty_derby"],"f:halo":["p:blue_archive","c:nagisa_kirifuji","c:mika_misono"],"f:zombie":["p:zombie_land_saga"],"f:hair_buns":["c:ayumu_uehara","c:yoshiko_tsushima","c:chisato_arashi","c:ceylon"],"f:twintails":["c:yu_takasaki","c:rurino_osawa","c:sayaka_murano","c:nico_yazawa","c:nozomi_tojo","c:ruby_kurosawa","c:ria_kazuno","c:arisa_ichigaya","c:himari_uehara","c:ako_udagawa","c:reona_nyubara","c:tsukushi_futaba","c:kotone_fujita"],"f:ponytail":["c:hime_anyoji","c:eli_ayase","c:honoka_kosaka","c:kanan_matsuura","c:seira_kazuno","c:ren_hazuki","c:saaya_yamabuki","c:nijika_ijichi","c:schwarz"],"f:very_long_hair":["c:hitori_gotou","c:nijika_ijichi","c:euphyllia_magenta","c:nagisa_kirifuji","c:mika_misono"],"f:lolicon":["c:suzuran","c:shamare"],"f:multiple_tails":["c:suzuran"],"f:wings":["c:remilia_scarlet","c:flandre_scarlet","c:koakuma","c:nagisa_kirifuji","c:mika_misono"],"f:vampire":["c:remilia_scarlet","c:flandre_scarlet"],"f:demon_girl":["c:koakuma","c:yuko_yoshida"],"f:thick_eyebrows":["c:suletta_mercury"],"f:glasses":["c:junna_hoshimi"],"f:beauty_mark":["c:misuzu_hataya"],"m:crossdressing":["c:mizuki_akiyama"],"f:angel":["c:nagisa_kirifuji","c:mika_misono"]}};
+const rules = {"prerequisite":{"(x|f):incest":["f:cousin","f:aunt","f:daughter","f:mother","f:granddaughter","f:sister","f:grandmother","f:niece"],"(x|m):incest":["m:cousin"],"f:incest":["f:inseki","f:low_incest"],"m:incest":["m:inseki","m:low_incest"],"x:incest":["x:inseki","x:low_incest"],"f:group":["f:fff_threesome","f:ttt_threesome","f:fft_threesome","f:ttf_threesome"],"m:group":["m:mmm_threesome"],"x:group":["x:mmf_threesome","x:mmt_threesome","x:ttm_threesome","x:ffm_threesome","x:mtf_threesome","x:oyakodon","x:shimaidon","x:gang_rape"],"(x|f):group":["f:oyakodon","f:shimaidon","f:multiple_straddling","f:gang_rape","f:layer_cake","f:harem"],"(x|m):group":["m:oyakodon","m:shimaidon","m:multiple_straddling","m:gang_rape","m:layer_cake","m:harem"],"f:yuri":["f:fff_threesome"],"m:yaoi":["m:group","m:mmm_threesome"],"f:futanari":["f:ttt_threesome","f:fft_threesome","f:ttf_threesome","f:full-packaged_futanari","f:futanarization"],"f:shemale":["f:ball-less_shemale"],"f:lolicon":["f:kodomo_doushi","x:kodomo_doushi","f:oppai_loli","f:mesugaki","f:low_lolicon"],"m:shotacon":["m:kodomo_doushi","x:kodomo_doushi"],"f:blowjob":["f:multimouth_blowjob","f:blowjob_face","f:deepthroat","f:focus_blowjob"],"m:blowjob":["m:multimouth_blowjob","m:blowjob_face","m:deepthroat","m:focus_blowjob"],"f:handjob":["f:multiple_handjob"],"m:handjob":["m:multiple_handjob"],"f:assjob":["f:multiple_assjob"],"m:assjob":["m:multiple_assjob"],"f:footjob":["f:multiple_footjob"],"m:footjob":["m:multiple_footjob"],"f:paizuri":["f:focus_paizuri"],"m:paizuri":["m:focus_paizuri"],"f:rimjob":["f:focus_rimjob"],"m:rimjob":["m:focus_rimjob"],"f:cunnilingus":["f:focus_cunnilingus"],"f:anal":["f:focus_anal","f:anal_intercourse","f:tail_plug","f:butt_plug"],"m:anal":["m:focus_anal","m:anal_intercourse","m:tail_plug","m:butt_plug"],"f:rape":["f:gang_rape"],"m:rape":["m:gang_rape"],"(f|m):corpse":["f:necrophilia","m:necrophilia"],"(f|m):masturbation":["f:phone_sex","m:phone_sex"],"f:bondage":["f:fanny_packing","f:shibari","f:straitjacket"],"m:bondage":["m:fanny_packing","m:shibari","m:straitjacket"],"f:inflation":["f:cumflation"],"m:inflation":["m:cumflation"],"f:lactation":["f:milking"],"m:lactation":["m:milking"],"f:piercing":["f:nipple_piercing","f:genital_piercing"],"m:piercing":["m:nipple_piercing","m:genital_piercing"],"f:big_breasts":["f:huge_breasts","f:gigantic_breasts"],"f:huge_breasts":["f:gigantic_breasts"],"f:sex_toys":["f:tail_plug","f:butt_plug","f:unusual_insertions"],"m:sex_toys":["m:tail_plug","m:butt_plug","m:unusual_insertions"],"f:swimsuit":["f:bikini"],"m:swimsuit":["m:bikini"],"f:crossdressing":["f:schoolboy_uniform"],"f:bandages":["f:sarashi"],"f:monster_girl":["f:zombie","f:skeleton"],"f:tail":["f:multiple_tails"],"(f|m):robot":["f:dismantling","m:dismantling"]},"conflict":{"f:females_only":["f:futanari","f:bisexual","f:ttt_threesome","f:fft_threesome","f:ttf_threesome","x:mmf_threesome","x:mmt_threesome","x:ttm_threesome","x:mtf_threesome","x:group","m:*","x:*"],"f:sole_female":["f:ttt_threesome","f:fft_threesome","x:mmt_threesome","x:ttm_threesome","m:mmm_threesome"],"f:sole_dickgirl":["f:fff_threesome","f:ttt_threesome","f:ttf_threesome","x:mmf_threesome","x:ttm_threesome","m:mmm_threesome"]},"possibleConflict":{"f:dark_skin":["f:tanlines"],"m:dark_skin":["m:tanlines"],"f:lolicon":["f:small_breasts"],"f:breast_feeding":["f:nipple_stimulation"]},"combo":{"f:kemonomimi":["f:horse_girl","f:dog_girl","f:mouse_girl","f:bunny_girl","f:catgirl","f:cowgirl","c:amiya","c:rosmontis","c:suzuran","c:shamare","c:schwarz"],"f:tail":["f:horse_girl","c:suzuran","c:schwarz","c:yuko_yoshida"],"f:leotard":["f:bunny_girl"],"f:horns":["f:oni","c:yuko_yoshida"],"f:horse_girl":["p:uma_musume_pretty_derby"],"f:halo":["p:blue_archive","c:nagisa_kirifuji","c:mika_misono"],"f:zombie":["p:zombie_land_saga"],"f:hair_buns":["c:ayumu_uehara","c:yoshiko_tsushima","c:chisato_arashi","c:ceylon"],"f:twintails":["c:yu_takasaki","c:rurino_osawa","c:sayaka_murano","c:nico_yazawa","c:nozomi_tojo","c:ruby_kurosawa","c:ria_kazuno","c:arisa_ichigaya","c:himari_uehara","c:ako_udagawa","c:reona_nyubara","c:tsukushi_futaba","c:kotone_fujita"],"f:ponytail":["c:hime_anyoji","c:eli_ayase","c:honoka_kosaka","c:kanan_matsuura","c:seira_kazuno","c:ren_hazuki","c:saaya_yamabuki","c:nijika_ijichi","c:schwarz","c:mafuyu_asahina"],"f:very_long_hair":["c:hitori_gotou","c:nijika_ijichi","c:euphyllia_magenta","c:nagisa_kirifuji","c:mika_misono","c:kanade_yoisaki"],"f:lolicon":["c:suzuran","c:shamare"],"f:multiple_tails":["c:suzuran"],"f:wings":["c:remilia_scarlet","c:flandre_scarlet","c:koakuma","c:nagisa_kirifuji","c:mika_misono"],"f:vampire":["c:remilia_scarlet","c:flandre_scarlet"],"f:demon_girl":["c:koakuma","c:yuko_yoshida"],"f:thick_eyebrows":["c:suletta_mercury"],"f:glasses":["c:junna_hoshimi"],"f:beauty_mark":["c:misuzu_hataya"],"m:crossdressing":["c:mizuki_akiyama"],"f:angel":["c:nagisa_kirifuji","c:mika_misono"]}};
 const getTagLintRules = () => {
   const shortNamespace = new Map([['p', 'parody'], ['c', 'character'], ['g', 'group'], ['a', 'artist'], ['m', 'male'], ['f', 'female'], ['x', 'mixed'], ['o', 'other']].map(([short, full]) => [new RegExp(\`\\\\b\${short}\\\\b(?=.*:)\`), full]));
   // 将缩写的命名空间转回全拼
@@ -11734,6 +11736,7 @@ const sortTagList = tagList => {
 
   // order 设为负数是为了在排列时能排在没有 order 值的元素前
   let i = -tagList.length;
+  // oxlint-disable-next-line no-array-sort
   for (const tag of tagList.sort(sortFn)) tag.order = i++;
   return tagList;
 };
@@ -14901,6 +14904,7 @@ const main = require('main');
 
     // #[绅士漫画(wnacg)](https://www.wnacg.com)
     // test: https://www.wnacg.com/photos-slide-aid-284931.html
+    case 'www.wn04.ru':
     case 'www.wnacg05.cc':
     case 'www.wnacg03.cc':
     case 'www.wnacg.com':
@@ -15010,7 +15014,7 @@ const main = require('main');
         };
         const handlePrevNext = text => async () => {
           await helper.waitDom('.v-bottom-navigation__content');
-          return helper.querySelectorClick('.v-bottom-navigation__content > button:not([disabled])', text);
+          return helper.querySelectorClick('.v-bottom-navigation__content button:not([disabled])', text);
         };
         options = {
           name: 'komiic',
@@ -15018,7 +15022,8 @@ const main = require('main');
           SPA: {
             isMangaPage: () => /comic\/\d+\/chapter\/\d+\/images\//.test(location.href),
             getOnPrev: handlePrevNext('上一'),
-            getOnNext: handlePrevNext('下一')
+            getOnNext: handlePrevNext('下一'),
+            handleUrl: location => location.pathname
           }
         };
         break;
@@ -15162,7 +15167,7 @@ const main = require('main');
             const [[w, {
               id,
               key
-            }]] = Object.entries(detailRes.response.data).filter(([, data]) => data.id && data.key).sort(([, a], [, b]) => b.size - a.size);
+            }]] = Object.entries(detailRes.response.data).filter(([, data]) => data.id && data.key).toSorted(([, a], [, b]) => b.size - a.size);
             const dataRes = await main.request(`https://api.schale.network/books/data/${galleryId}/${galleryKey}/${id}/${key}/${w}?crt=${crt}`, {
               fetch: true,
               responseType: 'json'
@@ -15372,6 +15377,30 @@ const main = require('main');
             const imgUrl = img.dataset.src || img.src;
             const baseUrl = imgUrl.split('/').slice(0, -1).join('/');
             return helper.range(max, i => `${baseUrl}/${i + 1}.${helper.fileType[unsafeWindow.g_th[i + 1].slice(0, 1)]}`);
+          }
+        };
+        break;
+      }
+
+    // #[IMHentai](https://imhentai.xxx)
+    // test: https://imhentai.xxx/gallery/1526168/
+    case 'imhentai.xxx':
+      {
+        if (!location.pathname.startsWith('/gallery/')) break;
+        options = {
+          name: 'IMHentai',
+          getImgList() {
+            const [baseUrl] = helper.querySelector('#append_thumbs a img').dataset.src.match(/.+\//);
+            const imgList = [];
+            for (const [i, th] of Object.entries(unsafeWindow.g_th)) {
+              const [t, w, h] = th.split(',');
+              imgList[Number(i) - 1] = {
+                src: `${baseUrl}${i}.${helper.fileType[t]}`,
+                width: Number(w),
+                height: Number(h)
+              };
+            }
+            return imgList;
           }
         };
         break;
