@@ -2872,9 +2872,11 @@ const selfhostedTranslation = async url => {
     }
     return URL.createObjectURL(await downloadImg(\`\${apiUrl()}/result/\${task_id}\`));
   }
+  const headers_ngrok = apiUrl().includes('ngrok-free')? new Headers({ "ngrok-skip-browser-warning": "69420" }) : undefined;
   try {
     const res = await fetch(\`\${apiUrl()}/translate/with-form/image/stream\`, {
       method: 'POST',
+      headers_ngrok,
       body: createFormData(imgBlob, 'selfhosted')
     });
     if (res.status !== 200 || !res.body) throw new Error(helper.t('translation.status.error'));
@@ -2931,6 +2933,7 @@ const selfhostedTranslation = async url => {
       // 也找不到第二个同样问题的网站，考虑到应该没人会在拷贝上翻译，就暂且不管了
       const res = await request.request(\`\${apiUrl()}/translate/with-form/image\`, {
         method: 'POST',
+        headers_ngrok,
         responseType: 'blob',
         fetch: false,
         timeout: 1000 * 60 * 10,
