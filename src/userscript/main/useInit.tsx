@@ -182,12 +182,11 @@ export const useInit = async <T extends Record<string, any>>(
       length,
       id = '',
       concurrency = 4,
-      onEnd,
+      onLoad,
     }) => {
       if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
 
       const imgNum = typeof length === 'number' ? length : length();
-      let loadNum = 0;
 
       // oxlint-disable-next-line no-async-promise-executor
       await new Promise<void>((resolve) => {
@@ -195,8 +194,7 @@ export const useInit = async <T extends Record<string, any>>(
           const img = await loadImg(i);
           setState('comicMap', id, 'imgList', (list) => list!.with(i, img));
           resolve();
-          loadNum += 1;
-          if (loadNum === imgNum) onEnd?.();
+          onLoad?.(img, i, store.comicMap[id].imgList!);
         }, concurrency);
 
         setState((state) => {

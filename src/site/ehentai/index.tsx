@@ -311,7 +311,11 @@ import { tagLint } from './tagLint';
           return { src: context.imgList[i], name: context.fileNameList[i] };
         },
         length: () => loadImgs().length,
-        onEnd: checkAd?.checkContent,
+        // 在最后十页的图片url加载出来后再检查广告
+        onLoad:
+          checkAd?.checkContent &&
+          ((_, __, list) =>
+            list.slice(-10, -1).every(Boolean) && checkAd?.checkContent()),
       });
     },
   });

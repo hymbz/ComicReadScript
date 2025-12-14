@@ -7,9 +7,8 @@ import {
   singleThreaded,
   t,
 } from 'helper';
-import { request } from 'request';
+import { downloadImgHeaders as headers, request } from 'request';
 
-import { downloadImgHeaders as headers } from '../helper';
 import { setState, store } from '../store';
 import { getImg, getImgEle, getImgIndexs } from './helper';
 import { handleImgRecognition } from './imageRecognition';

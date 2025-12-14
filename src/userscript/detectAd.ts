@@ -89,12 +89,13 @@ export const isAdImg = (imgBitmap: ImageBitmap) => {
 
 /** 通过图片内容判断是否是广告 */
 export const getAdPageByContent = (
-  imgList: (HTMLImageElement | string | undefined)[],
+  imgList: (HTMLImageElement | string | ImageBitmap | undefined)[],
   adList: Set<number>,
 ) =>
   getAdPage(
     imgList,
-    async (img: HTMLImageElement | string) => isAdImg(await imgToCanvas(img)),
+    async (img: HTMLImageElement | string | ImageBitmap) =>
+      isAdImg(img instanceof ImageBitmap ? img : await imgToCanvas(img)),
     adList,
   );
 

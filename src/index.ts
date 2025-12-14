@@ -1,6 +1,6 @@
 import type { InitOptions } from 'main';
 
-import { downloadImgHeaders, type MangaProps } from 'components/Manga';
+import { type MangaProps } from 'components/Manga';
 import {
   fileType,
   isUrl,
@@ -23,8 +23,7 @@ import { request, toast, universal } from 'main';
 import { getImglistByHtml } from 'userscript/copyApi';
 import { otherSite } from 'userscript/otherSite';
 
-import type { RequestDetails } from './request';
-
+import { downloadImgHeaders, type RequestDetails } from './request';
 import { getNhentaiData, toImgList } from './userscript/nhentaiApi';
 
 /** 站点配置 */

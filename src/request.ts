@@ -170,3 +170,28 @@ export const eachApi = async <T = any>(
   log.error('所有 api 请求均失败', url, baseUrlList, details);
   throw new Error(errorText);
 };
+
+export const downloadImgHeaders = {
+  Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+  'User-Agent': navigator.userAgent,
+  Referer: location.href,
+};
+export const downloadImg = async (
+  url: string,
+  details?: RequestDetails<Blob>,
+) => {
+  if (url.startsWith('blob:')) {
+    const res = await fetch(url);
+    return res.blob();
+  }
+
+  const res = await request<Blob>(url, {
+    responseType: 'blob',
+    errorText: t('translation.tip.download_img_failed'),
+    headers: downloadImgHeaders,
+    retryFetch: true,
+    ...details,
+  });
+
+  return res.response;
+};

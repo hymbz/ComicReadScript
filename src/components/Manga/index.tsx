@@ -104,6 +104,5 @@ export { SettingsItem } from './components/SettingsItem';
 export { SettingsItemButton } from './components/SettingsItemButton';
 export { SettingsItemNumber } from './components/SettingsItemNumber';
 export { SettingsItemSwitch } from './components/SettingsItemSwitch';
-export { downloadImg, downloadImgHeaders } from './helper';
 export type { ComicImg } from './store/image';
 export { refs, setState, store } from './store/index';

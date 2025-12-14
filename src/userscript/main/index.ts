@@ -88,7 +88,11 @@ export type MainContext<T extends Record<string, any> = Record<string, any>> = {
     id?: string | number;
     /** 并发数 */
     concurrency?: number;
-    /** 加载完成后触发的回调 */
-    onEnd?: () => void;
+    /** 加载完成一个后触发的回调 */
+    onLoad?: (
+      img: string | ComicImgData,
+      index: number,
+      imgList: (string | ComicImgData)[],
+    ) => void;
   }) => Promise<MangaProps['imgList']>;
 };

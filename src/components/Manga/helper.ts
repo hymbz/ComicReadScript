@@ -1,7 +1,6 @@
 import type { RequestDetails } from 'request';
 
-import { t } from 'helper';
-import { request } from 'request';
+import { downloadImg as _downloadImg } from 'request';
 
 import { setState, store } from './store';
 
@@ -19,11 +18,6 @@ export const playAnimation = (e?: HTMLElement) => {
   }
 };
 
-export const downloadImgHeaders = {
-  Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-  'User-Agent': navigator.userAgent,
-  Referer: location.href,
-};
 export const downloadImg = async (
   imgUrl: string,
   details?: RequestDetails<Blob>,
@@ -35,16 +29,8 @@ export const downloadImg = async (
     return res.blob();
   }
 
-  const res = await request<Blob>(url, {
-    responseType: 'blob',
-    errorText: t('translation.tip.download_img_failed'),
-    headers: downloadImgHeaders,
-    retryFetch: true,
-    ...details,
-  });
-
+  const res = await _downloadImg(url, details);
   if (Reflect.has(store.imgMap, imgUrl))
-    setState('imgMap', imgUrl, 'blobUrl', URL.createObjectURL(res.response));
-
-  return res.response;
+    setState('imgMap', imgUrl, 'blobUrl', URL.createObjectURL(res));
+  return res;
 };
