@@ -857,32 +857,31 @@ try {
 
     // #国外漫画站[welovemanga](https://nicomanga.com)
     // test: https://nicomanga.com/read-yuri-no-hajimari-wa-dorei-kara-chapter-6.2.html
-    case 'nicomanga.com':
-    case 'weloma.art':
-    case 'welovemanga.one': {
-      if (!querySelector('#listImgs, .chapter-content')) break;
-
-      const getImgList = async (): Promise<string[]> => {
-        const imgList = querySelectorAll<HTMLImageElement>(
-          'img.chapter-img:not(.ls-is-cached)',
-        )
-          .map((e) =>
-            (
-              e.dataset.src ||
-              e.dataset.srcset ||
-              e.dataset.original ||
-              e.src
-            ).trim(),
-          )
-          .filter(Boolean);
-        if (
-          imgList.length > 0 &&
-          imgList.every((url) => !/loading.*\.gif/.test(url))
-        )
-          return imgList;
-        await sleep(500);
-        return getImgList();
+    case 'nicomanga.com': {
+      options = {
+        name: 'welovemanga',
+        wait: () => unsafeWindow.chapterImages?.length,
+        getImgList: () => unsafeWindow.chapterImages,
+        onNext: querySelectorClick('.rd_top-right.next:not(.disabled)'),
+        onPrev: querySelectorClick('.rd_top-left.prev:not(.disabled)'),
       };
+      break;
+    }
+    case 'weloma.art':
+    case 'love4u.net': {
+      if (!querySelector('#chapter-images img')) break;
+
+      const getImgUrl = (e: HTMLImageElement) => {
+        const src =
+          e.dataset.srcset || e.dataset.original || e.dataset.src || e.src;
+        if (src && !src.endsWith('.gif')) return src.trim();
+        if (e.dataset.img) return atob(e.dataset.img);
+      };
+
+      const getImgList = () =>
+        querySelectorAll<HTMLImageElement>('#chapter-images img')
+          .map(getImgUrl)
+          .filter(Boolean) as string[];
 
       options = {
         name: 'welovemanga',
