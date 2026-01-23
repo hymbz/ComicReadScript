@@ -45,7 +45,8 @@ export const ComicImg: Component<_ComicImg & { index: number }> = (img) => {
 
   const styles = createMemo(() => ({
     img: {
-      'grid-area': isAbreastMode() && !store.gridMode ? 'none' : `_${img.index}`,
+      'grid-area':
+        isAbreastMode() && !store.gridMode ? 'none' : `_${img.index}`,
       'background-color': isEnableBg() ? img.background : undefined,
     },
     picture: {
