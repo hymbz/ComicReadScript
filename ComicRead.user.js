@@ -14571,10 +14571,21 @@ const buildChapters = async (comicName, hiddenType) => {
           buttonDom.style.setProperty('background-color', '#607d8b');
           buttonDom.style.setProperty('background-image', 'none');
         }
-        if (!location.pathname.startsWith('/photos-slide-aid-')) break;
+        let imgList;
+        if (location.pathname.startsWith('/photos-slide-aid-')) {
+          // 如果是单/双页模式，得先切换成下拉模式来显示所有图片
+          const nowMode = helper.querySelector(':is(#btn-d, #btn-s).active');
+          if (nowMode) unsafeWindow.reader.setMode('vertical');
+          imgList = helper.querySelectorAll('#content img').map(e => e.getAttribute('src'));
+          nowMode?.click();
+        } else if (location.pathname.startsWith('/photos-slist-aid-')) imgList = unsafeWindow.imglist.filter(({
+          caption
+        }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！').map(({
+          url
+        }) => url);else break;
         options = {
           name: 'wnacg',
-          getImgList: () => helper.querySelectorAll('#content img').map(e => e.getAttribute('src'))
+          getImgList: () => imgList
         };
         break;
       }

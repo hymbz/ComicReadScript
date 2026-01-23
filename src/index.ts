@@ -519,14 +519,26 @@ try {
         buttonDom.style.setProperty('background-image', 'none');
       }
 
-      if (!location.pathname.startsWith('/photos-slide-aid-')) break;
+      let imgList: string[];
+      if (location.pathname.startsWith('/photos-slide-aid-')) {
+        // 如果是单/双页模式，得先切换成下拉模式来显示所有图片
+        const nowMode = querySelector(':is(#btn-d, #btn-s).active');
+        if (nowMode) unsafeWindow.reader.setMode('vertical');
+        imgList = querySelectorAll<HTMLImageElement>('#content img').map(
+          (e) => e.getAttribute('src')!,
+        );
+        nowMode?.click();
+      } else if (location.pathname.startsWith('/photos-slist-aid-'))
+        imgList = (unsafeWindow.imglist as { url: string; caption: string }[])
+          .filter(
+            ({ caption }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！',
+          )
+          .map(({ url }) => url);
+      else break;
 
       options = {
         name: 'wnacg',
-        getImgList: () =>
-          querySelectorAll<HTMLImageElement>('#content img').map(
-            (e) => e.getAttribute('src')!,
-          ),
+        getImgList: () => imgList,
       };
       break;
     }
