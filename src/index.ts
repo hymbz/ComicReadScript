@@ -519,16 +519,14 @@ try {
         buttonDom.style.setProperty('background-image', 'none');
       }
 
-      if (!Reflect.has(unsafeWindow, 'imglist')) break;
+      if (!location.pathname.startsWith('/photos-slide-aid-')) break;
 
       options = {
         name: 'wnacg',
         getImgList: () =>
-          (unsafeWindow.imglist as { url: string; caption: string }[])
-            .filter(
-              ({ caption }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！',
-            )
-            .map(({ url }) => new URL(url, location.origin).href),
+          querySelectorAll<HTMLImageElement>('#content img').map(
+            (e) => e.getAttribute('src')!,
+          ),
       };
       break;
     }
