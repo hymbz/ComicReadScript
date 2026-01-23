@@ -13,7 +13,6 @@ import {
   isAbreastMode,
   isEnableBg,
 } from '../actions';
-import { useStyleMemo } from '../hooks/useStyle';
 import classes from '../index.module.css';
 import { store } from '../store';
 
@@ -44,33 +43,34 @@ export const ComicImg: Component<_ComicImg & { index: number }> = (img) => {
   const renderClone = () =>
     !store.gridMode && showState() !== undefined && cloneNum() > 0;
 
-  const selector = `.${classes.img}[id^="_${img.index}_"]`;
-  useStyleMemo(selector, {
-    'grid-area': () =>
-      isAbreastMode() && !store.gridMode ? 'none' : `_${img.index}`,
-    'background-color': () => (isEnableBg() ? img.background : undefined),
-  });
-  useStyleMemo(`${selector} > picture`, {
-    'aspect-ratio': () => `${img.size.width} / ${img.size.height}`,
-    background: () =>
-      img.progress &&
-      `linear-gradient(
-          to bottom,
-          var(--secondary-bg) ${img.progress}%,
-          var(--hover-bg-color,#fff3) ${img.progress}%
-        )`,
-  });
+  const styles = createMemo(() => ({
+    img: {
+      'grid-area': isAbreastMode() && !store.gridMode ? 'none' : `_${img.index}`,
+      'background-color': isEnableBg() ? img.background : undefined,
+    },
+    picture: {
+      'aspect-ratio': `${img.size.width} / ${img.size.height}`,
+      background: img.progress
+        ? `linear-gradient(
+            to bottom,
+            var(--secondary-bg) ${img.progress}%,
+            var(--hover-bg-color,#fff3) ${img.progress}%
+          )`
+        : undefined,
+    },
+  }));
 
   const _ComicImg: Component<{ cloneIndex?: number }> = (props) => (
     <div
       class={classes.img}
       id={`_${img.index}_${props.cloneIndex ?? 0}`}
+      style={styles().img}
       data-show={showState()}
       data-type={img.type ?? store.defaultImgType}
       data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
       {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
-      <picture>
+      <picture style={styles().picture}>
         <Show when={img.loadType !== 'wait' && src()}>
           <img
             src={src()}
