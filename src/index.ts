@@ -876,8 +876,8 @@ try {
         name: 'welovemanga',
         wait: () => unsafeWindow.chapterImages?.length,
         getImgList: () => unsafeWindow.chapterImages,
-        onNext: querySelectorClick('.rd_top-right.next:not(.disabled)'),
-        onPrev: querySelectorClick('.rd_top-left.prev:not(.disabled)'),
+        onNext: querySelectorClick('.next-chapter'),
+        onPrev: querySelectorClick('.prev-chapter'),
       };
       break;
     }
