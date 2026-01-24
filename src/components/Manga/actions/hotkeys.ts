@@ -29,6 +29,7 @@ export const [defaultHotkeys, setDefaultHotkeys] = createSignal<
   auto_scroll: [],
   jump_next: [],
   jump_prev: [],
+  reload_current_error_img: ['r'],
 });
 
 /** 快捷键配置 */

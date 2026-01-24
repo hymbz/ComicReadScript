@@ -55,6 +55,7 @@
     "jump_to_home": "Jump to the first page",
     "page_down": "Turn the page to the down",
     "page_up": "Turn the page to the up",
+    "reload_current_error_img": "Reload current error image",
     "repeat_tip": "This hotkey has been bound to \"{{hotkey}}\"",
     "scroll_down": "Scroll down",
     "scroll_left": "Scroll left",

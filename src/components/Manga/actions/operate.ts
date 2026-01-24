@@ -2,8 +2,9 @@ import { approx, getKeyboardCode } from 'helper';
 
 import classes from '../index.module.css';
 import { setState, store } from '../store';
-import { openScrollLock, setOption } from './helper';
+import { getImg, openScrollLock, setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
+import { reloadImg } from './imageLoad';
 import {
   abreastScrollFill,
   findTopPage,
@@ -16,6 +17,7 @@ import {
   setAbreastScrollFill,
 } from './memo';
 import { handleTrackpadWheel } from './pointer';
+import { showImgList } from './renderPage';
 import { constantScroll, scrollBy, scrollTo } from './scroll';
 import { handleScrollModeZoom } from './scrollMode';
 import {
@@ -221,6 +223,10 @@ export const handleHotkey = (hotkey: string, e?: KeyboardEvent) => {
       return setOption((draftOption) => {
         draftOption.disableZoom = !draftOption.disableZoom;
       });
+
+    case 'reload_current_error_img':
+      for (const i of showImgList()) reloadImg(getImg(i).src);
+      return;
 
     case 'exit':
       return store.prop.onExit?.();
