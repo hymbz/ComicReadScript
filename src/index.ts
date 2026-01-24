@@ -519,27 +519,29 @@ try {
         buttonDom.style.setProperty('background-image', 'none');
       }
 
-      let imgList: string[];
+      let getImgList: InitOptions['getImgList'] | undefined;
       if (location.pathname.startsWith('/photos-slide-aid-')) {
-        // 如果是单/双页模式，得先切换成下拉模式来显示所有图片
-        const nowMode = querySelector(':is(#btn-d, #btn-s).active');
-        if (nowMode) unsafeWindow.reader.setMode('vertical');
-        imgList = querySelectorAll<HTMLImageElement>('#content img').map(
-          (e) => e.getAttribute('src')!,
-        );
-        nowMode?.click();
+        getImgList = async () => {
+          await wait(() => querySelector('#content img'));
+          // 如果是单/双页模式，得先切换成下拉模式来显示所有图片
+          const nowMode = querySelector(':is(#btn-d, #btn-s).active');
+          if (nowMode) unsafeWindow.reader.setMode('vertical');
+          const imgList = querySelectorAll<HTMLImageElement>(
+            '#content img',
+          ).map((e) => e.getAttribute('src')!);
+          nowMode?.click();
+          return imgList;
+        };
       } else if (location.pathname.startsWith('/photos-slist-aid-'))
-        imgList = (unsafeWindow.imglist as { url: string; caption: string }[])
-          .filter(
-            ({ caption }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！',
-          )
-          .map(({ url }) => url);
+        getImgList = () =>
+          (unsafeWindow.imglist as { url: string; caption: string }[])
+            .filter(
+              ({ caption }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！',
+            )
+            .map(({ url }) => url);
       else break;
 
-      options = {
-        name: 'wnacg',
-        getImgList: () => imgList,
-      };
+      options = { name: 'wnacg', getImgList };
       break;
     }
 
