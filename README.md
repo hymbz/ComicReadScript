@@ -217,7 +217,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ### 其他
 
-[Pixiv](https://www.pixiv.net) · [明日方舟泰拉记事社](https://terra-historicus.hypergryph.com) · [最前線](https://sai-zen-sen.jp) · [Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi) · [LANraragi](https://github.com/Difegue/LANraragi)
+[Pixiv](https://www.pixiv.net) · [明日方舟泰拉记事社](https://terra-historicus.hypergryph.com) · [最前線](https://sai-zen-sen.jp) · [芸能ヌード](https://geinou-nude.com) · [Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi) · [LANraragi](https://github.com/Difegue/LANraragi)
 
 <!-- supportSiteList -->
 

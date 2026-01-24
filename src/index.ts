@@ -1034,6 +1034,26 @@ try {
       break;
     }
 
+    // #其他[芸能ヌード](https://geinou-nude.com)
+    // test: https://geinou-nude.com/ロン・モンロウ/
+    case 'geinou-nude.com': {
+      const imgList: MangaProps['imgList'] = querySelectorAll<HTMLImageElement>(
+        'main img.size-medium',
+      ).map((e) => {
+        const src = e.dataset.src ?? '';
+        const res = src.match(/-(\d+)x(\d+)\.[a-z]+$/i);
+        if (!res) return src;
+        return { src, width: Number(res[1]), height: Number(res[2]) };
+      });
+      if (imgList.length === 0) break;
+
+      options = {
+        name: 'geinou-nude',
+        getImgList: () => imgList,
+      };
+      break;
+    }
+
     // 为 pwa 版页面提供 api，以便翻译功能能正常运作
     // case 'localhost':
     case 'comic-read.pages.dev': {
