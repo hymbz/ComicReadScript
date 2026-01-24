@@ -21,6 +21,7 @@ export const playAnimation = (e?: HTMLElement) => {
 export const downloadImg = async (
   imgUrl: string,
   details?: RequestDetails<Blob>,
+  retryNum = 0,
 ) => {
   const url = store.imgMap[imgUrl]?.blobUrl ?? imgUrl;
 
@@ -29,7 +30,7 @@ export const downloadImg = async (
     return res.blob();
   }
 
-  const res = await _downloadImg(url, details);
+  const res = await _downloadImg(url, details, retryNum);
   if (Reflect.has(store.imgMap, imgUrl))
     setState('imgMap', imgUrl, 'blobUrl', URL.createObjectURL(res));
   return res;

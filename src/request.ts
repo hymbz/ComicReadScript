@@ -179,19 +179,24 @@ export const downloadImgHeaders = {
 export const downloadImg = async (
   url: string,
   details?: RequestDetails<Blob>,
+  retryNum = 0,
 ) => {
   if (url.startsWith('blob:')) {
     const res = await fetch(url);
     return res.blob();
   }
 
-  const res = await request<Blob>(url, {
-    responseType: 'blob',
-    errorText: t('translation.tip.download_img_failed'),
-    headers: downloadImgHeaders,
-    retryFetch: true,
-    ...details,
-  });
+  const res = await request<Blob>(
+    url,
+    {
+      responseType: 'blob',
+      errorText: t('translation.tip.download_img_failed'),
+      headers: downloadImgHeaders,
+      retryFetch: true,
+      ...details,
+    },
+    retryNum,
+  );
 
   return res.response;
 };

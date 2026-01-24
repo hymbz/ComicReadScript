@@ -53,7 +53,7 @@ export const DownloadButton = () => {
       let fileName: string;
       const index = `${i}`.padStart(imgIndexNum, '0');
       try {
-        data = await downloadImg(url);
+        data = await downloadImg(url, undefined, 3);
         fileName = img.name || `${index}.${getExtName(data.type)}`;
       } catch {
         fileName = `${index} - ${t('alert.download_failed')}`;
