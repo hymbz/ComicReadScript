@@ -68,7 +68,7 @@ export const resumeReadProgress = async (state: State) => {
   let i = state.imgList.length;
   while (i--) {
     const imgSize = progress.imgSize[i];
-    if (imgSize) updateImgSize(state.imgList[i], ...imgSize);
+    if (imgSize) updateImgSize(state.imgList[i], ...imgSize, state);
   }
   state.fillEffect = progress.fillEffect;
   updatePageData(state);

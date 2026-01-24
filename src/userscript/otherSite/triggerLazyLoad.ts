@@ -1,4 +1,11 @@
-import { createScheduled, singleThreaded, sleep, throttle, wait } from 'helper';
+import {
+  createScheduled,
+  isImageElement,
+  singleThreaded,
+  sleep,
+  throttle,
+  wait,
+} from 'helper';
 
 type ImgData = {
   /** 触发次数 */
@@ -63,9 +70,6 @@ const triggerEleLazyLoad = async (
     if (runCondition()) window.scroll({ top: nowScroll, behavior: 'instant' });
   }
 };
-
-const isImageElement = (e: HTMLElement): e is HTMLImageElement =>
-  e.tagName === 'IMG';
 
 /** 判断一个元素是否已经成功触发完懒加载 */
 export const isLazyLoaded = (e: HTMLElement, oldSrc?: string) => {

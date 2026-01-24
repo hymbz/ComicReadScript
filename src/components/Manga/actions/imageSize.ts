@@ -3,6 +3,7 @@ import { createEffectOn } from 'helper';
 import type { State } from '../store';
 
 import { setState, store } from '../store';
+import { withOptionalState } from './helper';
 import { updateImgType } from './imageType';
 import {
   abreastColumnWidth,
@@ -41,15 +42,16 @@ export const getImgDisplaySize = (
 };
 
 /** 更新图片尺寸 */
-export const updateImgSize = (url: string, width: number, height: number) =>
-  setState((state) => {
+export const updateImgSize = withOptionalState(
+  (url: string, width: number, height: number, state: State) => {
     const img = state.imgMap[url];
     if (img.width === width && img.height === height) return;
     img.width = width;
     img.height = height;
     img.size = getImgDisplaySize(state, img);
     updateImgType(state, img);
-  });
+  },
+);
 
 createEffectOn(
   [

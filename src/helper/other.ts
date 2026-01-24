@@ -86,6 +86,14 @@ export function range<T = number>(
   }
 }
 
+/** 判断节点是否为元素节点 */
+export const isHTMLElement = (node: Node): node is HTMLElement =>
+  node.nodeType === Node.ELEMENT_NODE;
+
+/** 判断节点是否为图片元素节点 */
+export const isImageElement = (node: Node): node is HTMLImageElement =>
+  node.nodeName === 'IMG';
+
 /**
  * 对 document.querySelector 的封装
  * 将默认返回类型改为 HTMLElement

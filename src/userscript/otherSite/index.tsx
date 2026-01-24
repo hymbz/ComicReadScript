@@ -6,8 +6,6 @@ import {
   onUrlChange,
   plimit,
   querySelectorAll,
-  singleThreaded,
-  sleep,
   t,
   testImgUrl,
   throttle,
@@ -17,6 +15,7 @@ import { toast, useInit } from 'main';
 
 import { getChapterSwitch } from './chapterSwitch';
 import { getEleSelector, isEleSelector } from './eleSelector';
+import { ImageWatcher } from './ImageWatcher';
 import {
   getDatasetUrl,
   imgMap,
@@ -30,7 +29,7 @@ import {
 // 需要配合其他翻页脚本使用
 // https://www.colamanga.com/manga-za76213/1/5.html
 // 直接跳转到图片元素不会立刻触发，还需要停留20ms
-// https://www.colamanga.com/manga-kg45140/1/2.html
+// https://www.colamanga.com/manga-me955535/1/1.html
 // 使用 URL.createObjectURL 后马上 URL.revokeObjectURL 的 URL
 
 /** 执行脚本操作。如果中途中断，将返回 true */
@@ -128,12 +127,6 @@ export const otherSite = async () => {
     }),
   );
 
-  /** 根据元素所在高度进行排序 */
-  const eleSortFn = (a?: HTMLElement, b?: HTMLElement) =>
-    a === undefined || b === undefined
-      ? 0
-      : a.getBoundingClientRect().y - b.getBoundingClientRect().y;
-
   const imgBlackList = [
     // 东方永夜机的预加载图片
     '#pagetual-preload',
@@ -153,82 +146,9 @@ export const otherSite = async () => {
         imgMap.get(e)!.triggedNum <= 5,
     );
 
-  /** 判断一个图片元素是否符合标准 */
-  const isDisplayImg = (e: HTMLImageElement) =>
-    e.offsetHeight > 100 &&
-    e.offsetWidth > 100 &&
-    ((e.naturalHeight > 500 && e.naturalWidth > 500) ||
-      isEleSelector(e, options.selector));
+  let imgEleList: HTMLImageElement[] = [];
 
-  let imgEleList: (HTMLImageElement | undefined)[];
-
-  /** 检查筛选符合标准的图片元素用于更新 imgList */
-  const updateImgList = singleThreaded(async (_state) => {
-    imgEleList = await wait(() => {
-      /** 大概率是漫画图片的图片元素 */
-      const expectImgs = options.selector
-        ? new Set(getExpectImgList())
-        : undefined;
-      let imgNum = 0;
-      const newImgList: typeof imgEleList = [];
-      for (const e of getAllImg()) {
-        if (isDisplayImg(e)) {
-          newImgList.push(e);
-          imgNum += 1;
-        } else if (expectImgs?.has(e) && needTrigged(e))
-          newImgList.push(undefined);
-      }
-      return imgNum >= 2 && newImgList.toSorted(eleSortFn);
-    });
-
-    if (imgEleList.length === 0)
-      return setState((state) => {
-        state.fab.show = false;
-        state.manga.show = false;
-      });
-
-    // 随着图片的增加，需要补上空缺位置，避免变成稀疏数组
-    if (store.manga.imgList.length < imgEleList.length)
-      setState('comicMap', '', 'imgList', [
-        ...store.manga.imgList,
-        ...Array.from(
-          { length: imgEleList.length - store.manga.imgList.length },
-          () => '',
-        ),
-      ]);
-    // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
-    else if (store.manga.imgList.length > imgEleList.length)
-      setState(
-        'comicMap',
-        '',
-        'imgList',
-        store.manga.imgList.slice(0, imgEleList.length),
-      );
-
-    let isEdited = false;
-    await plimit(
-      imgEleList.map((e, i) => async () => {
-        let newUrl = '';
-        if (e) {
-          newUrl = await handleImgUrl(e);
-          if (placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? '';
-        }
-        if (newUrl === store.manga.imgList[i]) return;
-
-        isEdited ||= true;
-        setState('comicMap', '', 'imgList', (list) => list!.with(i, newUrl));
-      }),
-    );
-    if (isEdited)
-      saveImgEleSelector(imgEleList.filter(Boolean) as HTMLElement[]);
-
-    if (isEdited || imgEleList.some((e) => !e || needTrigged(e))) {
-      await sleep(1000);
-      _state.continueRun();
-    }
-  });
-
-  let timeout = false;
+  let timeout = 0;
 
   /** 只在`开启了阅读模式`和`当前可显示图片数量不足`时通过滚动触发懒加载 */
   const runCondition = () =>
@@ -243,16 +163,71 @@ export const otherSite = async () => {
       return expectImgList.every((e) => !needTrigged(e));
     }, time);
 
-  const triggerAllLazyLoad = singleThreaded(async () => {
+  const imageWatcher = new ImageWatcher({
+    filter: (info, img) => {
+      // 排除显示尺寸小的
+      if (info.display.height <= 100 || info.display.width <= 100) return false;
+      // 排除黑名单里的
+      if (img.closest(imgBlackList.join(','))) return false;
+      // 记录在案的直接通过
+      if (isEleSelector(img, options.selector)) return true;
+      // 原图尺寸必须足够大
+      return info.natural.height > 500 && info.natural.width > 500;
+    },
+    onChanged: throttle(async (map) => {
+      imgEleList = [...map.entries()]
+        .toSorted((a, b) => a[1].top - b[1].top)
+        .map(([e]) => e);
+
+      if (imgEleList.length === 0)
+        return setState((state) => {
+          state.fab.show = false;
+          state.manga.show = false;
+        });
+
+      // 随着图片的增加，需要补上空缺位置，避免变成稀疏数组
+      if (store.manga.imgList.length < imgEleList.length)
+        setState('comicMap', '', 'imgList', [
+          ...store.manga.imgList,
+          ...Array.from(
+            { length: imgEleList.length - store.manga.imgList.length },
+            () => '',
+          ),
+        ]);
+      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
+      else if (store.manga.imgList.length > imgEleList.length)
+        setState(
+          'comicMap',
+          '',
+          'imgList',
+          store.manga.imgList.slice(0, imgEleList.length),
+        );
+
+      let isEdited = false;
+      await plimit(
+        imgEleList.map((e, i) => async () => {
+          let newUrl = await handleImgUrl(e);
+          if (placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? '';
+          if (newUrl === store.manga.imgList[i]) return;
+
+          isEdited ||= true;
+          setState('comicMap', '', 'imgList', (list) => list!.with(i, newUrl));
+        }),
+      );
+      if (isEdited) saveImgEleSelector(imgEleList);
+
+      triggerAllLazyLoad();
+      setState('manga', getChapterSwitch());
+    }, 500),
+  });
+
+  const triggerAllLazyLoad = async () => {
     // 优先触发大概率是漫画图片的懒加载
     if (options.selector) {
       await triggerExpectImg(3, 1000 * 5);
       await triggerExpectImg();
     }
-    await triggerLazyLoad(
-      getAllImg().filter(needTrigged).toSorted(eleSortFn),
-      runCondition,
-    );
+    await triggerLazyLoad(getAllImg().filter(needTrigged), runCondition);
 
     // 针对不使用 img 来触发懒加载的网站，要找到图片容器元素再尝试触发懒加载
     // https://www.twmanga.com/comic/chapter/sanjiaoguanxirumen-founai/0_0.html
@@ -285,30 +260,15 @@ export const otherSite = async () => {
         parent = parent.parentElement;
       }
     }
-  });
-
-  const handleMutation = () => {
-    updateImgList();
-    triggerAllLazyLoad();
-    setState('manga', getChapterSwitch());
   };
-  /** 监视页面元素发生变化的 Observer */
-  const imgDomObserver = new MutationObserver(handleMutation);
 
   setState('comicMap', '', {
     async getImgList() {
-      if (!imgEleList) {
-        imgEleList = [];
-        imgDomObserver.observe(document.body, {
-          subtree: true,
-          childList: true,
-          attributes: true,
-          attributeFilter: ['src'],
-        });
-        handleMutation();
+      if (imgEleList.length === 0) {
+        imageWatcher.start();
+        triggerAllLazyLoad();
 
-        setTimeout(() => {
-          timeout = true;
+        timeout = window.setTimeout(() => {
           if (store.manga.imgList.length > 0) return;
           toast.warn(t('site.simple.no_img'), {
             id: 'no_img',

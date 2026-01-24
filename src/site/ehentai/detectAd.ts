@@ -1,4 +1,9 @@
-import { createRootMemo, querySelectorAll, useStyle } from 'helper';
+import {
+  createRootMemo,
+  isImageElement,
+  querySelectorAll,
+  useStyle,
+} from 'helper';
 import { ReactiveSet } from 'main';
 import { getAdPageByContent, getAdPageByFileName } from 'userscript/detectAd';
 
@@ -31,8 +36,7 @@ export const detectAd = ({
 
       const thumbnail = e.querySelector<HTMLElement>('[title]')!;
       [, fileNameList[index]] = thumbnail.title.split(/：|: /);
-      if (thumbnail.tagName === 'IMG')
-        thumbnailList[index] = thumbnail as HTMLImageElement;
+      if (isImageElement(thumbnail)) thumbnailList[index] = thumbnail;
       if (thumbnail.style.background.includes('url('))
         thumbnailList[index] = await extractSpriteImage(thumbnail.style);
     }
