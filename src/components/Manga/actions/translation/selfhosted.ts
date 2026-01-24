@@ -1,12 +1,13 @@
 import {
   createEffectOn,
   createEqualsSignal,
+  createRootMemo,
   lang,
   log,
   sleep,
   t,
 } from 'helper';
-import { request } from 'request';
+import { request, type RequestDetails } from 'request';
 
 import type { TaskState } from './helper';
 
@@ -16,13 +17,30 @@ import { setOption } from '../helper';
 import { createFormData, createOptions, setMessage } from './helper';
 
 const apiUrl = () =>
-  store.option.translation.localUrl || 'http://127.0.0.1:5003';
+  store.option.translation.localUrl?.replace(/\/$/, '') ||
+  'http://127.0.0.1:5003';
+
+const headers = createRootMemo(() => {
+  if (apiUrl().includes('.ngrok-free.'))
+    return { 'ngrok-skip-browser-warning': '69420' };
+});
+
+export const api = async <T>(
+  url: string,
+  details?: RequestDetails<T>,
+  retryNum = 0,
+) =>
+  request<T>(
+    `${apiUrl()}${url}`,
+    { ...details, headers: { ...details?.headers, ...headers() } },
+    retryNum,
+  );
 
 // api 文档：<http://0.0.0.0:5003/docs>
 
 /** 使用自部署服务器翻译指定图片 */
 export const selfhostedTranslation = async (url: string): Promise<string> => {
-  const html = await request(apiUrl(), {
+  const html = await api('/', {
     errorText: `${t('setting.option.paragraph_translation')} - ${t('alert.server_connect_failed')}`,
   });
 
@@ -46,7 +64,7 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
         task_id: string;
         status: string;
       };
-      const res = await request<resData>(`${apiUrl()}/submit`, {
+      const res = await api<resData>('/submit', {
         method: 'POST',
         responseType: 'json',
         data: createFormData(imgBlob, 'selfhosted-old'),
@@ -63,10 +81,9 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
     while (!taskState?.finished) {
       try {
         await sleep(200);
-        const res = await request<TaskState>(
-          `${apiUrl()}/task-state?taskid=${task_id}`,
-          { responseType: 'json' },
-        );
+        const res = await api<TaskState>(`/task-state?taskid=${task_id}`, {
+          responseType: 'json',
+        });
         taskState = res.response;
         setMessage(
           url,
@@ -83,15 +100,15 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
     }
 
     return URL.createObjectURL(
-      await downloadImg(`${apiUrl()}/result/${task_id}`),
+      await downloadImg(`${apiUrl()}/result/${task_id}`, {
+        headers: headers(),
+      }),
     );
   }
-
-  const headers_ngrok = apiUrl().includes('ngrok-free')? new Headers({ "ngrok-skip-browser-warning": "69420" }) : undefined;
   try {
     const res = await fetch(`${apiUrl()}/translate/with-form/image/stream`, {
       method: 'POST',
-      headers: headers_ngrok,
+      headers: headers(),
       body: createFormData(imgBlob, 'selfhosted'),
     });
 
@@ -144,12 +161,11 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
       // 在拷贝漫画上莫名有概率报错
       // 虽然猜测可能是 cors connect-src 导致的，但在类似的 fantia 上却也无法复现
       // 也找不到第二个同样问题的网站，考虑到应该没人会在拷贝上翻译，就暂且不管了
-      const res = await request<Blob>(`${apiUrl()}/translate/with-form/image`, {
+      const res = await api<Blob>('/translate/with-form/image', {
         method: 'POST',
         responseType: 'blob',
         fetch: false,
         timeout: 1000 * 60 * 10,
-        headers: headers_ngrok,
         data: createFormData(imgBlob, 'selfhosted'),
         errorText: t('translation.tip.upload_error'),
       });
@@ -168,7 +184,7 @@ export const updateSelfhostedOptions = async (noTip = false) => {
   if (store.option.translation.server !== 'selfhosted') return;
 
   try {
-    const res = await request(`${apiUrl()}`, {
+    const res = await api('/', {
       noTip,
       errorText: `${t('setting.option.paragraph_translation')} - ${t('alert.server_connect_failed')}`,
     });
