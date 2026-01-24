@@ -87,9 +87,11 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
     );
   }
 
+  const headers_ngrok = apiUrl().includes('ngrok-free')? new Headers({ "ngrok-skip-browser-warning": "69420" }) : undefined;
   try {
     const res = await fetch(`${apiUrl()}/translate/with-form/image/stream`, {
       method: 'POST',
+      headers: headers_ngrok,
       body: createFormData(imgBlob, 'selfhosted'),
     });
 
@@ -147,6 +149,7 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
         responseType: 'blob',
         fetch: false,
         timeout: 1000 * 60 * 10,
+        headers: headers_ngrok,
         data: createFormData(imgBlob, 'selfhosted'),
         errorText: t('translation.tip.upload_error'),
       });
