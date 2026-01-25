@@ -1,6 +1,6 @@
 import type { MangaProps } from 'components/Manga';
 
-import { onUrlChange, wait, waitUrlChange } from 'helper';
+import { onUrlChange, sleep, wait, waitUrlChange } from 'helper';
 
 import type { MainContext, SiteOptions } from '.';
 
@@ -104,4 +104,50 @@ export const universal = async ({
         setState('manga', { onNext: await wait(SPA.getOnNext, 5000) }))(),
     ]);
   }, SPA?.handleUrl);
+};
+
+// TODO: 使用 universalSPA 重构 universal
+
+/** 用于适配 SPA 站点的配置项 */
+export type SpaInitOptions = {
+  options?: Partial<SiteOptions & Record<string, any>>;
+
+  /** 要确保返回 true 后，立刻就可以取得图片列表了。不然就在里面 wait 着 */
+  isMangaPage: () => Promise<unknown> | unknown;
+  work: (mainContext: MainContext) => Promise<void>;
+};
+
+/** 对简单站点的通用解 */
+export const universalSPA = async (
+  name: string,
+  { options: initOptions, isMangaPage, work }: SpaInitOptions,
+) => {
+  await waitUrlChange(isMangaPage);
+
+  const mainContext = await useInit(name, initOptions);
+  await work(mainContext);
+  const { store, setState, showComic, loadComic, init } = mainContext;
+  init();
+
+  onUrlChange(async (lastUrl) => {
+    if (!lastUrl) return;
+
+    setState((state) => {
+      state.fab.show = undefined;
+      state.manga.show = false;
+    });
+
+    if (!(await isMangaPage())) return setState('fab', 'show', false);
+
+    const lastImg = store.comicMap[store.nowComic].imgList?.[0];
+    // 等到能加载出新图片
+    const res = await wait(async () => {
+      await sleep(200);
+      await loadComic();
+      return store.comicMap[store.nowComic].imgList?.[0] !== lastImg;
+    }, 10 * 1000);
+    if (!res) return;
+
+    if (store.options.autoShow) await showComic();
+  });
 };
