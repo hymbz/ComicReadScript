@@ -522,15 +522,12 @@ try {
       let getImgList: InitOptions['getImgList'] | undefined;
       if (location.pathname.startsWith('/photos-slide-aid-')) {
         getImgList = async () => {
-          await wait(() => querySelector('#content img'));
-          // 如果是单/双页模式，得先切换成下拉模式来显示所有图片
-          const nowMode = querySelector(':is(#btn-d, #btn-s).active');
-          if (nowMode) unsafeWindow.reader.setMode('vertical');
-          const imgList = querySelectorAll<HTMLImageElement>(
-            '#content img',
-          ).map((e) => e.getAttribute('src')!);
-          nowMode?.click();
-          return imgList;
+          const id = location.pathname.match(/-(\d+).html/)?.[1];
+          if (!id) throw new Error(t('site.changed_load_failed'));
+          const res = await request<string>(`/photos-item-aid-${id}.html`);
+          const reRes = res.responseText.match(/"page_url":(\[.+\]),/);
+          if (!reRes) throw new Error(t('site.changed_load_failed'));
+          return eval(reRes[1]) as string[]; // oxlint-disable-line no-eval
         };
       } else if (location.pathname.startsWith('/photos-slist-aid-'))
         getImgList = () =>
