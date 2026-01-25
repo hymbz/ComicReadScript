@@ -933,29 +933,7 @@ try {
     // #其他[Pixiv](https://www.pixiv.net)
     // test: https://www.pixiv.net/artworks/128841242
     case 'www.pixiv.net': {
-      let imgList: string[] = [];
-
-      options = {
-        name: 'pixiv',
-        getImgList: () => imgList,
-        SPA: {
-          async isMangaPage() {
-            const id = Number(location.pathname.split('/')[2]);
-            if (!id || !location.pathname.startsWith('/artworks/')) {
-              imgList.length = 0;
-              return false;
-            }
-
-            type resData = { body: { urls: { original: string } }[] };
-            const res = await request<resData>(`/ajax/illust/${id}/pages`, {
-              responseType: 'json',
-            });
-            imgList = res.response.body.map((e) => e.urls.original);
-            return imgList.length > 1;
-          },
-        },
-        initOptions: { autoShow: false, defaultOption: { pageNum: 1 } },
-      };
+      inject('site/pixiv');
       break;
     }
 

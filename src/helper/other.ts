@@ -653,8 +653,8 @@ export const onUrlChange = (
 /** wait，但是只在 url 变化时判断 */
 export const waitUrlChange = (isValidUrl: () => unknown) =>
   new Promise<void>((resolve) => {
-    const abort = onUrlChange(() => {
-      if (!isValidUrl()) return;
+    const abort = onUrlChange(async () => {
+      if (!(await isValidUrl())) return;
       resolve();
       abort();
     });
