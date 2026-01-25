@@ -29,6 +29,14 @@ export const handleExit = () => setState('show', false);
 
 const collator = new Intl.Collator(undefined, { numeric: true });
 
+const sortFiles = (files: File[]) => {
+  // 我也不知道这个 path 是哪里来的，总之它就是存在
+  // 在 edge 上 webkitRelativePath 为空，但有 path。在火狐上，则是两个属性都有
+  const getFilePath = (file: File) =>
+    file.webkitRelativePath || (file as any).path || file.name;
+  files.sort((a, b) => collator.compare(getFilePath(a), getFilePath(b)));
+};
+
 /** 加载新的文件列表 */
 export const loadNewImglist = async (files: File[], errorTip?: string) => {
   if (files.length === 0) return;
@@ -36,6 +44,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
   if (store.loading) return toast.warn(t('pwa.alert.repeat_load'));
 
   setState('loading', true);
+  sortFiles(files);
 
   try {
     const imgListRaw = await Promise.all(files.map(getImgData));
@@ -52,7 +61,6 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
       state.imgList = [];
     });
     setState((state) => {
-      newImglist.sort((a, b) => collator.compare(a.name, b.name));
       state.imgList = newImglist;
       state.show = true;
 
