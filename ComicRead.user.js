@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.5.0
+// @version         12.5.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、再漫画、漫画柜(manhuagui)、动漫屋(dm5)、mangabz、komiic、無限動漫、绅士漫画(wnacg)、禁漫天堂、NoyAcg、熱辣漫畫、hanime1、hitomi、hdoujin、SchaleNetwork、nude-moon、HentaiZap、IMHentai、HentaiEra、HentaiEnvy、MangaDex、welovemanga、kemono、nekohouse、Pixiv、明日方舟泰拉记事社、最前線、芸能ヌード、Tachidesk、LANraragi
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | hdoujin | SchaleNetwork | nude-moon | HentaiZap | IMHentai | HentaiEra | HentaiEnvy | kemono | nekohouse | MangaDex | welovemanga
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -8820,7 +8820,7 @@ const handleVersionUpdate = async () => {
       var _el$ = web.template(\`<h2>🥳 ComicRead 已更新到 v\`)();
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>增加「重载当前错误图片」快捷键，默认为「R」键 </p></li><li><p>支持「芸能ヌード」 </p></li><li><p>pixiv 支持切换加载原图/非原图\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>下载失败时重试3次 </p></li><li><p>修复 welovemanga 上/下话切换失效的 bug </p></li><li><p>修复绅士漫画失效的 bug </p></li><li><p>修复自定义翻译 URL 为 ngrok 时需要验证警告页面的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复绅士漫画显示错误\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '12');
       },
@@ -14730,13 +14730,12 @@ const buildChapters = async (comicName, hiddenType) => {
         let getImgList;
         if (location.pathname.startsWith('/photos-slide-aid-')) {
           getImgList = async () => {
-            await helper.wait(() => helper.querySelector('#content img'));
-            // 如果是单/双页模式，得先切换成下拉模式来显示所有图片
-            const nowMode = helper.querySelector(':is(#btn-d, #btn-s).active');
-            if (nowMode) unsafeWindow.reader.setMode('vertical');
-            const imgList = helper.querySelectorAll('#content img').map(e => e.getAttribute('src'));
-            nowMode?.click();
-            return imgList;
+            const id = location.pathname.match(/-(\d+).html/)?.[1];
+            if (!id) throw new Error(helper.t('site.changed_load_failed'));
+            const res = await main.request(`/photos-item-aid-${id}.html`);
+            const reRes = res.responseText.match(/"page_url":(\[.+\]),/);
+            if (!reRes) throw new Error(helper.t('site.changed_load_failed'));
+            return eval(reRes[1]); // oxlint-disable-line no-eval
           };
         } else if (location.pathname.startsWith('/photos-slist-aid-')) getImgList = () => unsafeWindow.imglist.filter(({
           caption
