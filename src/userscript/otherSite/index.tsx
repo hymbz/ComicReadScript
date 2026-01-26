@@ -163,6 +163,15 @@ export const otherSite = async () => {
       return expectImgList.every((e) => !needTrigged(e));
     }, time);
 
+  /** 按照元素的显示高度来排序元素 */
+  const sortElementsByTop = <T extends HTMLElement>(
+    elements: Iterable<T>,
+  ): T[] => {
+    const topMap = new WeakMap<T, number>();
+    for (const e of elements) topMap.set(e, e.getBoundingClientRect().top);
+    return [...elements].toSorted((a, b) => topMap.get(a)! - topMap.get(b)!);
+  };
+
   const imageWatcher = new ImageWatcher({
     filter: (info, img) => {
       // 排除显示尺寸小的
@@ -175,9 +184,7 @@ export const otherSite = async () => {
       return info.natural.height > 500 && info.natural.width > 500;
     },
     onChanged: throttle(async (map) => {
-      imgEleList = [...map.entries()]
-        .toSorted((a, b) => a[1].top - b[1].top)
-        .map(([e]) => e);
+      imgEleList = sortElementsByTop(map.keys());
 
       if (imgEleList.length === 0)
         return setState((state) => {

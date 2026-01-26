@@ -6,8 +6,6 @@ import { isHTMLElement, isImageElement } from 'helper';
 export type ImageInfo = {
   display: { width: number; height: number };
   natural: { width: number; height: number };
-  /** 图片在文档里的绝对高度 */
-  top: number;
 };
 
 /**
@@ -88,14 +86,12 @@ export class ImageWatcher {
           height: entry.contentRect.height,
         },
         natural: { width: img.naturalWidth, height: img.naturalHeight },
-        top: 0,
       };
 
       // oxlint-disable-next-line no-array-method-this-argument
       if (this.qualifiedMap.has(img) || !this.options.filter(imageInfo, img))
         continue;
 
-      imageInfo.top = img.getBoundingClientRect().top + window.scrollY;
       this.qualifiedMap.set(img, imageInfo);
       changed = true;
 
