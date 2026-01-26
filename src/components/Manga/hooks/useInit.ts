@@ -185,13 +185,16 @@ export const useInit = (props: MangaProps) => {
       }
 
       /** 被删除的图片 */
-      const deleteList = oldImgList.difference(new Set(newImgList));
+      // TODO: 使用 oldImgList.difference(new Set(newImgList)); 替代
+      const deleteList = [...oldImgList].filter(
+        (url) => !newImgList.includes(url),
+      );
       for (const url of deleteList)
         if (state.imgMap[url].blobUrl && state.imgMap[url].blobUrl !== url)
           URL.revokeObjectURL(state.imgMap[url].blobUrl);
 
       /** 删除图片数 */
-      const deleteNum = deleteList.size;
+      const deleteNum = deleteList.length;
 
       /** 传入的是否是新漫画 */
       const isNew = deleteNum >= oldImgList.size * 0.8; // 删掉8成图就算是新漫画
