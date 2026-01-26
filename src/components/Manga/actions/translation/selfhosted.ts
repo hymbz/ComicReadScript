@@ -14,7 +14,7 @@ import type { TaskState } from './helper';
 import { downloadImg } from '../../helper';
 import { store } from '../../store';
 import { setOption } from '../helper';
-import { createFormData, createOptions, setMessage } from './helper';
+import { createFormData, createOptions, resize, setMessage } from './helper';
 
 const apiUrl = () =>
   store.option.translation.localUrl?.replace(/\/$/, '') ||
@@ -53,6 +53,8 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
     store.prop.onImgError?.(url);
     throw new Error(t('translation.tip.download_img_failed'), { cause: error });
   }
+
+  imgBlob = await resize(imgBlob, url);
 
   // 支持旧版 manga-image-translator
   // https://sleazyfork.org/zh-CN/scripts/374903/discussions/273466

@@ -1,4 +1,4 @@
-import { t } from 'helper';
+import { canvasToBlob, log, t, waitImgLoad } from 'helper';
 
 import { setState, store } from '../../store';
 
@@ -48,3 +48,30 @@ export const createOptions = (list: string[]) =>
     (name) =>
       [name, t(`translation.translator.${name}`) || name] as [string, string],
   );
+
+/** 缩小过大的图片 */
+export const resize = async (blob: Blob, url: string): Promise<Blob> => {
+  const img = store.imgMap[url];
+  const w = img.width!;
+  const h = img.height!;
+
+  if (w <= 4096 && h <= 4096) return blob;
+
+  try {
+    const scale = Math.min(4096 / w, 4096 / h);
+    const width = Math.floor(w * scale);
+    const height = Math.floor(h * scale);
+
+    const img = await waitImgLoad(URL.createObjectURL(blob));
+    const canvas = new OffscreenCanvas(width, height);
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, width, height);
+    URL.revokeObjectURL(img.src);
+
+    return await canvasToBlob(canvas);
+  } catch (error) {
+    log.error('缩小图片尺寸时出错', error);
+    return blob;
+  }
+};

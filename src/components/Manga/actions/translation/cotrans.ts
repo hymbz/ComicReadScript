@@ -5,7 +5,7 @@ import { request } from 'request';
 
 import { downloadImg } from '../../helper';
 import { store } from '../../store';
-import { createFormData, setMessage } from './helper';
+import { createFormData, resize, setMessage } from './helper';
 
 type QueryV1Message =
   | {
@@ -95,43 +95,19 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
   return URL.createObjectURL(await canvasToBlob(canvas));
 };
 
-/** 缩小过大的图片 */
-const resize = async (blob: Blob, w: number, h: number): Promise<Blob> => {
-  if (w <= 4096 && h <= 4096) return blob;
-
-  const scale = Math.min(4096 / w, 4096 / h);
-  const width = Math.floor(w * scale);
-  const height = Math.floor(h * scale);
-
-  const img = await waitImgLoad(URL.createObjectURL(blob));
-  const canvas = new OffscreenCanvas(width, height);
-  const ctx = canvas.getContext('2d')!;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, width, height);
-  URL.revokeObjectURL(img.src);
-
-  return canvasToBlob(canvas);
-};
-
 /** 使用 cotrans 翻译指定图片 */
 export const cotransTranslation = async (url: string) => {
-  const img = store.imgMap[url];
   setMessage(url, t('translation.tip.img_downloading'));
   let imgBlob: Blob;
   try {
-    imgBlob = await downloadImg(img.src);
+    imgBlob = await downloadImg(url);
   } catch (error) {
     log.error(error);
     store.prop.onImgError?.(url);
     throw new Error(t('translation.tip.download_img_failed'), { cause: error });
   }
 
-  try {
-    imgBlob = await resize(imgBlob, img.width!, img.height!);
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.resize_img_failed'), { cause: error });
-  }
+  imgBlob = await resize(imgBlob, url);
 
   setMessage(url, t('translation.tip.upload'));
   let res: Response;
