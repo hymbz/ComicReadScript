@@ -114,7 +114,7 @@ export const 网格模式: Story = {
 
 // export const 翻译 = {
 //   args: {
-//     option: { translation: { server: 'selfhosted' } },
+//     option: { translation: { enabled: true, provider: 'manga-image-translator' } },
 //   } satisfies PartialProps,
 //   async play() {
 //     await clickSettingItem(t('setting.option.disable_auto_enlarge'));

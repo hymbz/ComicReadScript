@@ -416,7 +416,6 @@ export const defaultSettingList: () => SettingList = () => [
   [
     t('setting.option.paragraph_translation'),
     SettingTranslation,
-    { initShow: () => store.option.translation.server !== 'disable' },
   ],
   [t('other.hotkeys'), SettingHotkeysBlock],
   [

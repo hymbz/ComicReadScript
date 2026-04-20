@@ -183,7 +183,7 @@
     },
     "sync_options_other_site": "Sync read options to other sites",
     "translation": {
-      "cotrans_tip": "<p>Using the interface provided by <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\n<p>So please <b>mind the frequency of use</b>.</p>\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
+      "cotrans_tip": "<p>Using the interface provided by <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\n<p>So please <b>mind the frequency of use</b>.</p>\n<p>It is highly recommended to locally deploy Manga Image Translator, as it does not consume server resources and does not require queuing.</p>",
       "options": {
         "box_threshold": "Box threshold",
         "detection_resolution": "Text detection resolution",
@@ -203,8 +203,7 @@
         "unclip_ratio": "Unclip ratio"
       },
       "range": "Scope of Translation",
-      "server": "Translation server",
-      "server_selfhosted": "Selfhosted",
+      "provider": "Translator",
       "translate_all": "Translate all images",
       "translate_to_end": "Translate the current page to the end"
     }
@@ -268,13 +267,20 @@
   },
   "translation": {
     "status": {
+      "after-translating": "Post-translation processing",
+      "cancelled": "Translation cancelled",
       "colorizing": "Colorizing",
       "default": "Unknown status",
       "detection": "Detecting text",
+      "downloading": "Downloading",
       "downscaling": "Downscaling",
       "error": "Error during translation",
+      "error-download": "Download error",
       "error-lang": "The target language is not supported by the chosen translator",
       "error-translating": "Did not get any text back from the text translation service",
+      "error-too-large": "Image size too large (greater than 8000x8000 px)",
+      "error-upload": "Upload error",
+      "error-disconnect": "Lost connection to server",
       "error-with-id": "Error during translation",
       "finished": "Finishing",
       "inpainting": "Inpainting",
@@ -284,12 +290,16 @@
       "pending-pos": "Pending",
       "preparing": "Waiting for idle window",
       "rendering": "Rendering",
+      "running_pre_translation_hooks": "Running pre-translation hooks",
       "saved": "Saved",
+      "saving": "Saving",
       "skip-no-regions": "No text regions detected in the image",
       "skip-no-text": "No text detected in the image",
       "textline_merge": "Merging text lines",
       "translating": "Translating",
-      "upscaling": "Upscaling"
+      "upload": "Uploading",
+      "upscaling": "Upscaling",
+      "uploading": "Uploading"
     },
     "tip": {
       "check_img_status_failed": "Failed to check image status",
@@ -315,6 +325,7 @@
       "none": "Remove texts",
       "offline": "offline translator",
       "original": "Original",
+      "papago": "Papago",
       "youdao": "youdao"
     }
   },

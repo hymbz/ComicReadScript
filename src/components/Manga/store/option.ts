@@ -1,6 +1,13 @@
-import { lang } from 'helper';
-
 import type { areaArrayMap } from '../components/TouchArea';
+
+import {
+  cotransDefaultOptions,
+  type CotransOptions,
+} from '../actions/translation/translator/Cotrans/options';
+import {
+  mitDefaultOptions,
+  type MitOptions,
+} from '../actions/translation/translator/MangaImageTranslator/options';
 
 export type Option = {
   /** 漫画方向 */
@@ -108,27 +115,17 @@ export type Option = {
 
   /** 翻译 */
   translation: {
-    /** 翻译服务器 */
-    server: 'disable' | 'selfhosted' | 'cotrans';
-    /** 本地部署的项目 url */
-    localUrl: string | undefined;
+    /** 是否启用翻译 */
+    enabled: boolean;
+    /** 翻译器 */
+    provider: 'manga-image-translator' | 'cotrans';
     /** 忽略缓存强制重试 */
     forceRetry: boolean;
-    /** manga-image-translator 配置 */
-    options: {
-      detector: {
-        detector: string;
-        detection_size: string;
-        box_threshold: number;
-        unclip_ratio: number;
-      };
-      render: { direction: string };
-      translator: { translator: string; target_lang: string };
-      inpainter: { inpainter: string; inpainting_size: string };
-      mask_dilation_offset: number;
-    };
     /** 只下载完成翻译的图片 */
     onlyDownloadTranslated: boolean;
+
+    mit: MitOptions;
+    cotrans: CotransOptions;
   };
 
   /** 自动滚动 */
@@ -193,27 +190,13 @@ const _defaultOption: Readonly<Option> = {
   },
 
   translation: {
-    server: 'disable',
-    localUrl: undefined,
-    forceRetry: false,
-    // 一些参数没有使用默认值，而是直接使用文档的推荐值
-    // https://github.com/zyddnys/manga-image-translator?tab=readme-ov-file#recommended-modules
-    options: {
-      detector: {
-        detector: 'ctd',
-        detection_size: '1536',
-        box_threshold: 0.7,
-        unclip_ratio: 2.3,
-      },
-      render: { direction: 'auto' },
-      translator: {
-        translator: 'gpt3.5',
-        target_lang: { zh: 'CHS', en: 'ENG', ru: 'RUS' }[lang()] ?? 'CHS',
-      },
-      inpainter: { inpainter: 'lama_large', inpainting_size: '2048' },
-      mask_dilation_offset: 30,
-    },
+    enabled: false,
+    provider: 'manga-image-translator',
     onlyDownloadTranslated: false,
+    forceRetry: false,
+
+    mit: mitDefaultOptions(),
+    cotrans: cotransDefaultOptions(),
   },
 
   autoScroll: {

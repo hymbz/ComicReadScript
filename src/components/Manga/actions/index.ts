@@ -18,6 +18,5 @@ export * from './scrollModeDrag';
 export * from './show';
 export * from './switch';
 export * from './translation';
-export * from './translation/selfhosted';
 export * from './turnPage';
 export * from './zoom';

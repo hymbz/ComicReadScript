@@ -1,6 +1,7 @@
 import type { Component } from 'solid-js';
 
 import { createSignal, Show } from 'solid-js';
+import { Dynamic } from 'solid-js/web';
 
 import { createEffectOn, descRange, extractRange, t } from 'helper';
 
@@ -8,21 +9,22 @@ import type { SetOptionsFunction } from '../actions';
 import type { Option } from '../store/option';
 
 import { RangeInput } from '../../RangeInput';
-import { bindOption as _bindOption, imgList, setOption } from '../actions';
 import {
+  allowBatchTranslation,
+  bindOption as _bindOption,
+  cotransSettings,
+  imgList,
   isTranslatingAll,
   isTranslatingToEnd,
+  mitSettings,
   setImgTranslationEnbale,
   translateAll,
   translateToEnd,
   translationImgs,
-  translatorOptions,
-} from '../actions/translation';
-import { updateSelfhostedOptions } from '../actions/translation/selfhosted';
+} from '../actions';
 import classes from '../index.module.css';
 import { store } from '../store';
 import { SettingsItem } from './SettingsItem';
-import { SettingsItemNumber } from './SettingsItemNumber';
 import { SettingsItemSelect } from './SettingsItemSelect';
 import { SettingsItemSwitch } from './SettingsItemSwitch';
 
@@ -73,137 +75,46 @@ const TranslateRange: Component = () => {
   );
 };
 
+const settingsMap = {
+  'manga-image-translator': mitSettings,
+  cotrans: cotransSettings,
+} satisfies Partial<Record<Option['translation']['provider'], Component>>;
+
 export const SettingTranslation = () => (
   <>
-    <SettingsItemSelect
-      name={t('setting.translation.server')}
-      options={[
-        ['disable', t('other.disable')],
-        ['selfhosted', t('setting.translation.server_selfhosted')],
-        ['cotrans'],
-      ]}
-      {...bindOption('server')}
+    <SettingsItemSwitch
+      name={t('other.enabled')}
+      {...bindOption('enabled')}
     />
 
-    <Show when={store.option.translation.server === 'cotrans'}>
-      {/* eslint-disable-next-line solid/no-innerhtml */}
-      <blockquote innerHTML={t('setting.translation.cotrans_tip')} />
-    </Show>
-
-    <Show when={store.option.translation.server === 'selfhosted'}>
-      <SettingsItemSwitch
-        name={t('setting.translation.translate_all')}
-        value={isTranslatingAll()}
-        onChange={translateAll}
-      />
-      <SettingsItemSwitch
-        name={t('setting.translation.translate_to_end')}
-        value={isTranslatingToEnd()}
-        onChange={translateToEnd}
-      />
-      <TranslateRange />
-
-      <hr style={{ margin: '1em 0' }} />
-    </Show>
-
-    <Show when={store.option.translation.server !== 'disable'}>
+    <Show when={store.option.translation.enabled}>
       <SettingsItemSelect
-        name={t('setting.translation.options.target_language')}
+        name={t('setting.translation.provider')}
         options={[
-          ['CHS', '简体中文'],
-          ['CHT', '繁體中文'],
-          ['JPN', '日本語'],
-          ['ENG', 'English'],
-          ['KOR', '한국어'],
-          ['VIN', 'Tiếng Việt'],
-          ['CSY', 'čeština'],
-          ['NLD', 'Nederlands'],
-          ['FRA', 'français'],
-          ['DEU', 'Deutsch'],
-          ['HUN', 'magyar nyelv'],
-          ['ITA', 'italiano'],
-          ['PLK', 'polski'],
-          ['PTB', 'português'],
-          ['ROM', 'limba română'],
-          ['RUS', 'русский язык'],
-          ['ESP', 'español'],
-          ['TRK', 'Türk dili'],
-          ['IND', 'Indonesia'],
+          ['manga-image-translator', 'Manga Image Translator'],
+          ['cotrans', 'Cotrans'],
         ]}
-        {...bindOption('options', 'translator', 'target_lang')}
-      />
-      <SettingsItemSelect
-        name={t('setting.translation.options.translator')}
-        options={translatorOptions()}
-        onClick={updateSelfhostedOptions}
-        {...bindOption('options', 'translator', 'translator')}
-      />
-      <SettingsItemSelect
-        name={t('setting.translation.options.direction')}
-        options={[
-          ['auto', t('setting.translation.options.direction_auto')],
-          ['horizontal', t('setting.translation.options.direction_horizontal')],
-          ['vertical', t('setting.translation.options.direction_vertical')],
-        ]}
-        {...bindOption('options', 'render', 'direction')}
-      />
-      <SettingsItemSelect
-        name={t('setting.translation.options.detection_resolution')}
-        options={[
-          ['1024', '1024px'],
-          ['1536', '1536px'],
-          ['2048', '2048px'],
-          ['2560', '2560px'],
-        ]}
-        {...bindOption('options', 'detector', 'detection_size')}
-      />
-      <SettingsItemSelect
-        name={t('setting.translation.options.text_detector')}
-        options={[['default'], ['ctd', 'Comic Text Detector']]}
-        {...bindOption('options', 'detector', 'detector')}
+        {...bindOption('provider')}
       />
 
-      <Show when={store.option.translation.server === 'selfhosted'}>
-        <SettingsItemSelect
-          name={t('setting.translation.options.inpainting_size')}
-          options={[
-            ['516', '516px'],
-            ['1024', '1024px'],
-            ['2048', '2048px'],
-            ['2560', '2560px'],
-          ]}
-          {...bindOption('options', 'inpainter', 'inpainting_size')}
+      <Show when={allowBatchTranslation()}>
+        <SettingsItemSwitch
+          name={t('setting.translation.translate_all')}
+          value={isTranslatingAll()}
+          onChange={translateAll}
         />
-        <SettingsItemSelect
-          name={t('setting.translation.options.inpainter')}
-          options={[
-            ['default', 'Default'],
-            ['lama_large', 'Lama Large'],
-            ['lama_mpe', 'Lama MPE'],
-            ['sd', 'SD'],
-            ['none', 'None'],
-            ['original', 'Original'],
-          ]}
-          {...bindOption('options', 'inpainter', 'inpainter')}
+        <SettingsItemSwitch
+          name={t('setting.translation.translate_to_end')}
+          value={isTranslatingToEnd()}
+          onChange={translateToEnd}
         />
-        <SettingsItemNumber
-          name={t('setting.translation.options.unclip_ratio')}
-          step={0.01}
-          {...bindOption('options', 'detector', 'unclip_ratio')}
-        />
-        <SettingsItemNumber
-          name={t('setting.translation.options.box_threshold')}
-          step={0.01}
-          {...bindOption('options', 'detector', 'box_threshold')}
-        />
-        <SettingsItemNumber
-          name={t('setting.translation.options.mask_dilation_offset')}
-          {...bindOption('options', 'mask_dilation_offset')}
-        />
+        <TranslateRange />
+
+        <hr style={{ margin: '1em 0' }} />
       </Show>
-    </Show>
 
-    <Show when={store.option.translation.server !== 'disable'}>
+      <Dynamic component={settingsMap[store.option.translation.provider]} />
+
       <hr style={{ margin: '1em 0' }} />
 
       <SettingsItemSwitch
@@ -214,30 +125,6 @@ export const SettingTranslation = () => (
         name={t('setting.translation.options.only_download_translated')}
         {...bindOption('onlyDownloadTranslated')}
       />
-      <Show when={store.option.translation.server === 'selfhosted'}>
-        <SettingsItemSwitch
-          name={t('setting.translation.options.local_url')}
-          value={store.option.translation.localUrl !== undefined}
-          onChange={(val) => {
-            setOption((draftOption) => {
-              draftOption.translation.localUrl = val ? '' : undefined;
-            });
-          }}
-        />
-        <Show when={store.option.translation.localUrl !== undefined}>
-          <input
-            type="url"
-            value={store.option.translation.localUrl}
-            onChange={(e) => {
-              setOption((draftOption) => {
-                // 删掉末尾的斜杠
-                const url = e.target.value.replace(/\/$/, '');
-                draftOption.translation.localUrl = url;
-              });
-            }}
-          />
-        </Show>
-      </Show>
     </Show>
   </>
 );

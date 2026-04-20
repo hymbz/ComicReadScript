@@ -33,6 +33,7 @@ import {
   switchScrollMode,
   translateCurrent,
   translateToEnd,
+  allowBatchTranslation,
 } from './actions';
 import { AutoScrollButton } from './components/autoScroll';
 import { DownloadButton } from './components/DownloadButton';
@@ -106,7 +107,7 @@ export const defaultButtonList: ToolbarButtonList = [
   ),
   // 翻译
   () => (
-    <Show when={store.option.translation.server !== 'disable'}>
+    <Show when={store.option.translation.enabled}>
       <hr />
       <IconButton
         tip={
@@ -121,7 +122,7 @@ export const defaultButtonList: ToolbarButtonList = [
       <IconButton
         tip={t('setting.translation.translate_to_end')}
         enabled={isTranslatingToEnd()}
-        hidden={store.option.translation.server !== 'selfhosted'}
+        hidden={!allowBatchTranslation()}
         onClick={translateToEnd}
         children={<MdLowPriority />}
       />

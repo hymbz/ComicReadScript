@@ -2,11 +2,31 @@ import type { Accessor } from 'solid-js';
 
 import { createRootMemo, range, singleThreaded, t } from 'helper';
 
+import type { Option } from '../../store/option';
+import type { TranslationTask } from './TranslationTask';
+
 import { setState, store } from '../../store';
 import { activeImgIndex, activePage, imgList } from '../memo';
-import { cotransTranslation, cotransTranslators } from './cotrans';
-import { createOptions, setMessage } from './helper';
-import { selfhostedOptions, selfhostedTranslation } from './selfhosted';
+import { Cotrans } from './translator/Cotrans';
+import { MIT, updateMitTranslators } from './translator/MangaImageTranslator';
+
+export { updateMitTranslators };
+export { cotransSettings } from './translator/Cotrans/settings';
+export { mitSettings } from './translator/MangaImageTranslator/settings';
+
+/** 判断当前翻译器是否允许批量翻译 */
+export const allowBatchTranslation = () =>
+  store.option.translation.provider !== 'cotrans';
+
+const taskRegistry: Partial<
+  Record<Option['translation']['provider'], new (url: string) => TranslationTask>
+> = {
+  'manga-image-translator': MIT,
+  cotrans: Cotrans,
+};
+
+const setMessage = (url: string, message: string) =>
+  setState('imgMap', url, 'translationMessage', message);
 
 /** 翻译指定图片 */
 export const translationImage = async (url: string) => {
@@ -22,11 +42,9 @@ export const translationImage = async (url: string) => {
     if (img.loadType !== 'loaded')
       return setMessage(url, t('translation.tip.img_not_fully_loaded'));
 
-    const translationUrl = await (
-      store.option.translation.server === 'cotrans'
-        ? cotransTranslation
-        : selfhostedTranslation
-    )(url);
+    const Task = taskRegistry[store.option.translation.provider];
+    if (!Task) throw new Error('未知翻译器');
+    const translationUrl = await new Task(url).run();
 
     setState('imgMap', url, {
       translationUrl,
@@ -53,9 +71,9 @@ export const translationAll = singleThreaded(async (state): Promise<void> => {
 /** 开启或关闭指定图片的翻译 */
 export const setImgTranslationEnbale = (
   list: Iterable<number>,
-  enbale: boolean,
+  enable: boolean,
 ) => {
-  if (store.option.translation.server === 'disable' && enbale) return;
+  if (!store.option.translation.enabled && enable) return;
 
   setState((state) => {
     for (const i of list) {
@@ -63,7 +81,7 @@ export const setImgTranslationEnbale = (
       if (!img) continue;
       const url = img.src;
 
-      if (enbale) {
+      if (enable) {
         if (state.option.translation.forceRetry) {
           img.translationType = 'wait';
           img.translationUrl = undefined;
@@ -103,12 +121,6 @@ export const setImgTranslationEnbale = (
   return translationAll();
 };
 
-export const translatorOptions = createRootMemo(() =>
-  store.option.translation.server === 'selfhosted'
-    ? selfhostedOptions()
-    : createOptions(cotransTranslators),
-);
-
 /** 翻译范围的图片 */
 export const translationImgs = createRootMemo(() => {
   const list = new Set<number>();
@@ -137,7 +149,7 @@ const createTranslateRange = (imgs: Accessor<number[]>) => {
     imgs().every((i) => translationImgs().has(i)),
   );
   const translateRange = () => {
-    if (store.option.translation.server !== 'selfhosted') return;
+    if (!allowBatchTranslation()) return;
     setImgTranslationEnbale(imgs(), !isTranslating());
   };
   return [isTranslating, translateRange] as const;

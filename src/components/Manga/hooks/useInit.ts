@@ -25,8 +25,8 @@ import {
   resetImgState,
   resumeReadProgress,
   scrollTo,
+  updateMitTranslators,
   updatePageData,
-  updateSelfhostedOptions,
   updateShowRange,
   watchDomSize,
 } from '../actions';
@@ -181,7 +181,7 @@ export const useInit = (props: MangaProps) => {
       const oldImgList = new Set(state.imgList);
       if (oldImgList.size === 0 && newImgList.length > 0) {
         resumeReadProgress(state);
-        updateSelfhostedOptions(true);
+        updateMitTranslators(true);
       }
 
       /** 被删除的图片 */

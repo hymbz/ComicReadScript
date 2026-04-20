@@ -183,7 +183,7 @@
     },
     "sync_options_other_site": "同步阅读配置至其他站点",
     "translation": {
-      "cotrans_tip": "<p>将使用 <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\n<p>所以还请 <b>注意用量</b></p>\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",
+      "cotrans_tip": "<p>将使用 <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\n<p>所以还请 <b>注意用量</b></p>\n<p>更推荐自己本地部署 Manga Image Translator，既不占用服务器资源也不需要排队</p>",
       "options": {
         "box_threshold": "文本框阈值",
         "detection_resolution": "文本扫描清晰度",
@@ -203,8 +203,7 @@
         "unclip_ratio": "文本框膨胀比率"
       },
       "range": "翻译范围",
-      "server": "翻译服务器",
-      "server_selfhosted": "本地部署",
+      "provider": "翻译器",
       "translate_all": "翻译全部图片",
       "translate_to_end": "翻译当前页至结尾"
     }
@@ -268,13 +267,20 @@
   },
   "translation": {
     "status": {
+      "after-translating": "翻译后处理中",
+      "cancelled": "翻译已取消",
       "colorizing": "正在上色",
       "default": "未知状态",
       "detection": "正在检测文本",
+      "downloading": "正在下载",
       "downscaling": "正在缩小图片",
       "error": "翻译出错",
+      "error-download": "下载出错",
       "error-lang": "你选择的翻译服务不支持你选择的语言",
       "error-translating": "翻译服务没有返回任何文本",
+      "error-too-large": "图片尺寸过大（超过 8000x8000 像素）",
+      "error-upload": "上传出错",
+      "error-disconnect": "与服务器断开连接",
       "error-with-id": "翻译出错",
       "finished": "正在整理结果",
       "inpainting": "正在修补图片",
@@ -284,12 +290,16 @@
       "pending-pos": "正在等待",
       "preparing": "等待空闲窗口",
       "rendering": "正在渲染",
+      "running_pre_translation_hooks": "正在执行翻译前处理",
       "saved": "保存结果",
+      "saving": "正在保存",
       "skip-no-regions": "图片中没有检测到文本区域",
       "skip-no-text": "图片中没有检测到文本",
       "textline_merge": "正在整合文本",
       "translating": "正在翻译文本",
-      "upscaling": "正在放大图片"
+      "upload": "正在上传",
+      "upscaling": "正在放大图片",
+      "uploading": "正在上传"
     },
     "tip": {
       "check_img_status_failed": "检查图片状态失败",
@@ -315,6 +325,7 @@
       "none": "删除文本",
       "offline": "离线模型",
       "original": "原文",
+      "papago": "Papago",
       "youdao": "有道"
     }
   },

@@ -185,4 +185,24 @@ export const migration = async (version: string) => {
           await renameOption(key, ['hotkeys => add_hotkeys_actions']);
       }
     }
+
+  // 12.5.1 => 12.6 - 翻译配置结构迁移
+  if (versionLt(version, '12.6'))
+    for (const key of values) {
+      if (key.startsWith('@')) continue;
+
+      await migrationOption(key, (option) => {
+        const oldTranslation = option.option?.translation;
+        if (!oldTranslation) return;
+
+        // 为简化迁移逻辑，直接删除翻译相关配置，仅迁移 mit 的自定义服务器地址
+        delete option.option.translation;
+
+        if (oldTranslation.localUrl) {
+          option.option.translation ??= {};
+          option.option.translation.mit ??= {};
+          option.option.translation.mit.localUrl = oldTranslation.localUrl;
+        }
+      });
+    }
 };
