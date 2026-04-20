@@ -3,15 +3,18 @@ import {
   domParse,
   fileType,
   log,
+  onUrlChange,
   querySelector,
   querySelectorAll,
   scrollIntoView,
   singleThreaded,
   t,
   useStyle,
+  wait,
 } from 'helper';
 import { ReactiveSet, request, toast, useInit } from 'main';
 import { getAdPageByContent } from 'userscript/detectAd';
+import { getNhentaiData, getNhentaiImageUrl } from '../userscript/nhentaiApi';
 
 type Images = {
   thumbnail: { t: keyof typeof fileType; w: number; h: number };
@@ -31,8 +34,28 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
     detect_ad: true,
   });
 
-  // 在漫画详情页
-  if (Reflect.has(unsafeWindow, 'gallery')) {
+  let currentGalleryId: string | null = null;
+
+  const removeComicReadMode = () => {
+    querySelector('#comicReadMode')?.remove();
+  };
+
+  const createComicReadMode = () => {
+    const el = document.createElement('a');
+    el.href = 'javascript:;';
+    el.id = 'comicReadMode';
+    el.className = 'btn btn-secondary';
+    el.addEventListener('click', showComic);
+    el.innerHTML = '<i class="fa fa-book"></i> Read';
+    return el;
+  };
+
+  const setupDetailPage = async (id: string) => {
+    if (currentGalleryId === id) return;
+    currentGalleryId = id;
+
+    removeComicReadMode();
+
     setState('manga', {
       onExit(isEnd) {
         if (isEnd) scrollIntoView('#comment-container');
@@ -40,38 +63,47 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
       },
     });
 
-    // nh 自己是每张图随机选一个 cdn，但反正只是分流，简单点顺序分配应该也没问题吧
-    const cdn = unsafeWindow._n_app.options.image_cdn_urls as string[];
-    const getImgList = () =>
-      _gallery.images.pages.map(({ t, w: width, h: height }, i) => {
-        const src = `https://${cdn[i % cdn.length]}/galleries/${_gallery.media_id}/${i + 1}.${fileType[t]}`;
-        return { src, width, height };
-      });
-    setState('comicMap', '', { getImgList });
+    let gallery: any = null;
+    try {
+      gallery = await getNhentaiData(id);
+    } catch (error) {
+      log.error('nhentai getNhentaiData failed', error);
+    }
+
+    if (gallery) {
+      const getImgList = () =>
+        gallery.pages.map((page: any, i: number) => ({
+          src: getNhentaiImageUrl(gallery, i),
+          width: page.width,
+          height: page.height,
+        }));
+
+      setState('comicMap', '', { getImgList });
+    }
+
     setState('fab', 'initialShow', options.autoShow);
 
-    const comicReadModeDom = (
-      <a
-        href="javascript:;"
-        id="comicReadMode"
-        class="btn btn-secondary"
-        onClick={() => showComic()}
-      >
-        {/* eslint-disable-next-line i18next/no-literal-string */}
-        <i class="fa fa-book" /> Read
-      </a>
-    ) as HTMLAnchorElement;
-    document.getElementById('download')!.after(comicReadModeDom);
+    const comicReadModeDom = createComicReadMode();
+    const downloadBtn = document.getElementById('download');
+    if (downloadBtn) downloadBtn.after(comicReadModeDom);
+    else document.body.append(comicReadModeDom);
 
-    const enableDetectAd =
-      options.detect_ad && querySelector('#tags .tag.tag-144644');
+    const shouldDetectAd = options.detect_ad;
+    const adTagSelector = '#tags a[href="/tag/extraneous-ads/"]';
+    const detectedTag = shouldDetectAd
+      ? await wait(
+          () => querySelector(adTagSelector),
+          1000,
+        )
+      : null;
+    const enableDetectAd = Boolean(detectedTag);
     if (enableDetectAd) {
       setState('comicMap', '', 'adList', new ReactiveSet());
 
       // 先使用缩略图识别
       await getAdPageByContent(
         querySelectorAll<HTMLImageElement>('.thumb-container img').map(
-          (img) => img.dataset.src,
+          (img) => img.dataset.src || img.src,
         ),
         store.comicMap[''].adList!,
       );
@@ -100,92 +132,111 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
         return styleList.join('\n');
       });
     }
+  };
 
-    return;
-  }
+  const setupListPage = async () => {
+    currentGalleryId = null;
+    removeComicReadMode();
 
-  // 在漫画浏览页
-  if (document.getElementsByClassName('gallery').length > 0) {
+    // 在漫画浏览页
+    if (!document.getElementsByClassName('gallery').length) return;
+    if (location.pathname.startsWith('/g/')) return;
+
     if (options.open_link_new_page)
       for (const e of querySelectorAll('a:not([href^="javascript:"])'))
         e.setAttribute('target', '_blank');
 
-    const blacklist: number[] = (unsafeWindow?._n_app ?? unsafeWindow?.n)
-      ?.options?.blacklisted_tags;
-    if (blacklist === undefined)
-      toast.error(t('site.nhentai.tag_blacklist_fetch_failed'));
-    // blacklist === null 时是未登录
+    const app = await wait(
+      () => (window as any)._n_app ?? (window as any).n,
+      2000,
+      100,
+    );
+    const blacklist: number[] | null | undefined = app?.options?.blacklisted_tags;
 
-    if (options.block_totally && blacklist?.length)
+    if (typeof blacklist === 'undefined' && app !== undefined)
+      toast.error(t('site.nhentai.tag_blacklist_fetch_failed'));
+
+    if (options.block_totally && Array.isArray(blacklist) && blacklist.length)
       useStyle('.blacklisted.gallery { display: none; }');
 
-    if (options.auto_page_turn) {
-      let nextUrl = querySelector<HTMLAnchorElement>('a.next')?.href;
-      if (!nextUrl) return;
+    const blackSet = new Set(Array.isArray(blacklist) ? blacklist : []);
+    const contentDom = document.getElementById('content')!;
+    let nextUrl = querySelector<HTMLAnchorElement>('a.next')?.href;
+    const getObserveDom = () =>
+      contentDom.querySelector(
+        ':is(.index-container, #favcontainer):last-of-type',
+      )!;
 
-      useStyle(`
-        hr { bottom: 1px; box-sizing: border-box; margin: -1em auto 2em; }
-        hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
-        hr:not(:last-child) { display: none; }
-        @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
-      `);
+    const loadNextPage = singleThreaded(
+      async (): Promise<void> => {
+        if (!nextUrl) return;
 
-      const blackSet = new Set(blacklist);
-      const contentDom = document.getElementById('content')!;
-      const getObserveDom = () =>
-        contentDom.querySelector(
-          ':is(.index-container, #favcontainer):last-of-type',
+        const res = await request(nextUrl, {
+          fetch: true,
+          errorText: t('site.nhentai.fetch_next_page_failed'),
+        });
+        const html = domParse(res.responseText);
+        history.replaceState(null, '', nextUrl);
+
+        const container = html.querySelector(
+          '.index-container, #favcontainer',
         )!;
-
-      const loadNextPage = singleThreaded(
-        async (): Promise<void> => {
-          if (!nextUrl) return;
-
-          const res = await request(nextUrl, {
-            fetch: true,
-            errorText: t('site.nhentai.fetch_next_page_failed'),
-          });
-          const html = domParse(res.responseText);
-          history.replaceState(null, '', nextUrl);
-
-          const container = html.querySelector(
-            '.index-container, #favcontainer',
-          )!;
-          for (const galleryDom of container.querySelectorAll<HTMLElement>(
-            '.gallery',
-          )) {
-            for (const img of galleryDom.getElementsByTagName('img'))
-              img.setAttribute('src', img.dataset.src!);
-
-            // 判断是否有黑名单标签
-            const tags = galleryDom.dataset.tags!.split(' ').map(Number);
-            if (tags.some((tag) => blackSet.has(tag)))
-              galleryDom.classList.add('blacklisted');
+        for (const galleryDom of container.querySelectorAll<HTMLElement>(
+          '.gallery',
+        )) {
+          for (const img of galleryDom.getElementsByTagName('img')) {
+            const src = img.dataset.src || img.src;
+            if (src) img.setAttribute('src', src);
           }
 
-          const pagination = html.querySelector<HTMLElement>('.pagination')!;
-          nextUrl = pagination.querySelector<HTMLAnchorElement>('a.next')?.href;
+          const tags = galleryDom.dataset.tags!.split(' ').map(Number);
+          if (tags.some((tag) => blackSet.has(tag)))
+            galleryDom.classList.add('blacklisted');
+        }
 
-          contentDom.append(container, pagination);
+        const pagination = html.querySelector<HTMLElement>('.pagination')!;
+        nextUrl = pagination.querySelector<HTMLAnchorElement>('a.next')?.href;
 
-          const hr = document.createElement('hr');
-          contentDom.append(hr);
-          observer.disconnect();
-          observer.observe(getObserveDom());
-          if (!nextUrl) hr.style.animationPlayState = 'paused';
-        },
-        { abandon: true },
-      );
+        contentDom.append(container, pagination);
 
-      loadNextPage();
+        const hr = document.createElement('hr');
+        contentDom.append(hr);
+        observer.disconnect();
+        observer.observe(getObserveDom());
+        if (!nextUrl) hr.style.animationPlayState = 'paused';
+      },
+      { abandon: true },
+    );
 
-      const observer = new IntersectionObserver(
-        (entries) => entries[0].isIntersecting && loadNextPage(),
-      );
-      observer.observe(getObserveDom());
+    loadNextPage();
 
-      if (querySelector('section.pagination'))
-        contentDom.append(document.createElement('hr'));
+    const observer = new IntersectionObserver(
+      (entries) => entries[0].isIntersecting && loadNextPage(),
+    );
+    observer.observe(getObserveDom());
+
+    if (querySelector('section.pagination'))
+      contentDom.append(document.createElement('hr'));
+  };
+
+  const processPage = async () => {
+    const galleryPathMatch = location.pathname.match(/^\/g\/(\d+)/);
+    if (galleryPathMatch) {
+      await setupDetailPage(galleryPathMatch[1]);
+    } else {
+      await setupListPage();
     }
-  }
+  };
+
+  await processPage();
+  onUrlChange(async (_, nowUrl) => {
+    const match = new URL(nowUrl).pathname.match(/^\/g\/(\d+)/);
+    if (match) {
+      await setupDetailPage(match[1]);
+    } else {
+      await setupListPage();
+    }
+  });
+
+  return;
 })().catch((error) => log.error(error));

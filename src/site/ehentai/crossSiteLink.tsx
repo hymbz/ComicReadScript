@@ -4,10 +4,10 @@ import { For, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { render } from 'solid-js/web';
 
-import { fileType, hijackFn, querySelector, querySelectorAll, t } from 'helper';
+import { hijackFn, querySelector, querySelectorAll, t } from 'helper';
 import { request, toast } from 'main';
 
-import { searchNhentai } from '../../userscript/nhentaiApi';
+import { searchNhentai, getNhentaiData, getNhentaiImageUrl } from '../../userscript/nhentaiApi';
 import { type GalleryContext, isInCategories } from './helper';
 
 type ItemData = {
@@ -24,34 +24,36 @@ type SiteFn = {
 };
 
 const nhentai: SiteFn = async ({ setState, galleryTitle }) => {
-  const downImg = async (i: number, media_id: string, type: string) => {
-    const imgRes = await request<Blob>(
-      `https://i.nhentai.net/galleries/${media_id}/${i + 1}.${fileType[type]}`,
-      {
-        headers: { Referer: `https://nhentai.net/g/${media_id}` },
-        responseType: 'blob',
-        fetch: false,
-      },
-    );
-    return URL.createObjectURL(imgRes.response);
-  };
-
   const result = await searchNhentai(galleryTitle!);
-  return result.map(({ id, title, images, num_pages, media_id }) => {
+  return result.map(({ id, media_id, english_title, japanese_title }) => {
     const itemId = `@nh:${id}`;
+
+    const galleryPromise = getNhentaiData(String(id));
+
     setState('comicMap', itemId, {
-      getImgList: ({ dynamicLazyLoad }) =>
-        dynamicLazyLoad({
-          loadImg: (i) => downImg(i, media_id, images.pages[i].t),
-          length: num_pages,
+      getImgList: async ({ dynamicLazyLoad }) => {
+        const gallery = await galleryPromise;
+        return dynamicLazyLoad({
+          loadImg: async (i) => {
+            const url = getNhentaiImageUrl(gallery, i);
+            if (!url) throw new Error('nhentai image url not found');
+            const imgRes = await request<Blob>(url, {
+              headers: { Referer: `https://nhentai.net/g/${id}` },
+              responseType: 'blob',
+              fetch: false,
+            });
+            return URL.createObjectURL(imgRes.response);
+          },
+          length: gallery.num_pages,
           id: itemId,
-        }),
+        });
+      },
     });
 
     return {
       id: itemId,
       showText: `${id}`,
-      title: title.english || title.japanese,
+      title: japanese_title || english_title || '',
       href: `https://nhentai.net/g/${id}`,
       class: 'gtl',
     };
