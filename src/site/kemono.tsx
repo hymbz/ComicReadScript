@@ -32,28 +32,31 @@ universalSPA('kemono', {
     /** 加载原图 */
     load_original_image: true,
   },
-  isMangaPage: async () => {
-    if (!location.pathname.includes('/post/')) return false;
+  getPageType: async () => {
+    const match = location.pathname.match(/\/post\/(\w+)/);
+    if (!match) return;
     await waitDom('.post__thumbnail');
     handlePwa();
-    return true;
+    return { type: 'manga', id: match[1] };
   },
 
-  work: async ({ store, setState, showComic }) => {
-    // 在切换时重新获取图片
-    createEffectOn(
-      () => store.options.load_original_image,
-      (isOriginal, prev) => {
-        setState('nowComic', isOriginal ? 'original' : 'thumbnail');
-        if (prev) showComic();
-      },
-    );
+  handlers: {
+    manga: async ({ store, setState, showComic }) => {
+      // 在切换时重新获取图片
+      createEffectOn(
+        () => store.options.load_original_image,
+        (isOriginal, prev) => {
+          setState('nowComic', isOriginal ? 'original' : 'thumbnail');
+          if (prev) showComic();
+        },
+      );
 
-    setState((state) => {
-      state.comicMap.original = { getImgList: original };
-      state.comicMap.thumbnail = { getImgList: thumbnail };
-      state.manga.onNext = querySelectorClick('.post__nav-link.next');
-      state.manga.onPrev = querySelectorClick('.post__nav-link.prev');
-    });
+      setState((state) => {
+        state.comicMap.original = { getImgList: original };
+        state.comicMap.thumbnail = { getImgList: thumbnail };
+        state.manga.onNext = querySelectorClick('.post__nav-link.next');
+        state.manga.onPrev = querySelectorClick('.post__nav-link.prev');
+      });
+    },
   },
 });

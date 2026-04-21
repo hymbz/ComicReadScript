@@ -23,7 +23,7 @@ import { handleVersionUpdate } from './version';
 /** 对基础的初始化操作的封装 */
 export const useInit = async <T extends Record<string, any>>(
   name: string,
-  initSiteOptions = {} as T,
+  initSiteOptions: Partial<T> = {},
 ) => {
   await setInitLang();
   await handleVersionUpdate();
@@ -121,7 +121,7 @@ export const useInit = async <T extends Record<string, any>>(
   };
 
   let inited = false;
-  const init = () => {
+  const init = (autoShow = true) => {
     if (inited) return;
     inited = true;
 
@@ -130,7 +130,7 @@ export const useInit = async <T extends Record<string, any>>(
       show: !options.hiddenFAB && undefined,
     });
 
-    if (store.flag.needAutoShow && options.autoShow) showComic();
+    if (autoShow && store.flag.needAutoShow && options.autoShow) showComic();
 
     (async () => {
       await GM.registerMenuCommand(t('other.enter_comic_read_mode'), () =>

@@ -1,20 +1,22 @@
+import type { Promisable } from 'type-fest';
+
 import type { MangaProps } from 'components/Manga';
 
 import { onUrlChange, sleep, wait, waitUrlChange } from 'helper';
 
-import type { MainContext, SiteOptions } from '.';
+import type { MainContext } from '.';
 
 import { useInit } from './useInit';
 
 export type UseInitFnMap = AsyncReturnType<typeof useInit>;
 
-export type InitOptions = {
+export type InitOptions<T extends Record<string, any> = Record<string, any>> = {
   name: string;
   /** 等待返回 true 后才开始运行。用于等待元素渲染 */
   wait?: () => unknown | Promise<unknown>;
 
   getImgList: (
-    mainContext: MainContext,
+    mainContext: MainContext<T>,
   ) => Promise<MangaProps['imgList']> | MangaProps['imgList'];
   onPrev?: MangaProps['onPrev'];
   onNext?: MangaProps['onNext'];
@@ -23,7 +25,7 @@ export type InitOptions = {
   getCommentList?: () => Promise<string[]> | string[];
 
   /** 初始站点配置 */
-  initOptions?: Partial<SiteOptions>;
+  initOptions?: Partial<T>;
 
   /** 用于适配单页应用的配置项 */
   SPA?: {
@@ -37,7 +39,7 @@ export type InitOptions = {
 };
 
 /** 对简单站点的通用解 */
-export const universal = async ({
+export const universal = async <T extends Record<string, any> = Record<string, any>>({
   name,
   wait: waitFn,
   getImgList,
@@ -48,7 +50,7 @@ export const universal = async ({
   getCommentList,
   initOptions,
   SPA,
-}: InitOptions) => {
+}: InitOptions<T>) => {
   if (SPA?.isMangaPage) await waitUrlChange(SPA.isMangaPage);
   if (waitFn) await wait(waitFn);
 
@@ -109,35 +111,66 @@ export const universal = async ({
 // TODO: 使用 universalSPA 重构 universal
 
 /** 用于适配 SPA 站点的配置项 */
-export type SpaInitOptions = {
-  options?: Partial<SiteOptions & Record<string, any>>;
+export type SpaPageType = { type: string; id: string | null };
 
-  /** 要确保返回 true 后，立刻就可以取得图片列表了。不然就在里面 wait 着 */
-  isMangaPage: () => Promise<unknown> | unknown;
-  work: (mainContext: MainContext) => Promise<void>;
+export type SpaInitOptions<T extends Record<string, any> = Record<string, any>> = {
+  options?: Partial<T>;
+  /**
+   * 获取当前页面的类型标识
+   *
+   * 返回的对象中，type 字段用于匹配对应的 handler，其值变化将触发重新初始化；
+   * id 字段用于标识同一类型下的不同页面实例，在同类型页面切换时用于判断是否需要重新初始化。
+   */
+  getPageType: () => Promisable<SpaPageType | undefined>;
+  handlers: Record<
+    string,
+    (
+      mainContext: MainContext<T>,
+      pageType: SpaPageType,
+    ) => Promisable<void | (() => Promisable<void>)>
+  >;
+  handleUrl?: (location: Location) => string;
 };
 
-/** 对简单站点的通用解 */
-export const universalSPA = async (
+/** 对简单 SPA 网站的通用解 */
+export const universalSPA = async <T extends Record<string, any> = Record<string, any>>(
   name: string,
-  { options: initOptions, isMangaPage, work }: SpaInitOptions,
+  { options: initOptions, getPageType, handlers, handleUrl }: SpaInitOptions<T>,
 ) => {
-  await waitUrlChange(isMangaPage);
+  let pageType: SpaPageType | undefined = await waitUrlChange(getPageType);
+  let cleanup: void | (() => Promisable<void>);
 
   const mainContext = await useInit(name, initOptions);
-  await work(mainContext);
   const { store, setState, showComic, loadComic, init } = mainContext;
-  init();
 
-  onUrlChange(async (lastUrl) => {
-    if (!lastUrl) return;
+  const processPageType = async (
+    newPageType: typeof pageType,
+    force = false,
+  ) => {
+    if (
+      !force &&
+      pageType?.type === newPageType?.type &&
+      pageType?.id === newPageType?.id
+    )
+      return;
+
+    await cleanup?.();
+    cleanup = undefined;
+    pageType = newPageType;
+    const isMangePage = newPageType?.type === 'manga';
 
     setState((state) => {
-      state.fab.show = undefined;
+      // FAB 在漫画页要显示出来，其他页面默认不显示，有需要再在 handlers 里处理
+      state.fab.show = isMangePage ? undefined : false;
       state.manga.show = false;
     });
 
-    if (!(await isMangaPage())) return setState('fab', 'show', false);
+    if (!newPageType) return;
+
+    cleanup = await handlers[newPageType.type]?.(mainContext, newPageType);
+    init(isMangePage);
+
+    if (!isMangePage) return;
 
     const lastImg = store.comicMap[store.nowComic].imgList?.[0];
     // 等到能加载出新图片
@@ -146,8 +179,15 @@ export const universalSPA = async (
       await loadComic();
       return store.comicMap[store.nowComic].imgList?.[0] !== lastImg;
     }, 10 * 1000);
+    // 十秒都加载不出来就算了
     if (!res) return;
 
     if (store.options.autoShow) await showComic();
-  });
+  };
+
+  onUrlChange(async (lastUrl) => {
+    if (!lastUrl) return await processPageType(pageType, true);
+
+    await processPageType(await getPageType());
+  }, handleUrl);
 };

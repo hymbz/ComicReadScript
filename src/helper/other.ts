@@ -651,11 +651,12 @@ export const onUrlChange = (
 };
 
 /** wait，但是只在 url 变化时判断 */
-export const waitUrlChange = (isValidUrl: () => unknown) =>
-  new Promise<void>((resolve) => {
+export const waitUrlChange = <T = unknown>(isValidUrl: () => T) =>
+  new Promise<NonNullable<T>>((resolve) => {
     const abort = onUrlChange(async () => {
-      if (!(await isValidUrl())) return;
-      resolve();
+      const res = await isValidUrl();
+      if (!res) return;
+      resolve(res);
       abort();
     });
   });

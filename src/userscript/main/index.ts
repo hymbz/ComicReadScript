@@ -72,7 +72,7 @@ export type MainContext<T extends Record<string, any> = Record<string, any>> = {
   setOptions: <K = T>(newOptions: Partial<K & SiteOptions>) => void;
   showComic: (id?: string | number) => Promise<void>;
   loadComic: (id?: string | number) => Promise<void>;
-  init: () => void;
+  init: (autoShow?: boolean) => void;
 
   /** 动态加载图片列表 */
   dynamicLoad: (
