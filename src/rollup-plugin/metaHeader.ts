@@ -74,9 +74,17 @@ export const updateReadme = () => {
   const newMd = readmeMd.replace(
     /(?<=<!-- supportSiteList -->\n\n).*(?=\n\n<!-- supportSiteList -->)/s,
     [...categoryMap.entries()]
-      .map(
-        ([category, links]) => `### ${category}\n\n${[...links].join(' · ')}`,
-      )
+      .map(([category, links]) => {
+        const linkWithFavicon = (link: string) => {
+          const match = link.match(/\[(.+?)\]\((.+?)\)/);
+          if (!match) return link;
+          const [, text, url] = match;
+          const siteUrl = new URL(url);
+          const faviconUrl = `https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${siteUrl.origin}&size=16`;
+          return `<a href="${url}"><img src="${faviconUrl}" style="width:1em;height:1em;" loading="lazy"> ${text}</a>`;
+        };
+        return `### ${category}\n\n${[...links].map(linkWithFavicon).join(' · ')}`;
+      })
       .join('\n\n'),
   );
   if (newMd !== readmeMd) fs.writeFileSync(readmePath, newMd);
@@ -105,9 +113,9 @@ export const getMetaData = (isDevMode: boolean) => {
   const enSupportSite = [
     'E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.)',
     'nhentai (Totally block comics, Auto page turning)',
-    ...getCategory('国外R18'),
+    ...getCategory('R18'),
     ...getCategory('Fanbox'),
-    ...getCategory('国外漫画站'),
+    ...getCategory('漫画站'),
   ];
   const meta = {
     name: 'ComicRead',

@@ -112,7 +112,7 @@ try {
       break;
     }
 
-    // #国内漫画站[再漫画](https://manhua.zaimanhua.com/)
+    // #漫画站（中文）[再漫画](https://manhua.zaimanhua.com/)
     // test: https://manhua.zaimanhua.com/view/heimaohemonvdeketang/64175/133789
     case 'www.zaimanhua.com':
     case 'manhua.zaimanhua.com': {
@@ -215,7 +215,7 @@ try {
       break;
     }
 
-    // #国内漫画站[漫画柜(manhuagui)](https://www.manhuagui.com)
+    // #漫画站（中文）[漫画柜(manhuagui)](https://www.manhuagui.com)
     // test: https://www.manhuagui.com/comic/36584/508218.html
     case 'tw.manhuagui.com':
     case 'm.manhuagui.com':
@@ -284,7 +284,7 @@ try {
       break;
     }
 
-    // #国内漫画站[动漫屋(dm5)](https://www.dm5.com)
+    // #漫画站（中文）[动漫屋(dm5)](https://www.dm5.com)
     // test: https://www.dm5.cn/m1033552/
     case 'www.manhuaren.com':
     case 'm.1kkk.com':
@@ -363,7 +363,7 @@ try {
       break;
     }
 
-    // #国内漫画站[mangabz](https://mangabz.com)
+    // #漫画站（中文）[mangabz](https://mangabz.com)
     // test: https://mangabz.com/m131128/
     case 'www.mangabz.com':
     case 'mangabz.com': {
@@ -428,7 +428,7 @@ try {
       break;
     }
 
-    // #国内漫画站[komiic](https://komiic.com)
+    // #漫画站（中文）[komiic](https://komiic.com)
     // test: https://komiic.com/comic/2299/chapter/66668/images/all
     case 'komiic.com': {
       const query = `
@@ -483,37 +483,7 @@ try {
       break;
     }
 
-    // #生肉站点[kisslove(klz9)](https://klz9.com)
-    // test: https://klz9.com/mayonaka-heart-tune-chapter-109.html
-    case 'klz9.com': {
-      if (!/-chapter-/.test(location.pathname)) break;
-
-      const getNavBtn = (index: 0 | 1) =>
-        querySelectorAll<HTMLButtonElement>('main button.flex-1')[index];
-
-      const handlePrevNext = (index: 0 | 1) => {
-        const btn = getNavBtn(index);
-        return btn && !btn.disabled ? () => btn.click() : undefined;
-      };
-
-      options = {
-        name: 'klz9',
-        wait: () => querySelector('main img:not(a img)'),
-        getImgList: () =>
-          querySelectorAll<HTMLImageElement>('main img:not(a img)').map(
-            (img) => img.src,
-          ),
-        SPA: {
-          isMangaPage: () => /-chapter-/.test(location.pathname),
-          getOnPrev: () => handlePrevNext(0),
-          getOnNext: () => handlePrevNext(1),
-          handleUrl: (location) => location.pathname,
-        },
-      };
-      break;
-    }
-
-    // #国内漫画站[無限動漫](https://www.8comic.com)
+    // #漫画站（中文）[無限動漫](https://www.8comic.com)
     // test: 直接访问漫画页会因为 referer 检测不过而被拦截，跳过
     case '8.twobili.com':
     case 'a.twobili.com':
@@ -537,7 +507,7 @@ try {
       break;
     }
 
-    // #国内R18[绅士漫画(wnacg)](https://www.wnacg.com)
+    // #R18（中文）[绅士漫画(wnacg)](https://www.wnacg.com)
     // test: https://www.wnacg.com/photos-slide-aid-284931.html
     case 'siteUrl#wnacg':
     case 'www.wnacg.com':
@@ -572,7 +542,7 @@ try {
       break;
     }
 
-    // #国内R18[禁漫天堂](https://18comic.vip)
+    // #R18（中文）[禁漫天堂](https://18comic.vip)
     // test: https://18comic.vip/photo/1198559
     case 'siteUrl#jm':
     case '18comic.org':
@@ -581,7 +551,7 @@ try {
       break;
     }
 
-    // #国内R18[NoyAcg](https://noy1.top)
+    // #R18（中文）[NoyAcg](https://noy1.top)
     // test: https://noy1.top/#/read/13349
     case 'siteUrl#noy':
     case 'noy1.top': {
@@ -606,7 +576,7 @@ try {
       break;
     }
 
-    // #国内R18[熱辣漫畫](https://www.relamanhua.org/)
+    // #R18（中文）[熱辣漫畫](https://www.relamanhua.org/)
     // test: https://www.relamanhua.org/comic/lianggrendeetaobixianshi/chapter/33cde95c-c8ea-11ea-a67e-00163e0ca5bd
     case 'www.relamanhua.org':
     case 'www.manga2024.com':
@@ -629,7 +599,7 @@ try {
       break;
     }
 
-    // #国内R18[hanime1](https://hanime1.me)
+    // #R18（中文）[hanime1](https://hanime1.me)
     // test: https://hanime1.me/comic/134422
     case 'hanime1.me': {
       if (!location.pathname.startsWith('/comic/')) break;
@@ -651,7 +621,7 @@ try {
       break;
     }
 
-    // #国外R18[hitomi](https://hitomi.la)
+    // #R18[hitomi](https://hitomi.la)
     // test: https://hitomi.la/reader/3427121.html
     case 'hitomi.la': {
       options = {
@@ -673,7 +643,7 @@ try {
       break;
     }
 
-    // #国外R18[hdoujin](https://hdoujin.org)
+    // #R18[hdoujin](https://hdoujin.org)
     // test: https://hdoujin.org/g/95756/2d1aa56c3325
     case 'hdoujin.org': {
       // https://github.com/dyphire/hentai-assistant/blob/hdoujin/src/providers/hdoujin_api.py
@@ -744,7 +714,7 @@ try {
       break;
     }
 
-    // #国外R18[SchaleNetwork](https://schale.network/)
+    // #R18[SchaleNetwork](https://schale.network/)
     // test: 有cf验证，跳过
     case 'shupogaki.moe':
     case 'hoshino.one':
@@ -812,20 +782,20 @@ try {
       break;
     }
 
-    // #国外R18[nude-moon](https://nude-moon.org)
+    // #R18[nude-moon](https://nude-moon.org)
     // test: https://nude-moon.org/22729--zone-himitsu-no-tomodachi--tayney-drug.html
     case 'nude-moon.org': {
       inject('site/nude-moon');
       break;
     }
 
-    // #国外R18[HentaiZap](https://hentaizap.com)
+    // #R18[HentaiZap](https://hentaizap.com)
     // test: https://hentaizap.com/gallery/1290854/
-    // #国外R18[IMHentai](https://imhentai.xxx)
+    // #R18[IMHentai](https://imhentai.xxx)
     // test: https://imhentai.xxx/gallery/1526168/
-    // #国外R18[HentaiEra](https://hentaiera.com)
+    // #R18[HentaiEra](https://hentaiera.com)
     // test: https://hentaiera.com/gallery/1506236/
-    // #国外R18[HentaiEnvy](https://hentaienvy.com)
+    // #R18[HentaiEnvy](https://hentaienvy.com)
     // test: https://hentaienvy.com/gallery/1411647/
     case 'hentaizap.com':
     case 'imhentai.xxx':
@@ -858,7 +828,7 @@ try {
       break;
     }
 
-    // #国外漫画站[MangaDex](https://mangadex.org)
+    // #漫画站[MangaDex](https://mangadex.org)
     // test: https://mangadex.org/chapter/4c419c16-ef49-4305-9c46-d3adbe1f60b7
     case 'mangadex.org': {
       options = {
@@ -896,7 +866,7 @@ try {
       break;
     }
 
-    // #国外漫画站[welovemanga](https://nicomanga.com)
+    // #漫画站[welovemanga](https://nicomanga.com)
     // test: https://nicomanga.com/read-yuri-no-hajimari-wa-dorei-kara-chapter-6.2.html
     case 'nicomanga.com': {
       options = {
@@ -929,6 +899,36 @@ try {
         getImgList,
         onNext: querySelectorClick('.rd_top-right.next:not(.disabled)'),
         onPrev: querySelectorClick('.rd_top-left.prev:not(.disabled)'),
+      };
+      break;
+    }
+
+    // #漫画站[kisslove(klz9)](https://klz9.com)
+    // test: https://klz9.com/mayonaka-heart-tune-chapter-109.html
+    case 'klz9.com': {
+      if (!/-chapter-/.test(location.pathname)) break;
+
+      const getNavBtn = (index: 0 | 1) =>
+        querySelectorAll<HTMLButtonElement>('main button.flex-1')[index];
+
+      const handlePrevNext = (index: 0 | 1) => {
+        const btn = getNavBtn(index);
+        return btn && !btn.disabled ? () => btn.click() : undefined;
+      };
+
+      options = {
+        name: 'klz9',
+        wait: () => querySelector('main img:not(a img)'),
+        getImgList: () =>
+          querySelectorAll<HTMLImageElement>('main img:not(a img)').map(
+            (img) => img.src,
+          ),
+        SPA: {
+          isMangaPage: () => /-chapter-/.test(location.pathname),
+          getOnPrev: () => handlePrevNext(0),
+          getOnNext: () => handlePrevNext(1),
+          handleUrl: (location) => location.pathname,
+        },
       };
       break;
     }
@@ -1070,8 +1070,8 @@ try {
     }
 
     default: {
-      // #其他[Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
-      // #其他[LANraragi](https://github.com/Difegue/LANraragi)
+      // #自部署[Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
+      // #自部署[LANraragi](https://github.com/Difegue/LANraragi)
       inject('site/selfhosted');
 
       if (!options) {

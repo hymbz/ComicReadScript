@@ -195,29 +195,33 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 <!-- 根据 src/index.ts 自动生成 -->
 <!-- supportSiteList -->
 
-### 国内漫画站
+### 漫画站（中文）
 
-[漫画柜(manhuagui)](https://www.manhuagui.com) · [动漫屋(dm5)](https://www.dm5.com) · [mangabz](https://mangabz.com) · [komiic](https://komiic.com) · [無限動漫](https://www.8comic.com)
+<a href="https://www.manhuagui.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.manhuagui.com&size=16" style="width:1em;height:1em;" loading="lazy"> 漫画柜(manhuagui)</a> · <a href="https://www.dm5.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.dm5.com&size=16" style="width:1em;height:1em;" loading="lazy"> 动漫屋(dm5)</a> · <a href="https://mangabz.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://mangabz.com&size=16" style="width:1em;height:1em;" loading="lazy"> mangabz</a> · <a href="https://komiic.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://komiic.com&size=16" style="width:1em;height:1em;" loading="lazy"> komiic</a> · <a href="https://www.8comic.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.8comic.com&size=16" style="width:1em;height:1em;" loading="lazy"> 無限動漫</a>
 
-### 国内R18
+### R18（中文）
 
-[绅士漫画(wnacg)](https://www.wnacg.com) · [禁漫天堂](https://18comic.vip) · [NoyAcg](https://noy1.top) · [熱辣漫畫](https://www.relamanhua.org/) · [hanime1](https://hanime1.me)
+<a href="https://www.wnacg.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.wnacg.com&size=16" style="width:1em;height:1em;" loading="lazy"> 绅士漫画(wnacg)</a> · <a href="https://18comic.vip"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://18comic.vip&size=16" style="width:1em;height:1em;" loading="lazy"> 禁漫天堂</a> · <a href="https://noy1.top"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://noy1.top&size=16" style="width:1em;height:1em;" loading="lazy"> NoyAcg</a> · <a href="https://www.relamanhua.org/"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.relamanhua.org&size=16" style="width:1em;height:1em;" loading="lazy"> 熱辣漫畫</a> · <a href="https://hanime1.me"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hanime1.me&size=16" style="width:1em;height:1em;" loading="lazy"> hanime1</a>
 
-### 国外R18
+### R18
 
-[hitomi](https://hitomi.la) · [hdoujin](https://hdoujin.org) · [SchaleNetwork](https://schale.network/) · [nude-moon](https://nude-moon.org) · [HentaiZap](https://hentaizap.com) · [IMHentai](https://imhentai.xxx) · [HentaiEra](https://hentaiera.com) · [HentaiEnvy](https://hentaienvy.com)
+<a href="https://hitomi.la"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hitomi.la&size=16" style="width:1em;height:1em;" loading="lazy"> hitomi</a> · <a href="https://hdoujin.org"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hdoujin.org&size=16" style="width:1em;height:1em;" loading="lazy"> hdoujin</a> · <a href="https://schale.network/"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://schale.network&size=16" style="width:1em;height:1em;" loading="lazy"> SchaleNetwork</a> · <a href="https://nude-moon.org"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nude-moon.org&size=16" style="width:1em;height:1em;" loading="lazy"> nude-moon</a> · <a href="https://hentaizap.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hentaizap.com&size=16" style="width:1em;height:1em;" loading="lazy"> HentaiZap</a> · <a href="https://imhentai.xxx"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://imhentai.xxx&size=16" style="width:1em;height:1em;" loading="lazy"> IMHentai</a> · <a href="https://hentaiera.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hentaiera.com&size=16" style="width:1em;height:1em;" loading="lazy"> HentaiEra</a> · <a href="https://hentaienvy.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hentaienvy.com&size=16" style="width:1em;height:1em;" loading="lazy"> HentaiEnvy</a>
 
-### 国外漫画站
+### 漫画站
 
-[MangaDex](https://mangadex.org) · [welovemanga](https://nicomanga.com)
+<a href="https://mangadex.org"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://mangadex.org&size=16" style="width:1em;height:1em;" loading="lazy"> MangaDex</a> · <a href="https://nicomanga.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nicomanga.com&size=16" style="width:1em;height:1em;" loading="lazy"> welovemanga</a> · <a href="https://klz9.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://klz9.com&size=16" style="width:1em;height:1em;" loading="lazy"> kisslove(klz9)</a>
 
 ### Fanbox
 
-[kemono](https://kemono.su) · [nekohouse](https://nekohouse.su)
+<a href="https://kemono.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://kemono.su&size=16" style="width:1em;height:1em;" loading="lazy"> kemono</a> · <a href="https://nekohouse.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nekohouse.su&size=16" style="width:1em;height:1em;" loading="lazy"> nekohouse</a>
 
 ### 其他
 
-[Pixiv](https://www.pixiv.net) · [明日方舟泰拉记事社](https://terra-historicus.hypergryph.com) · [最前線](https://sai-zen-sen.jp) · [芸能ヌード](https://geinou-nude.com) · [Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi) · [LANraragi](https://github.com/Difegue/LANraragi)
+<a href="https://www.pixiv.net"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.pixiv.net&size=16" style="width:1em;height:1em;" loading="lazy"> Pixiv</a> · <a href="https://terra-historicus.hypergryph.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://terra-historicus.hypergryph.com&size=16" style="width:1em;height:1em;" loading="lazy"> 明日方舟泰拉记事社</a> · <a href="https://sai-zen-sen.jp"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://sai-zen-sen.jp&size=16" style="width:1em;height:1em;" loading="lazy"> 最前線</a> · <a href="https://geinou-nude.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://geinou-nude.com&size=16" style="width:1em;height:1em;" loading="lazy"> 芸能ヌード</a>
+
+### 自部署
+
+<a href="https://github.com/Suwayomi/Tachidesk-Sorayomi"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://github.com&size=16" style="width:1em;height:1em;" loading="lazy"> Tachidesk</a> · <a href="https://github.com/Difegue/LANraragi"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://github.com&size=16" style="width:1em;height:1em;" loading="lazy"> LANraragi</a>
 
 <!-- supportSiteList -->
 
