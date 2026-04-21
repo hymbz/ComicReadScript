@@ -8,12 +8,8 @@ const siteUrlFnMap = {
     return [...res.data.matchAll(/(?<=<span>)[\da-z-.]+(?=<\/span>)/g)].flat();
   },
   async wnacg() {
-    const res = await axios<string>('https://wnacg.date');
+    const res = await axios<string>('https://wnacg01.link/');
     return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+(?=<\/i>)/g)].flat();
-  },
-  async noy() {
-    const res = await axios<string>('https://noy.icu/atom.xml');
-    return [.../(?<=<link href="https:\/\/).+(?=\/")/.exec(res.data)!];
   },
 };
 

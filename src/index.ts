@@ -553,7 +553,6 @@ try {
 
     // #R18（中文）[NoyAcg](https://noy1.top)
     // test: https://noy1.top/#/read/13349
-    case 'siteUrl#noy':
     case 'noy1.top': {
       options = {
         name: 'NoyAcg',
