@@ -61,6 +61,45 @@ declare const areaArrayMap: {
     l: ArrayConfig;
 };
 
+/** MangaImageTranslator 翻译配置 */
+type MitOptions = {
+    /** 自定义服务器地址，为空则使用默认地址 */
+    localUrl: string | undefined;
+    detector: {
+        detector: string;
+        detection_size: string;
+        box_threshold: number;
+        unclip_ratio: number;
+    };
+    render: {
+        direction: string;
+    };
+    translator: {
+        translator: string;
+        target_lang: string;
+    };
+    inpainter: {
+        inpainter: string;
+        inpainting_size: string;
+    };
+    mask_dilation_offset: number;
+};
+
+/** Cotrans 翻译配置 */
+type CotransOptions = {
+    detector: {
+        detector: string;
+        detection_size: string;
+    };
+    render: {
+        direction: string;
+    };
+    translator: {
+        translator: string;
+        target_lang: string;
+    };
+};
+
 type Option = {
     /** 漫画方向 */
     dir: 'ltr' | 'rtl';
@@ -158,35 +197,16 @@ type Option = {
     };
     /** 翻译 */
     translation: {
-        /** 翻译服务器 */
-        server: 'disable' | 'selfhosted' | 'cotrans';
-        /** 本地部署的项目 url */
-        localUrl: string | undefined;
+        /** 是否启用翻译 */
+        enabled: boolean;
+        /** 翻译器 */
+        provider: 'manga-image-translator' | 'cotrans';
         /** 忽略缓存强制重试 */
         forceRetry: boolean;
-        /** manga-image-translator 配置 */
-        options: {
-            detector: {
-                detector: string;
-                detection_size: string;
-                box_threshold: number;
-                unclip_ratio: number;
-            };
-            render: {
-                direction: string;
-            };
-            translator: {
-                translator: string;
-                target_lang: string;
-            };
-            inpainter: {
-                inpainter: string;
-                inpainting_size: string;
-            };
-            mask_dilation_offset: number;
-        };
         /** 只下载完成翻译的图片 */
         onlyDownloadTranslated: boolean;
+        mit: MitOptions;
+        cotrans: CotransOptions;
     };
     /** 自动滚动 */
     autoScroll: {
@@ -302,6 +322,16 @@ declare const showState: ShowState;
 
 type State = typeof imgState & typeof showState & typeof propState & typeof optionState & typeof otherState;
 
+type Response<T = any> = {
+    readonly responseText: string;
+    readonly response: T;
+    readonly status: number;
+    readonly statusText: string;
+};
+type ErrorResponse = {
+    readonly error: string;
+} & Response;
+
 type ComicImgData = Partial<ComicImg> & {
     src: string;
 };
@@ -329,16 +359,6 @@ type MangaProps = {
     /** 修改默认设置项列表 */
     editSettingList?: State['prop']['editSettingList'];
 } & Partial<State['prop']>;
-
-type Response<T = any> = {
-    readonly responseText: string;
-    readonly response: T;
-    readonly status: number;
-    readonly statusText: string;
-};
-type ErrorResponse = {
-    readonly error: string;
-} & Response;
 
 type Request<TContext = object> = {
     method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE';
