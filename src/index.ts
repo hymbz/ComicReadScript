@@ -483,6 +483,36 @@ try {
       break;
     }
 
+    // #生肉站点[kisslove(klz9)](https://klz9.com)
+    // test: https://klz9.com/mayonaka-heart-tune-chapter-109.html
+    case 'klz9.com': {
+      if (!/-chapter-/.test(location.pathname)) break;
+
+      const getNavBtn = (index: 0 | 1) =>
+        querySelectorAll<HTMLButtonElement>('main button.flex-1')[index];
+
+      const handlePrevNext = (index: 0 | 1) => {
+        const btn = getNavBtn(index);
+        return btn && !btn.disabled ? () => btn.click() : undefined;
+      };
+
+      options = {
+        name: 'klz9',
+        wait: () => querySelector('main img:not(a img)'),
+        getImgList: () =>
+          querySelectorAll<HTMLImageElement>('main img:not(a img)').map(
+            (img) => img.src,
+          ),
+        SPA: {
+          isMangaPage: () => /-chapter-/.test(location.pathname),
+          getOnPrev: () => handlePrevNext(0),
+          getOnNext: () => handlePrevNext(1),
+          handleUrl: (location) => location.pathname,
+        },
+      };
+      break;
+    }
+
     // #国内漫画站[無限動漫](https://www.8comic.com)
     // test: 直接访问漫画页会因为 referer 检测不过而被拦截，跳过
     case '8.twobili.com':
