@@ -19,6 +19,7 @@ import { createEffectOn, t } from 'helper';
 
 import { IconButton } from '../IconButton';
 import {
+  allowBatchTranslation,
   doubleClickZoom,
   handleScrollModeZoom,
   isOnePageMode,
@@ -33,7 +34,6 @@ import {
   switchScrollMode,
   translateCurrent,
   translateToEnd,
-  allowBatchTranslation,
 } from './actions';
 import { AutoScrollButton } from './components/autoScroll';
 import { DownloadButton } from './components/DownloadButton';

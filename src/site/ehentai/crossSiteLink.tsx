@@ -60,7 +60,7 @@ const nhentai: SiteFn = async ({ setState, galleryTitle, galleryId }) => {
         class: `${galleryId}` === media_id ? 'gt' : 'gtl',
       };
     })
-    .sort(
+    .toSorted(
       (a, b) =>
         (a.class === 'gt' ? 0 : 1) - (b.class === 'gt' ? 0 : 1) ||
         Number(b.showText) - Number(a.showText),

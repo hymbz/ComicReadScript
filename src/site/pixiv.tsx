@@ -17,7 +17,7 @@ universalSPA('pixiv', {
   getPageType: async () => {
     if (!location.pathname.startsWith('/artworks/')) return;
 
-    const id = location.pathname.split('/')[2];
+    const [, , id] = location.pathname.split('/');
     if (!id) {
       imgs.length = 0;
       return;

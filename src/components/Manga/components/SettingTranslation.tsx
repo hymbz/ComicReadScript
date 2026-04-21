@@ -10,8 +10,8 @@ import type { Option } from '../store/option';
 
 import { RangeInput } from '../../RangeInput';
 import {
-  allowBatchTranslation,
   bindOption as _bindOption,
+  allowBatchTranslation,
   cotransSettings,
   imgList,
   isTranslatingAll,
@@ -82,10 +82,7 @@ const settingsMap = {
 
 export const SettingTranslation = () => (
   <>
-    <SettingsItemSwitch
-      name={t('other.enabled')}
-      {...bindOption('enabled')}
-    />
+    <SettingsItemSwitch name={t('other.enabled')} {...bindOption('enabled')} />
 
     <Show when={store.option.translation.enabled}>
       <SettingsItemSelect

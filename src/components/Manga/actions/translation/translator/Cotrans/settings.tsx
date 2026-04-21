@@ -7,10 +7,7 @@ import { t } from 'helper';
 
 import type { Option } from '../../../../store/option';
 
-import {
-  bindOption as _bindOption,
-  type SetOptionsFunction,
-} from '../../..';
+import { bindOption as _bindOption, type SetOptionsFunction } from '../../..';
 import { SettingsItemSelect } from '../../../../components/SettingsItemSelect';
 import { cotransTranslators, targetLanguageOptions } from './options';
 

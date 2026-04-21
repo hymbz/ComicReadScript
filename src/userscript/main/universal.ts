@@ -39,7 +39,9 @@ export type InitOptions<T extends Record<string, any> = Record<string, any>> = {
 };
 
 /** 对简单站点的通用解 */
-export const universal = async <T extends Record<string, any> = Record<string, any>>({
+export const universal = async <
+  T extends Record<string, any> = Record<string, any>,
+>({
   name,
   wait: waitFn,
   getImgList,
@@ -113,7 +115,9 @@ export const universal = async <T extends Record<string, any> = Record<string, a
 /** 用于适配 SPA 站点的配置项 */
 export type SpaPageType = { type: string; id: string | null };
 
-export type SpaInitOptions<T extends Record<string, any> = Record<string, any>> = {
+export type SpaInitOptions<
+  T extends Record<string, any> = Record<string, any>,
+> = {
   options?: Partial<T>;
   /**
    * 获取当前页面的类型标识
@@ -133,7 +137,9 @@ export type SpaInitOptions<T extends Record<string, any> = Record<string, any>> 
 };
 
 /** 对简单 SPA 网站的通用解 */
-export const universalSPA = async <T extends Record<string, any> = Record<string, any>>(
+export const universalSPA = async <
+  T extends Record<string, any> = Record<string, any>,
+>(
   name: string,
   { options: initOptions, getPageType, handlers, handleUrl }: SpaInitOptions<T>,
 ) => {

@@ -13,7 +13,10 @@ export type CotransOptions = {
   translator: { translator: string; target_lang: string };
 };
 
-export { sizeDict, targetLanguageOptions } from '../MangaImageTranslator/options';
+export {
+  sizeDict,
+  targetLanguageOptions,
+} from '../MangaImageTranslator/options';
 
 /** Cotrans 支持的翻译器列表 */
 export const cotransTranslators = [

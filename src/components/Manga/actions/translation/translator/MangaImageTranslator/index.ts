@@ -20,7 +20,7 @@ import type { TaskState } from './helper';
 import { setOption } from '../../..';
 import { store } from '../../../../store';
 import { TranslationTask } from '../../TranslationTask';
-import { apiUrl, headers, api } from './helper';
+import { api, apiUrl, headers } from './helper';
 import { sizeDict } from './options';
 
 /**
@@ -41,10 +41,7 @@ export class MIT extends TranslationTask {
     // oxlint-disable-next-line no-unused-vars
     const { localUrl: _, ...options } = store.option.translation.mit;
 
-    if (!isOldVersion) {
-      formData.append('image', file);
-      formData.append('config', JSON.stringify(options));
-    } else {
+    if (isOldVersion) {
       formData.append('file', file);
       formData.append('mime', file.type);
       formData.append('size', sizeDict[options.detector.detection_size]);
@@ -53,6 +50,9 @@ export class MIT extends TranslationTask {
       formData.append('translator', options.translator.translator);
       formData.append('target_lang', options.translator.target_lang);
       formData.append('retry', `${store.option.translation.forceRetry}`);
+    } else {
+      formData.append('image', file);
+      formData.append('config', JSON.stringify(options));
     }
     return formData;
   }
@@ -201,8 +201,7 @@ export class MIT extends TranslationTask {
   async work(blob: Blob) {
     this.setMessage(t('translation.tip.upload'));
 
-    if (this.isOldVersion)
-      return await this.oldWork(blob);
+    if (this.isOldVersion) return await this.oldWork(blob);
 
     try {
       const reader = await this.uploadByStream(blob);
@@ -263,7 +262,11 @@ export const updateMitTranslators = async (noTip = false) => {
 
 // 在切换翻译器或地址时更新可用翻译器列表
 createEffectOn(
-  [() => store.option.translation.provider, () => store.option.translation.mit.localUrl, lang],
+  [
+    () => store.option.translation.provider,
+    () => store.option.translation.mit.localUrl,
+    lang,
+  ],
   ([server]) => {
     if (server === 'manga-image-translator' && store.imgList.length > 0)
       return updateMitTranslators(true);

@@ -68,7 +68,6 @@ const getModel = async () => {
         id: 'upscale',
         duration: Number.POSITIVE_INFINITY,
       });
-      // TODO: 修改网址
       const bin = await request<ArrayBuffer>(
         'https://cdn.jsdelivr.net/npm/@hymbz/comic-read-script@11.12.1/public/realcugan/2x-conservative-128/group1-shard1of1.bin',
         { responseType: 'arraybuffer', noTip: true },

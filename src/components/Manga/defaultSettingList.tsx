@@ -413,10 +413,7 @@ export const defaultSettingList: () => SettingList = () => [
       </>
     ),
   ],
-  [
-    t('setting.option.paragraph_translation'),
-    SettingTranslation,
-  ],
+  [t('setting.option.paragraph_translation'), SettingTranslation],
   [t('other.hotkeys'), SettingHotkeysBlock],
   [
     t('other.other'),

@@ -14,6 +14,9 @@ import { getAdPageByContent } from 'userscript/detectAd';
 
 import { getNhentaiData, toImgList } from '../userscript/nhentaiApi';
 
+/** 等待水合完成，确保之后的 dom 操作不会被水合覆盖 */
+const waitHydrated = () => waitDom('#svelte-announcer', 1000 * 5);
+
 universalSPA('nhentai', {
   options: {
     /** 无限滚动 */
@@ -51,6 +54,7 @@ universalSPA('nhentai', {
         },
       });
 
+      await waitHydrated();
       const comicReadModeDom = (
         <a
           href="javascript:;"
@@ -109,8 +113,7 @@ universalSPA('nhentai', {
       if (options.block_totally)
         useStyle('.blacklisted.gallery { display: none; }');
 
-      /** 等待水合完成，确保之后的 dom 操作不会被水合覆盖 */
-      await waitDom('#svelte-announcer', 1000 * 5);
+      await waitHydrated();
 
       if (options.open_link_new_page)
         for (const e of querySelectorAll('a:not([href^="javascript:"])'))
@@ -127,9 +130,9 @@ universalSPA('nhentai', {
           hr:not(:last-child) { display: none; }
           @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
         `);
-        const getContentDom = () => document.getElementById('content')!;
+        const contentDom = document.getElementById('content')!;
         const getObserveDom = () =>
-          getContentDom().querySelector(
+          contentDom.querySelector(
             ':is(.index-container, #favcontainer):last-of-type',
           )!;
 
@@ -150,13 +153,13 @@ universalSPA('nhentai', {
             nextUrl =
               pagination.querySelector<HTMLAnchorElement>('a.next')?.href;
 
-            getContentDom().append(
+            contentDom.append(
               html.querySelector('.index-container, #favcontainer')!,
               pagination,
             );
 
             const hr = document.createElement('hr');
-            getContentDom().append(hr);
+            contentDom.append(hr);
             observer.disconnect();
             observer.observe(getObserveDom());
             if (!nextUrl) hr.style.animationPlayState = 'paused';
@@ -171,7 +174,7 @@ universalSPA('nhentai', {
         observer.observe(getObserveDom());
 
         if (querySelector('section.pagination'))
-          getContentDom().append(document.createElement('hr'));
+          contentDom.append(document.createElement('hr'));
 
         return () => observer.disconnect();
       }

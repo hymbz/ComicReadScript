@@ -19,7 +19,10 @@ export const allowBatchTranslation = () =>
   store.option.translation.provider !== 'cotrans';
 
 const taskRegistry: Partial<
-  Record<Option['translation']['provider'], new (url: string) => TranslationTask>
+  Record<
+    Option['translation']['provider'],
+    new (url: string) => TranslationTask
+  >
 > = {
   'manga-image-translator': MIT,
   cotrans: Cotrans,
