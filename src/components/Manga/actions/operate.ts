@@ -323,21 +323,64 @@ const isMultipleOf = (a: number, b: number) => {
   return !decimal || decimal.startsWith('0000') || decimal.startsWith('9999');
 };
 
+const normalizeWheelDeltaY = (e: WheelEvent) => {
+  switch (e.deltaMode) {
+    // 统一换算为近似像素距离，便于累计滚动量
+    case WheelEvent.DOM_DELTA_LINE:
+      return e.deltaY * 16;
+    case WheelEvent.DOM_DELTA_PAGE:
+      return e.deltaY * window.innerHeight;
+    default:
+      return e.deltaY;
+  }
+};
+
 let lastDeltaY = -1;
 let timeoutId = 0;
 let lastPageNum = -1;
-let wheelType: undefined | 'trackpad' | 'mouse';
+let wheelType: undefined | 'trackpad' | 'mouse' | 'highPrecisionWheel';
 let equalNum = 0;
 let diffNum = 0;
+let highPrecisionWheelDeltaY = 0;
+let highPrecisionWheelResetId = 0;
+
+const highPrecisionWheelPageThreshold = 96; // 16 * 6
+const highPrecisionWheelResetDelay = 200;
+
+// 高精度滚轮按累计位移翻页，避免一次滚动触发多个 wheel 事件导致连翻
+const handleHighPrecisionWheel = (deltaY: number, dir: 'next' | 'prev') => {
+  if (highPrecisionWheelResetId) clearTimeout(highPrecisionWheelResetId);
+  highPrecisionWheelResetId = window.setTimeout(() => {
+    highPrecisionWheelDeltaY = 0;
+  }, highPrecisionWheelResetDelay);
+
+  if (highPrecisionWheelDeltaY * deltaY < 0) highPrecisionWheelDeltaY = 0;
+  highPrecisionWheelDeltaY += deltaY;
+
+  if (Math.abs(highPrecisionWheelDeltaY) < highPrecisionWheelPageThreshold)
+    return;
+
+  // 翻页后清空余量，避免单次滚动的尾部事件连翻
+  highPrecisionWheelDeltaY = 0;
+  if (!turnPage(dir)) return false;
+  openScrollLock();
+  return true;
+};
 
 export const handleWheel = (e: WheelEvent) => {
   if (store.gridMode) return;
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
 
-  const isWheelDown = e.deltaY > 0;
+  const normalizedDeltaY = normalizeWheelDeltaY(e);
+  const isWheelDown = normalizedDeltaY > 0;
   const dir = isWheelDown ? 'next' : 'prev';
   const absDeltaY = Math.abs(e.deltaY);
+  const isHighPrecisionWheelEvent =
+    e.deltaMode === WheelEvent.DOM_DELTA_PIXEL &&
+    Number.isInteger(e.deltaY) &&
+    absDeltaY >= 5 &&
+    absDeltaY < 100;
 
   // 通过`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
   if (
@@ -377,7 +420,7 @@ export const handleWheel = (e: WheelEvent) => {
   // 并排卷轴模式下
   if (isAbreastMode() && store.option.zoom.ratio === 100) {
     e.preventDefault();
-    scrollBy(e.deltaY, true);
+    scrollBy(normalizedDeltaY, true);
   }
 
   // 防止滚动到网页
@@ -385,7 +428,7 @@ export const handleWheel = (e: WheelEvent) => {
 
   // 为了避免因临时卡顿而误判为触摸板
   // 在连续几次滚动量均相同的情况下，将 wheelType 相关变量重置回初始状态
-  if (diffNum < 10) {
+  if (diffNum < 10 && wheelType !== 'highPrecisionWheel') {
     if (lastDeltaY === absDeltaY && absDeltaY > 5) equalNum += 1;
     else {
       diffNum += 1;
@@ -406,15 +449,28 @@ export const handleWheel = (e: WheelEvent) => {
         // 第一次触发滚动没法判断类型，就当作滚轮来处理
         // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
         lastPageNum = store.activePageIndex;
+        highPrecisionWheelDeltaY = normalizedDeltaY;
         timeoutId = window.setTimeout(turnPage, 16, dir);
         return;
       }
+
+      // 高精度滚轮通常是像素单位的小段滚动，按累计位移处理
+      if (isHighPrecisionWheelEvent) {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (lastPageNum !== -1) setState('activePageIndex', lastPageNum);
+        wheelType = 'highPrecisionWheel';
+        return handleHighPrecisionWheel(normalizedDeltaY, dir);
+      }
+
       wheelType = 'mouse';
     }
     // falls through
 
     case 'mouse':
       return turnPage(dir);
+
+    case 'highPrecisionWheel':
+      return handleHighPrecisionWheel(normalizedDeltaY, dir);
 
     case 'trackpad':
       return handleTrackpadWheel(e);
