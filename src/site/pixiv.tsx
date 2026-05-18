@@ -1,5 +1,7 @@
 ﻿import { request, setupSiteAdapter } from 'core';
-import { createEffectOn } from 'helper';
+import { createEffectOn, waitDom } from 'helper';
+
+import { getMultiSelectLoader } from '../userscript/multiSelect';
 
 let imgs: {
   urls: { original: string; regular: string };
@@ -16,9 +18,12 @@ setupSiteAdapter({
     load_original_image: true,
   },
   getPageContext: async () => {
+    const listId = /^\/users\/(\d+)/.exec(location.pathname)?.[1];
+    if (listId) return { type: 'list', id: listId } as const;
+
     if (!location.pathname.startsWith('/artworks/')) return;
 
-    const [, , id] = location.pathname.split('/');
+    const id = /^\/artworks\/(\d+)/.exec(location.pathname)?.[1];
     if (!id) {
       imgs.length = 0;
       return;
@@ -31,7 +36,7 @@ setupSiteAdapter({
     if (res.response.body.length <= 1) return;
     imgs = res.response.body;
 
-    return { type: 'manga', id };
+    return { type: 'manga', id } as const;
   },
 
   handlers: {
@@ -55,6 +60,30 @@ setupSiteAdapter({
         state.comicMap.original = { getImgList: getImgList(true) };
         state.comicMap.regular = { getImgList: getImgList(false) };
       });
+    },
+    list: async (coreCtx, { id }) => {
+      const { options } = coreCtx;
+
+      const loader = await getMultiSelectLoader(coreCtx, {
+        id,
+        getImgList: async (workId) => {
+          const res = await request<{ body: typeof imgs }>(
+            `/ajax/illust/${workId}/pages`,
+            { responseType: 'json' },
+          );
+
+          if (options.load_original_image)
+            return res.response.body.map((img) => img.urls.original);
+          return res.response.body.map((img) => img.urls.regular);
+        },
+      });
+
+      await loader.registerItems(id, async (map) => {
+        for (const dom of await waitDom('li div[data-worktype="illusts"]'))
+          map.set(dom, dom.dataset.workid!);
+      });
+
+      return loader.createCleanup(id);
     },
   },
 });
