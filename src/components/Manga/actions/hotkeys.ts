@@ -40,10 +40,11 @@ export const hotkeysMap = createRootMemo(() =>
   ),
 );
 
-const actionsMap: Record<
-  'bubble' | 'capture',
-  Record<string, (e: KeyboardEvent) => void> | null
-> = { bubble: null, capture: null };
+type ActionsMap = Record<string, (e: KeyboardEvent) => unknown>;
+const actionsMap: Record<'bubble' | 'capture', ActionsMap | null> = {
+  bubble: null,
+  capture: null,
+};
 
 const createKeydownHandler =
   (type: 'bubble' | 'capture') => (e: KeyboardEvent) => {
@@ -59,15 +60,16 @@ const createKeydownHandler =
     if ((e.target as HTMLElement).isContentEditable) return;
 
     if (Reflect.has(actions, e.key)) {
-      actions[e.key](e);
+      if (actions[e.key](e) === 'SKIP') return;
       e.stopPropagation();
       e.preventDefault();
       e.stopImmediatePropagation();
+      return;
     }
 
     const hotkeyName = hotkeysMap()[getKeyboardCode(e)];
     if (Reflect.has(actions, hotkeyName)) {
-      actions[hotkeyName](e);
+      if (actions[hotkeyName](e) === 'SKIP') return;
       e.stopPropagation();
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -81,7 +83,7 @@ const handlers = {
 
 /** 监听快捷键 */
 export const listenHotkey = (
-  actions: Record<string, (e: KeyboardEvent) => void>,
+  actions: ActionsMap,
   capture?: boolean,
 ): (() => void) => {
   const type = capture ? 'capture' : 'bubble';

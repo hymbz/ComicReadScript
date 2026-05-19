@@ -149,9 +149,7 @@ export const useInit = async <T extends Record<string, unknown>>(
     listenHotkey(
       {
         enter_read_mode: () => showComic(),
-        Escape: (e) => {
-          if (handleEsc()) e.stopImmediatePropagation();
-        },
+        Escape: () => handleEsc() || 'SKIP',
       },
       true,
     );
