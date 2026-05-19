@@ -1,11 +1,15 @@
 export { SelectionMask } from './SelectionMask';
 export type {
-  MultiSelectReturn,
+  MultiSelectController,
   UseMultiSelectOptions,
 } from './useMultiSelect';
 export { useMultiSelect } from './useMultiSelect';
-export { useMultiSelectLoad } from './useMultiSelectLoad';
+export {
+  useMultiSelectLoad,
+  createMultiSelectLoadController,
+} from './useMultiSelectLoad';
 export type {
-  UseMultiSelectLoadOptions,
-  UseMultiSelectLoadReturn,
+  MultiSelectExternalController,
+  MultiSelectLoadOptions,
+  MultiSelectLoadController,
 } from './useMultiSelectLoad';

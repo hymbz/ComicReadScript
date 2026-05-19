@@ -6,10 +6,7 @@ import {
   waitDom,
 } from 'helper';
 
-import {
-  type UseMultiSelectLoadReturn,
-  useMultiSelectLoad,
-} from '../userscript/multiSelect';
+import { useMultiSelectLoad } from '../userscript/multiSelect';
 
 const original = () =>
   querySelectorAll<HTMLAnchorElement>('.post__thumbnail a').map((e) => e.href);
@@ -28,9 +25,6 @@ const handlePwa = () => {
     e.parentNode!.insertBefore(a, e.nextElementSibling);
   }
 };
-
-/** 多选加载实例，用于在翻页时保持选中状态 */
-let multiSelectLoader: UseMultiSelectLoadReturn | undefined;
 
 setupSiteAdapter({
   name: 'kemono',
@@ -77,51 +71,37 @@ setupSiteAdapter({
     list: async (coreCtx, { id }) => {
       const { options } = coreCtx;
 
-      // 首次进入列表时初始化多选加载器
-      if (!multiSelectLoader) {
-        multiSelectLoader = await useMultiSelectLoad(coreCtx, {
-          id,
-          onStart: () => {
-            for (const item of querySelectorAll('.post-card'))
-              item.style.position = 'relative';
-          },
-          getImgList: async (postId) => {
-            const res = await request<{
-              previews: { name: string; path: string; serer: string }[];
-            }>(`/api/v1${location.pathname}/post/${postId}`, {
-              responseType: 'json',
-              headers: { Accept: 'text/css' },
-            });
+      const ms = await useMultiSelectLoad(coreCtx, {
+        id,
+        onStart: () => {
+          for (const item of querySelectorAll('.post-card'))
+            item.style.position = 'relative';
+        },
+        getImgList: async (postId) => {
+          const res = await request<{
+            previews: { name: string; path: string; serer: string }[];
+          }>(`/api/v1${location.pathname}/post/${postId}`, {
+            responseType: 'json',
+            headers: { Accept: 'text/css' },
+          });
 
-            if (options.load_original_image)
-              return res.response.previews.map(
-                ({ serer, path, name }) => `${serer}/data${path}?f=${name}`,
-              );
-
+          if (options.load_original_image)
             return res.response.previews.map(
-              ({ path }) =>
-                `https://img.${location.host}/thumbnail/data${path}`,
+              ({ serer, path, name }) => `${serer}/data${path}?f=${name}`,
             );
-          },
-        });
-      }
 
-      await multiSelectLoader.registerItems(id, async (map) => {
+          return res.response.previews.map(
+            ({ path }) => `https://img.${location.host}/thumbnail/data${path}`,
+          );
+        },
+      });
+
+      await ms.registerItems(id, async (map) => {
         for (const dom of await waitDom('.post-card', 20))
           map.set(dom, dom.dataset.id!);
       });
 
-      // 页面切换时根据下一页类型决定清理策略
-      return (nextPageCtx) => {
-        // 同一 list 翻页，只清理副作用，保留实例和选中状态
-        multiSelectLoader?.unmount();
-
-        // 切换到不同页面时，完全清理
-        if (nextPageCtx?.type !== 'list' || nextPageCtx?.id !== id) {
-          multiSelectLoader?.dispose();
-          multiSelectLoader = undefined;
-        }
-      };
+      return ms.createCleanup(id);
     },
   },
 });

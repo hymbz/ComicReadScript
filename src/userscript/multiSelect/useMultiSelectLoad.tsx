@@ -1,6 +1,5 @@
 import MdChecklist from '@material-design-icons/svg/round/checklist.svg';
-import MdClearAll from '@material-design-icons/svg/round/clear_all.svg';
-import { type CoreContext, listenHotkey } from 'core';
+import { type CoreContext, listenHotkey, registerEsc } from 'core';
 import {
   createEffectOn,
   isEqual,
@@ -12,7 +11,15 @@ import {
 } from 'helper';
 import { createRoot, createSignal } from 'solid-js';
 
-import { type UseMultiSelectOptions, useMultiSelect } from './useMultiSelect';
+import {
+  type MultiSelectController,
+  type UseMultiSelectOptions,
+  useMultiSelect,
+} from './useMultiSelect';
+
+export type MultiSelectExternalController = MultiSelectController & {
+  load: () => Promise<void> | undefined;
+};
 
 /**
  * 多选加载缓存结构
@@ -24,7 +31,7 @@ type MultiSelectCache = {
   confirmed: { id: string; selecteds: string[] };
 };
 
-export type UseMultiSelectLoadOptions = {
+export type MultiSelectLoadOptions = {
   /** 当前列表的唯一标识，用于区分不同列表的选择项 */
   id: string;
   /** 在 start 时调用，用于页面 DOM 预处理，返回清理函数 */
@@ -33,83 +40,66 @@ export type UseMultiSelectLoadOptions = {
   getImgList: (id: string) => Promise<string[]>;
 };
 
-export const useMultiSelectLoad = <T extends Record<string, any>>(
-  { setState, showComic }: CoreContext<T>,
-  { id: initListid, onStart, getImgList }: UseMultiSelectLoadOptions,
+export const createMultiSelectLoadController = <T extends Record<string, any>>(
+  coreCtx: CoreContext<T>,
+  { id: initListId, onStart, getImgList }: MultiSelectLoadOptions,
 ) =>
   createRoot(async (dispose) => {
+    const { setState, showComic } = coreCtx;
     const cache = await useCache<MultiSelectCache>({
       pending: 'id',
       confirmed: 'id',
     });
 
-    const [listId, setListId] = createSignal<string>(initListid);
-    const [registeredItems, setregisteredItems] = createSignal(
+    const [listId, setListId] = createSignal<string>(initListId);
+    const [registeredItems, setRegisteredItems] = createSignal(
       new Map<HTMLElement, string>(),
     );
-    const sm = useMultiSelect({ onStart, registeredItems });
+    const controller = useMultiSelect({ onStart, registeredItems });
 
     // 切换列表时清空选中状态
     createEffectOn([listId], ([currentId], prev) => {
       const prevId = prev?.[0];
-      if (prevId !== undefined && prevId !== currentId) sm.clear();
+      if (prevId !== undefined && prevId !== currentId) controller.clear();
     });
 
     const multiSelectLoad = singleThreaded(async () => {
-      if (!sm.isEnabled()) {
-        sm.start();
+      if (!controller.isEnabled()) {
+        controller.start();
         const confirmed = await cache.get('confirmed', listId());
-        if (confirmed) sm.setSelectedIds(confirmed.selecteds);
+        if (confirmed) controller.setSelectedIds(confirmed.selecteds);
         return;
       }
 
-      const imgLists = await sm.collect(getImgList);
+      const imgLists = await controller.collect(getImgList);
       const imgList = imgLists.flat().filter(isString);
-      if (imgList.length === 0) return sm.clear();
+      if (imgList.length === 0) return controller.clear();
 
       await cache.del('pending', listId());
       await cache.set('confirmed', {
         id: listId(),
-        selecteds: sm.selectedIds(),
+        selecteds: controller.selectedIds(),
       });
 
-      setState('comicMap', 'selected', { imgList });
-      await showComic('selected');
+      setState('comicMap', 'multiSelect', { imgList });
+      await showComic('multiSelect');
     });
 
-    createEffectOn(
-      [sm.isEnabled, () => sm.selectedIds().length, listId],
-      ([enabled, count, id]) => {
-        setState((state) => {
-          if (enabled) {
-            state.fab.multiSelectCount = count;
-            state.fab.onClick = multiSelectLoad;
-            state.fab.overrideSpeedDial = [
-              {
-                name: t('other.clear'),
-                onClick: sm.clear,
-                icon: <MdClearAll />,
-              },
-            ];
-          } else {
-            state.fab.multiSelectCount = undefined;
-            state.fab.onClick = showComic;
-            state.fab.overrideSpeedDial = undefined;
-          }
-        });
-        if (!enabled) return;
+    coreCtx.multiSelect = { ...controller, load: multiSelectLoad };
 
-        // 多选模式启用时，将当前选中项保存到 pending 缓存
-        // 同时清除 confirmed 缓存，避免一个 id 的选中项同时存在两个地方
-        const selecteds = sm.selectedIds();
-        (async () => {
-          await cache.del('confirmed', id);
-          await (selecteds.length === 0
-            ? cache.del('pending', id)
-            : cache.set('pending', { id, selecteds }));
-        })();
-      },
-    );
+    // 提前设置 imgList 表示当前页面可以被多选加载
+    setState('comicMap', 'multiSelect', { imgList: [] });
+
+    let unregisterEscHandler: (() => void) | undefined;
+    createEffectOn([controller.isEnabled], ([enabled]) => {
+      // ESC 退出多选模式
+      if (enabled) {
+        unregisterEscHandler?.();
+        unregisterEscHandler = registerEsc(-1, () =>
+          controller.isEnabled() ? controller.unmount() : 'SKIP',
+        );
+      }
+    });
 
     setState('fab', 'extraSpeedDial', [
       {
@@ -118,6 +108,22 @@ export const useMultiSelectLoad = <T extends Record<string, any>>(
         icon: <MdChecklist />,
       },
     ]);
+
+    // 多选模式启用时，将当前选中项保存到 pending 缓存
+    createEffectOn(
+      [controller.isEnabled, () => controller.selectedIds().length, listId],
+      ([enabled, , id]) => {
+        if (!enabled) return;
+
+        const selecteds = controller.selectedIds();
+        (async () => {
+          await cache.del('confirmed', id);
+          await (selecteds.length === 0
+            ? cache.del('pending', id)
+            : cache.set('pending', { id, selecteds }));
+        })();
+      },
+    );
 
     const unlistenHotkey = listenHotkey(
       {
@@ -130,12 +136,13 @@ export const useMultiSelectLoad = <T extends Record<string, any>>(
     let oldIdSet: string[] = [];
     /** 清理副作用，但保留选中状态（用于翻页） */
     const unmount = () => {
+      unregisterEscHandler?.();
       // 保存当前 ID 集合供下次比对
       oldIdSet = [...registeredItems().values()];
 
-      sm.unmount();
+      controller.unmount();
       // 清空 registeredItems，避免旧 DOM 引用残留
-      setregisteredItems(new Map());
+      setRegisteredItems(new Map());
       unlistenHotkey();
     };
 
@@ -160,12 +167,12 @@ export const useMultiSelectLoad = <T extends Record<string, any>>(
         if (!map) throw new Error('等待新 DOM 超时');
 
         // 设置注册项，并自动恢复 pending 状态
-        setregisteredItems(map);
+        setRegisteredItems(map);
         const pending = await cache.get('pending', listId());
         // 有 pending 时自动恢复选中状态
         if (pending?.selecteds.length) {
-          sm.start();
-          sm.setSelectedIds(pending.selecteds);
+          controller.start();
+          controller.setSelectedIds(pending.selecteds);
         }
       },
       unmount,
@@ -173,12 +180,37 @@ export const useMultiSelectLoad = <T extends Record<string, any>>(
       dispose: () => {
         oldIdSet = [];
         unmount();
-        sm.dispose();
+        controller.dispose();
         dispose();
       },
+      /** 页面切换时的清理策略 */
+      createCleanup:
+        (id: string) => (nextPageCtx?: { type: string; id: string }) => {
+          // 同一 list 翻页，只清理副作用，保留实例和选中状态
+          unmount();
+          // 切换到不同页面时，完全清理
+          if (nextPageCtx?.type !== 'list' || nextPageCtx?.id !== id) {
+            dispose();
+            multiSelectLoadController = undefined;
+          }
+        },
     };
   });
 
-export type UseMultiSelectLoadReturn = Awaited<
-  ReturnType<typeof useMultiSelectLoad>
+export type MultiSelectLoadController = Awaited<
+  ReturnType<typeof createMultiSelectLoadController>
 >;
+
+let multiSelectLoadController: MultiSelectLoadController | undefined;
+
+export const useMultiSelectLoad = async <T extends Record<string, any>>(
+  coreCtx: CoreContext<T>,
+  options: MultiSelectLoadOptions,
+) => {
+  if (multiSelectLoadController) return multiSelectLoadController;
+  multiSelectLoadController = await createMultiSelectLoadController(
+    coreCtx,
+    options,
+  );
+  return multiSelectLoadController;
+};

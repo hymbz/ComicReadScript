@@ -1,7 +1,8 @@
 import { listenHotkey } from 'components/Manga';
+import { registerEsc } from 'core';
 import { querySelector } from 'helper';
 
-import { type EhFeatureHandler, escHandler } from './helper';
+import { type EhFeatureHandler } from './helper';
 
 export const addHotkeysActions: EhFeatureHandler = (_, pageCtx) => {
   if (pageCtx.type !== 'gallery')
@@ -10,8 +11,8 @@ export const addHotkeysActions: EhFeatureHandler = (_, pageCtx) => {
       scroll_left: () => querySelector('#uprev')?.click(),
     });
 
-  escHandler.set('取消选中当前标签', () =>
-    unsafeWindow.selected_tagname ? unsafeWindow.toggle_tagmenu() : true,
+  registerEsc('取消选中当前标签', () =>
+    unsafeWindow.selected_tagname ? unsafeWindow.toggle_tagmenu() : 'SKIP',
   );
 
   return listenHotkey({

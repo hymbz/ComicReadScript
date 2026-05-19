@@ -6,7 +6,7 @@ import ru from '../../locales/ru.json' with { type: 'json' };
 import zh from '../../locales/zh.json' with { type: 'json' };
 import pkg from '../../package.json' with { type: 'json' };
 
-export const rootDir = resolve(__dirname, '../..');
+export const rootDir = resolve(import.meta.dirname, '../..');
 export const isDevMode = process.argv.includes('--dev');
 
 /**

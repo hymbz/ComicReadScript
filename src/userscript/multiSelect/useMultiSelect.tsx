@@ -3,8 +3,8 @@ import { type Accessor, createRoot, createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
 
 import { SelectionMask } from './SelectionMask';
-import { createDragSession } from './usePointerSelect';
-import { useSelectionManager } from './useSelection';
+import { useDragSelect } from './useDragSelect';
+import { createSelectionController } from './useSelection';
 
 export type UseMultiSelectOptions = {
   /** 在 start 时调用，用于页面 DOM 预处理，返回清理函数 */
@@ -20,15 +20,12 @@ export const useMultiSelect = ({
   createRoot((dispose) => {
     const [isEnabled, setIsEnabled] = createSignal(false);
 
-    const selection = useSelectionManager();
+    const selectionController = createSelectionController();
 
-    const drag = createDragSession({
+    const drag = useDragSelect({
       isEnabled,
       registeredItems,
-      isSelected: selection.isSelected,
-      setSession: selection.setSession,
-      commit: selection.commit,
-      cancel: selection.cancel,
+      ...selectionController,
     });
 
     /** 所有需要在 unmount 时执行的清理函数（DOM dispose、事件监听等） */
@@ -51,7 +48,7 @@ export const useMultiSelect = ({
             index={index}
             isEnabled={isEnabled}
             registeredItems={registeredItems}
-            selection={selection}
+            selection={selectionController}
             drag={drag}
           />
         ),
@@ -103,7 +100,7 @@ export const useMultiSelect = ({
         process: (id: string) => Promise<T>,
         limit?: number,
       ) => {
-        const ids = selection.selectedIds();
+        const ids = selectionController.selectedIds();
         if (ids.length === 0) return [];
 
         setIsEnabled(false);
@@ -122,18 +119,18 @@ export const useMultiSelect = ({
       },
       /** 清空选中状态并卸载所有 DOM 注册 */
       clear: () => {
-        selection.clearBaseline();
-        selection.cancel();
+        selectionController.clearBaseline();
+        selectionController.cancel();
         unmount();
       },
       unmount,
       /** 清理所有 SolidJS 响应式资源 */
       dispose,
       /** 当前选中项 ID 列表 */
-      selectedIds: selection.selectedIds,
+      selectedIds: selectionController.selectedIds,
       /** 根据 ID 列表恢复选中状态（翻页后重新注册 DOM 时使用） */
-      setSelectedIds: selection.setBaseline,
+      setSelectedIds: selectionController.setBaseline,
     };
   });
 
-export type MultiSelectReturn = ReturnType<typeof useMultiSelect>;
+export type MultiSelectController = ReturnType<typeof useMultiSelect>;

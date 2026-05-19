@@ -11,7 +11,7 @@ export type SessionState = {
 };
 
 /** 创建选中状态管理器 */
-export const useSelectionManager = () => {
+export const createSelectionController = () => {
   /** 已确认的选中项 */
   const baselineIds = new ReactiveSet<string>();
 
@@ -85,4 +85,4 @@ export const useSelectionManager = () => {
   };
 };
 
-export type SelectionManager = ReturnType<typeof useSelectionManager>;
+export type SelectionController = ReturnType<typeof createSelectionController>;

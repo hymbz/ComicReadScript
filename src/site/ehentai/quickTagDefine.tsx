@@ -1,11 +1,11 @@
 import MDLaunch from '@material-design-icons/svg/round/launch.svg';
-import { request } from 'core';
+import { registerEsc, request } from 'core';
 import { domParse, hijackFn, querySelector, useStyle } from 'helper';
 import { type JSX, Show, createSignal } from 'solid-js';
 import { createMutable } from 'solid-js/store';
 import { render } from 'solid-js/web';
 
-import { type EhFeatureHandler, escHandler } from './helper';
+import { type EhFeatureHandler } from './helper';
 
 /** 快捷查看标签定义 */
 export const quickTagDefine: EhFeatureHandler = (_, pageCtx) => {
@@ -144,5 +144,5 @@ export const quickTagDefine: EhFeatureHandler = (_, pageCtx) => {
 
   hijackFn('toggle_tagmenu', () => setShow(false));
 
-  escHandler.set('关闭显示标签定义', () => (show() ? setShow(false) : true));
+  registerEsc('关闭显示标签定义', () => (show() ? setShow(false) : 'SKIP'));
 };

@@ -4,9 +4,8 @@ import {
   SettingBlockSubtitle,
   SettingHotkeys,
   SettingsItemSwitch,
-  listenHotkey,
 } from 'components/Manga';
-import { setupSiteAdapter, toast } from 'core';
+import { setEscPriority, setupSiteAdapter, toast } from 'core';
 import {
   assign,
   log,
@@ -32,7 +31,6 @@ import {
   type EhOptions,
   type EhPageContext,
   LoadButton,
-  escHandler,
   featureOptions,
   getPageContext,
   isInCategories,
@@ -110,12 +108,11 @@ setupSiteAdapter<EhPageContext, EhOptions>({
       });
 
       // 按顺序处理 esc 按键
-      listenHotkey({
-        Escape: (e) => {
-          for (const handler of escHandler.values())
-            if (handler() !== true) return e.stopImmediatePropagation();
-        },
-      });
+      setEscPriority([
+        '关闭显示标签定义',
+        '取消选中当前标签',
+        '关闭浮动标签栏',
+      ]);
     },
 
     mpv: ({ setState }) => {

@@ -3,7 +3,7 @@ import { type Accessor } from 'solid-js';
 
 import { type SessionState } from './useSelection';
 
-type DragSessionDeps = {
+type DragSelectOptions = {
   /** 当前是否处于多选模式 */
   isEnabled: () => boolean;
   /** 需要注册的可选 DOM 元素 Map，key 为 DOM 元素，value 为 id */
@@ -12,29 +12,29 @@ type DragSessionDeps = {
   isSelected: (id: string) => boolean;
   /** 修改会话状态 */
   setSession: SetStateFunction<SessionState>;
+  /** 当前会话状态 */
+  session: SessionState;
   /** 将 session 的修改应用到基线 */
   commit: () => void;
   /** 重置 session 为初始状态 */
   cancel: () => void;
 };
 
-/**
- * 创建区间拖拽选择引擎。
- * 通过操作 session 的 range 和 operationType 来管理选中状态，
- * pointerup 时 commit 提交修改，pointercancel 时 cancel 丢弃修改。
- */
-export const createDragSession = ({
+export const useDragSelect = ({
   isEnabled,
   registeredItems,
   isSelected,
   setSession,
+  session,
   commit,
   cancel,
-}: DragSessionDeps) => {
+}: DragSelectOptions) => {
   /** 当前活跃手势的 pointerId，null 表示无活跃手势 */
   let pointerId: number | null = null;
   /** 锚点在 items 中的索引，固定不变 */
   let anchorIndex = -1;
+  /** 当前手势是否扩展过范围（用于判断是否应撤销选择） */
+  let hasExpanded = false;
 
   return {
     onPointerDown: (dom: HTMLElement, e: PointerEvent) => {
@@ -46,6 +46,7 @@ export const createDragSession = ({
       if (anchorIndex === -1) return;
 
       ({ pointerId } = e);
+      hasExpanded = false;
 
       setSession((state) => {
         state.operationType = isSelected(registeredItems().get(dom)!)
@@ -77,13 +78,15 @@ export const createDragSession = ({
         if (state.range[0] === newRange[0] && state.range[1] === newRange[1])
           return;
         state.range = newRange;
+        if (newRange[0] !== newRange[1]) hasExpanded = true;
       });
     },
     onPointerUp: (e: PointerEvent) => {
       if (e.pointerId !== pointerId) return;
-      // 手势正常结束，提交 session 修改
       pointerId = null;
-      commit();
+      // 如果扩展过返回后再重新回到初始项，则撤销这次选择
+      if (session.range[0] === session.range[1] && hasExpanded) cancel();
+      else commit();
     },
     onPointerCancel: (e: PointerEvent) => {
       if (e.pointerId !== pointerId) return;
@@ -99,4 +102,4 @@ export const createDragSession = ({
   };
 };
 
-export type DragSession = ReturnType<typeof createDragSession>;
+export type DragSession = ReturnType<typeof useDragSelect>;

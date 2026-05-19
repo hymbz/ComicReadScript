@@ -1,5 +1,6 @@
 import MdPictureInPicture from '@material-design-icons/svg/round/picture_in_picture.svg?raw';
 import { focus, listenHotkey, setDefaultHotkeys } from 'components/Manga';
+import { registerEsc } from 'core';
 import {
   approx,
   clamp,
@@ -13,7 +14,7 @@ import {
 } from 'helper';
 import { type Writable } from 'type-fest';
 
-import { type EhFeatureHandler, escHandler } from './helper';
+import { type EhFeatureHandler } from './helper';
 
 const getDomPosition = (dom: HTMLElement) => {
   const rect = dom.getBoundingClientRect();
@@ -274,8 +275,8 @@ export const floatTagList: EhFeatureHandler = (
 
   setDefaultHotkeys((hotkeys) => ({ ...hotkeys, float_tag_list: ['q'] }));
 
-  escHandler.set('关闭浮动标签栏', () =>
-    store.open ? setState('open', false) : true,
+  registerEsc('关闭浮动标签栏', () =>
+    store.open ? setState('open', false) : 'SKIP',
   );
 
   listenHotkey({

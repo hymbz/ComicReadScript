@@ -1,7 +1,7 @@
 ﻿import { request, setupSiteAdapter } from 'core';
 import { createEffectOn, waitDom } from 'helper';
 
-import { getMultiSelectLoader } from '../userscript/multiSelect';
+import { useMultiSelectLoad } from '../userscript/multiSelect';
 
 let imgs: {
   urls: { original: string; regular: string };
@@ -64,7 +64,7 @@ setupSiteAdapter({
     list: async (coreCtx, { id }) => {
       const { options } = coreCtx;
 
-      const loader = await getMultiSelectLoader(coreCtx, {
+      const ms = await useMultiSelectLoad(coreCtx, {
         id,
         getImgList: async (workId) => {
           const res = await request<{ body: typeof imgs }>(
@@ -78,12 +78,12 @@ setupSiteAdapter({
         },
       });
 
-      await loader.registerItems(id, async (map) => {
+      await ms.registerItems(id, async (map) => {
         for (const dom of await waitDom('li div[data-worktype="illusts"]'))
           map.set(dom, dom.dataset.workid!);
       });
 
-      return loader.createCleanup(id);
+      return ms.createCleanup(id);
     },
   },
 });

@@ -12,8 +12,8 @@ import {
   t,
   useStore,
 } from 'helper';
-import { createEffect } from 'solid-js';
 
+import { handleEsc } from './escManager';
 import { type CoreContext, type CoreStore, type SiteOptions } from './types';
 import { useFab } from './useFab';
 import { useManga } from './useManga';
@@ -146,7 +146,15 @@ export const useInit = async <T extends Record<string, unknown>>(
       await updateHideFabMenu();
     })();
 
-    listenHotkey({ enter_read_mode: () => showComic() }, true);
+    listenHotkey(
+      {
+        enter_read_mode: () => showComic(),
+        Escape: (e) => {
+          if (handleEsc()) e.stopImmediatePropagation();
+        },
+      },
+      true,
+    );
   };
 
   // 首次设置默认漫画的加载函数时，进行初始化
@@ -156,6 +164,15 @@ export const useInit = async <T extends Record<string, unknown>>(
     { defer: true },
   );
 
+  const canLoadComic = createRootMemo(() =>
+    Object.entries(store.comicMap).some(
+      ([key, entry]) =>
+        key !== 'multiSelect' && entry.getImgList?.name !== 'init',
+    ),
+  );
+
+  const canMultiSelect = createRootMemo(() => 'multiSelect' in store.comicMap);
+
   const coreCtx: CoreContext<T> = {
     store,
     setState,
@@ -164,6 +181,8 @@ export const useInit = async <T extends Record<string, unknown>>(
     loadComic,
     showComic,
     init,
+    canLoadComic,
+    canMultiSelect,
 
     dynamicLoad: async (loadImgFn, length, id = '') => {
       if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
@@ -220,18 +239,6 @@ export const useInit = async <T extends Record<string, unknown>>(
     return comic.imgList.filter((_, i) => !comic.adList?.has(i));
   });
 
-  createEffect(() => {
-    // 多选模式下悬浮按钮持续显示
-    if (store.fab.multiSelectCount !== undefined)
-      return setState('fab', 'show', true);
-
-    setState(
-      'fab',
-      'show',
-      store.flag.hasPageHandler && !options.hiddenFab ? undefined : false,
-    );
-  });
-
   createEffectOn(
     nowImgList,
     (list) => list && setState('manga', 'imgList', list),
@@ -263,7 +270,8 @@ export const useInit = async <T extends Record<string, unknown>>(
     }),
   );
 
-  if (isDevMode) Object.assign(unsafeWindow, { coreCtx, toast });
+  if (isDevMode)
+    Object.assign(unsafeWindow, { coreCtx, toast, coreStore: store });
 
   return coreCtx;
 };

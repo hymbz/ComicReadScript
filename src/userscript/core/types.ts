@@ -4,6 +4,8 @@ import { type SetStateFunction } from 'helper';
 import { type Accessor, type JSX } from 'solid-js';
 import { type Promisable } from 'type-fest';
 
+import { type MultiSelectExternalController } from '../multiSelect/useMultiSelectLoad';
+
 export type SpeedDialButton = {
   /** 按钮名称/提示文本 */
   name: string;
@@ -33,8 +35,6 @@ export type CoreStore<T extends Record<string, any>> = {
     extraSpeedDial?: SpeedDialButton[];
     /** 覆盖默认的 speedDial，有值时将直接使用它 */
     overrideSpeedDial?: SpeedDialButton[];
-    /** 多选模式下显示的选中数量，有值时覆盖默认图标 */
-    multiSelectCount?: number;
   };
   manga: MangaProps;
   hotkeys: Record<string, string[]>;
@@ -77,6 +77,12 @@ export type CoreContext<T extends Record<string, any> = Record<string, any>> = {
   showComic: (id?: string | number) => Promise<void>;
   loadComic: (id?: string | number) => Promise<void>;
   init: (autoShow?: boolean) => void;
+
+  canLoadComic: Accessor<boolean>;
+  canMultiSelect: Accessor<boolean>;
+
+  /** 多选管理器，由 getMultiSelectLoadController 注入 */
+  multiSelect?: MultiSelectExternalController;
 
   /** 动态加载图片列表 */
   dynamicLoad: (

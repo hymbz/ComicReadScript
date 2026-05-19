@@ -1,32 +1,44 @@
-import MdSwipe from '@material-design-icons/svg/round/swipe.svg';
-import MdSwipeVertical from '@material-design-icons/svg/round/swipe_vertical.svg';
-import {
-  type Accessor,
-  type Component,
-  Match,
-  Switch,
-  createSignal,
-} from 'solid-js';
+import { useStyle, useStyleMemo, withEventStop } from 'helper';
+import { type Accessor, type Component, Show } from 'solid-js';
 
-import { withEventStop } from '../../helper';
-import { useStyle, useStyleMemo } from '../../helper/useStyle';
-import { type DragSession } from './usePointerSelect';
-import { type SelectionManager } from './useSelection';
+import { type DragSession } from './useDragSelect';
+import { type SelectionController } from './useSelection';
+
+const DashedRoundedSquare: Component = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    width="1.5em"
+    height="1.5em"
+    fill="none"
+    opacity="0.4"
+  >
+    <rect
+      x="4"
+      y="4"
+      width="16"
+      height="16"
+      rx="5"
+      stroke="currentColor"
+      stroke-width="1.3"
+      stroke-dasharray="3 2"
+    />
+  </svg>
+);
 
 export const SelectionMask: Component<{
   dom: HTMLElement;
   index: number;
   isEnabled: () => boolean;
   registeredItems: Accessor<Map<HTMLElement, string>>;
-  selection: Pick<SelectionManager, 'isSelected' | 'getOrder' | 'selectedIds'>;
+  selection: Pick<
+    SelectionController,
+    'isSelected' | 'getOrder' | 'selectedIds'
+  >;
   drag: Pick<DragSession, 'onPointerDown' | 'onPointerEnter'>;
 }> = (props) => {
   const id = () => props.registeredItems().get(props.dom)!;
   const isSelected = () => props.selection.isSelected(id());
-  const selectedCount = () => props.selection.selectedIds().length;
-  const shouldBlink = () => selectedCount() === 0 && props.index === 0;
-
-  const [showVerticalIcon, setShowVerticalIcon] = createSignal(false);
 
   useStyle(
     `
@@ -41,76 +53,49 @@ export const SelectionMask: Component<{
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 5em;
+        container-type: size;
+        font-size: 4cqmin;
+        overflow: clip;
         user-select: none;
         touch-action: none;
-        transition: opacity 0.15s ease, background-color 0.15s ease;
-
-        &.blink {
-          animation: check-blink 2s ease-in-out 2s backwards infinite;
-        }
+        background: rgba(0, 0, 0, 0.6);
+        cursor: cell;
       }
 
-      .selection-mask.selected,
-      .selection-mask.blink {
-        background: #0009;
-      }
-
-      .selection-mask-content {
-        font-size: 1.5em;
+      .selection-mask-order {
+        font-size: 2em;
+        font-family: sans-serif;
         font-weight: bold;
+        -webkit-text-stroke: none;
         text-shadow: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        & > svg {
-          width: 1em;
-          font-size: 1em;
-        }
-      }
-
-      @keyframes check-blink {
-        0% { opacity: 0; }
-        20% { opacity: 1; }   /* 0.4s 淡入 */
-        35% { opacity: 1; }   /* 保持显示 0.3s */
-        55% { opacity: 0; }   /* 0.4s 淡出 */
-        100% { opacity: 0; }  /* 等待 0.9s */
-      }
-    `,
+      }`,
     props.dom,
   );
 
   useStyleMemo(
-    '.selection-mask-content',
+    '.selection-mask',
     { color: () => (isSelected() ? '#ffffffbf' : '#fffb') },
     props.dom,
   );
 
   return (
-    <div
-      class="selection-mask"
-      classList={{
-        selected: isSelected(),
-        blink: shouldBlink() && !isSelected(),
-      }}
-      onPointerDown={withEventStop((e) =>
-        props.drag.onPointerDown(props.dom, e),
-      )}
-      onPointerEnter={withEventStop((e) =>
-        props.drag.onPointerEnter(props.dom, e),
-      )}
-      onContextMenu={withEventStop()}
-      onAnimationIteration={() => setShowVerticalIcon((prev) => !prev)}
-    >
-      <span class="selection-mask-content">
-        <Switch>
-          <Match when={isSelected()}>{props.selection.getOrder(id())}</Match>
-          <Match when={shouldBlink()}>
-            {showVerticalIcon() ? <MdSwipeVertical /> : <MdSwipe />}
-          </Match>
-        </Switch>
-      </span>
-    </div>
+    <Show when={props.isEnabled()}>
+      <div
+        class="selection-mask"
+        onPointerDown={withEventStop((e) =>
+          props.drag.onPointerDown(props.dom, e),
+        )}
+        onPointerEnter={withEventStop((e) =>
+          props.drag.onPointerEnter(props.dom, e),
+        )}
+        onPointerOver={withEventStop()}
+        onMouseOver={withEventStop()}
+        onContextMenu={withEventStop()}
+      >
+        <span class="selection-mask-order">
+          {props.selection.getOrder(id()) ?? <DashedRoundedSquare />}
+        </span>
+      </div>
+    </Show>
   );
 };

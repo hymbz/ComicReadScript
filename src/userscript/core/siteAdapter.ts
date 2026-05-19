@@ -173,6 +173,15 @@ export const setupSiteAdapter = async <
       state.flag.hasPageHandler =
         Boolean(newPageCtx?.type) && Reflect.has(handlers, newPageCtx!.type);
       state.manga.show = false;
+      // 页面类型切换时重置 comicMap，触发响应式更新
+      state.comicMap = {
+        '': {
+          // oxlint-disable-next-line func-name-matching no-shadow
+          getImgList: function init() {
+            return [];
+          },
+        },
+      };
     });
 
     if (!newPageCtx) return;
