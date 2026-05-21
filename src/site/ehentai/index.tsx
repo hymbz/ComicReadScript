@@ -8,10 +8,6 @@ import {
 import { setEscPriority, setupSiteAdapter, toast } from 'core';
 import {
   assign,
-  log,
-  plimit,
-  querySelector,
-  range,
   scrollIntoView,
   singleThreaded,
   sleep,
@@ -24,7 +20,6 @@ import { render } from 'solid-js/web';
 
 import { colorizeTag } from './colorizeTag';
 import { crossSiteLink } from './crossSiteLink';
-import { detectAd } from './detectAd';
 import { expandTagList } from './expandTagList';
 import { floatTagList } from './floatTagList';
 import {
@@ -35,13 +30,7 @@ import {
   getPageContext,
   isInCategories,
 } from './helper';
-import {
-  checkMpvKey,
-  checkShowkey,
-  getImgPageUrl,
-  getImgUrl,
-  updatePageUrl,
-} from './helper/api';
+import { getImgUrl, updatePageUrl } from './helper/api';
 import { addHotkeysActions } from './hotkeys';
 import { multiSelectLoad } from './multiSelectLoad';
 import { quickFavorite } from './quickFavorite';
@@ -153,59 +142,7 @@ setupSiteAdapter<EhPageContext, EhOptions>({
       // 处理侧边栏溢出
       sidebarOverflow(coreCtx, pageCtx);
 
-      const checkAd = detectAd(coreCtx, pageCtx);
-
-      const totalPageNum = Number(
-        querySelector('.ptt td:nth-last-child(2)')!.textContent,
-      );
-
-      coreCtx.setState('comicMap', '', {
-        getImgList: async ({ dynamicLazyLoad }) => {
-          // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
-          // 所以只能一次性获取所有页数上的图片页地址
-          // TODO: 真不行吗？
-          if (pageCtx.pageList.length !== totalPageNum) {
-            const allPageList = await plimit(
-              range(totalPageNum, (pageNum) => () => getImgPageUrl(pageNum)),
-            );
-            pageCtx.pageList.length = 0;
-            pageCtx.fileNameList.length = 0;
-            for (const pageList of allPageList) {
-              for (const [url, fileName] of pageList) {
-                pageCtx.pageList.push(url);
-                pageCtx.fileNameList.push(fileName);
-              }
-            }
-            void checkAd?.checkFileName();
-          }
-
-          try {
-            await checkMpvKey(pageCtx);
-            await checkShowkey(pageCtx, pageCtx.pageList[0]);
-          } catch (error) {
-            log.warn('checkKey failed', error);
-          }
-
-          return dynamicLazyLoad({
-            loadImg: async (index) => {
-              const i = loadImgs()[index];
-              pageCtx.imgList[i] ||= await getImgUrl(pageCtx, i);
-              return {
-                src: pageCtx.imgList[i],
-                name: pageCtx.fileNameList[i],
-              };
-            },
-            length: () => loadImgs().length,
-            // 在最后十页的图片url加载出来后再检查广告
-            onLoad:
-              checkAd?.checkContent &&
-              ((_, __, list) =>
-                list.slice(-10, -1).every(Boolean) && checkAd?.checkContent()),
-          });
-        },
-      });
-
-      const { loadImgs, handleClick } = await multiSelectLoad(coreCtx, pageCtx);
+      const { handleClick } = await multiSelectLoad(coreCtx, pageCtx);
 
       render(() => {
         const hasMultiPage = sidebar.children[6]?.classList.contains('gsp');

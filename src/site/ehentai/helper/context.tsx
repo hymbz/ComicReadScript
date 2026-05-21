@@ -67,7 +67,7 @@ export const getPageContext = async () => {
 
   const pageCtx: GalleryPageContext = {
     type: 'gallery',
-    galleryId: Number(location.pathname.split('/')[2]),
+    galleryId: location.pathname.split('/')[2],
     galleryTitle: querySelector('#gn')?.textContent || undefined,
     japanTitle: querySelector('#gj')?.textContent || undefined,
     imgNum,
@@ -86,7 +86,7 @@ export const getPageContext = async () => {
 
 export type GalleryPageContext = {
   type: 'gallery';
-  galleryId: number;
+  galleryId: string;
   galleryTitle?: string;
   japanTitle?: string;
   imgNum: number;

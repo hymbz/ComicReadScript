@@ -1,25 +1,21 @@
 import MdChecklist from '@material-design-icons/svg/round/checklist.svg';
+import { type MangaProps } from 'components/Manga';
 import { type CoreContext, listenHotkey, registerEsc } from 'core';
 import {
+  PQueue,
   createEffectOn,
+  createRootMemo,
+  inRange,
   isEqual,
-  isString,
   singleThreaded,
   t,
   useCache,
   wait,
 } from 'helper';
 import { createRoot, createSignal } from 'solid-js';
+import { type Promisable } from 'type-fest';
 
-import {
-  type MultiSelectController,
-  type UseMultiSelectOptions,
-  useMultiSelect,
-} from './useMultiSelect';
-
-export type MultiSelectExternalController = MultiSelectController & {
-  load: () => Promise<void> | undefined;
-};
+import { type UseMultiSelectOptions, useMultiSelect } from './useMultiSelect';
 
 /**
  * 多选加载缓存结构
@@ -36,20 +32,22 @@ export type MultiSelectLoadOptions = {
   id: string;
   /** 在 start 时调用，用于页面 DOM 预处理，返回清理函数 */
   onStart?: UseMultiSelectOptions['onStart'];
-  /** 根据标识获取图片列表 */
-  getImgList: (id: string) => Promise<string[]>;
+  /** 所有可选项的 ID，用于加载全部内容 */
+  allItemIds?: () => string[];
+  /** 根据选中项 ID 获取对应的图片列表 */
+  getImgList: (id: string) => Promisable<MangaProps['imgList']>;
 };
 
 export const createMultiSelectLoadController = <T extends Record<string, any>>(
   coreCtx: CoreContext<T>,
-  { id: initListId, onStart, getImgList }: MultiSelectLoadOptions,
+  { id: initListId, onStart, allItemIds, getImgList }: MultiSelectLoadOptions,
 ) =>
   createRoot(async (dispose) => {
     const { setState, showComic } = coreCtx;
-    const cache = await useCache<MultiSelectCache>({
-      pending: 'id',
-      confirmed: 'id',
-    });
+    const cache = await useCache<MultiSelectCache>(
+      { pending: 'id', confirmed: 'id' },
+      'MultiSelect',
+    );
 
     const [listId, setListId] = createSignal<string>(initListId);
     const [registeredItems, setRegisteredItems] = createSignal(
@@ -63,6 +61,69 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
       if (prevId !== undefined && prevId !== currentId) controller.clear();
     });
 
+    const urlMap: Record<string, MangaProps['imgList']> = {};
+
+    const targetIds = createRootMemo(() => {
+      const ids = controller.selectedIds();
+      if (controller.isEnabled() && ids.length > 0) return ids;
+      return allItemIds?.() ?? [];
+    });
+
+    const computeImgList = () =>
+      targetIds().flatMap((id) => urlMap[id] ?? ['']);
+
+    /** 将 Manga 组件的扁平图片索引转为对应的选中项 ID */
+    const getItemIdsFromIndices = (indices: Set<number>): string[] => {
+      const ids: string[] = [];
+      let offset = 0;
+      for (const id of targetIds()) {
+        const len = urlMap[id]?.length ?? 1;
+        for (const idx of indices) {
+          if (inRange(offset, idx, offset + len - 1)) {
+            ids.push(id);
+            break;
+          }
+        }
+        offset += len;
+      }
+      return ids;
+    };
+
+    setState('comicMap', '', {
+      getImgList: async () => {
+        if (coreCtx.store.comicMap[''].imgList?.length)
+          return coreCtx.store.comicMap[''].imgList;
+
+        await new Promise<void>((resolve) => {
+          const queue = new PQueue<string>(async (id) => {
+            try {
+              urlMap[id] = await getImgList(id);
+            } catch (error) {
+              console.error(error);
+            }
+            setState('comicMap', '', 'imgList', computeImgList());
+            resolve();
+          }, 4);
+
+          setState((state) => {
+            state.comicMap[''].imgList = computeImgList();
+            state.manga.onWaitUrlImgs = (imgs) => {
+              queue.set(...getItemIdsFromIndices(imgs));
+            };
+          });
+
+          // 如果已经有图片url加载好了，就直接 resolve
+          // 避免全部加载完毕后再次 getImgList 时无法触发 onWaitUrlImgs
+          if (targetIds().some((id) => urlMap[id])) resolve();
+        });
+
+        return coreCtx.store.comicMap[''].imgList!;
+      },
+    });
+
+    // 标记当前页面支持多选加载
+    setState('flag', 'canMultiSelect', true);
+
     const multiSelectLoad = singleThreaded(async () => {
       if (!controller.isEnabled()) {
         controller.start();
@@ -71,24 +132,17 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
         return;
       }
 
-      const imgLists = await controller.collect(getImgList);
-      const imgList = imgLists.flat().filter(isString);
-      if (imgList.length === 0) return controller.clear();
-
       await cache.del('pending', listId());
       await cache.set('confirmed', {
         id: listId(),
         selecteds: controller.selectedIds(),
       });
 
-      setState('comicMap', 'multiSelect', { imgList });
-      await showComic('multiSelect');
+      if (controller.selectedIds().length === 0) return;
+
+      setState('comicMap', '', 'imgList', undefined);
+      await showComic('');
     });
-
-    coreCtx.multiSelect = { ...controller, load: multiSelectLoad };
-
-    // 提前设置 imgList 表示当前页面可以被多选加载
-    setState('comicMap', 'multiSelect', { imgList: [] });
 
     let unregisterEscHandler: (() => void) | undefined;
     createEffectOn([controller.isEnabled], ([enabled]) => {
@@ -96,7 +150,9 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
       if (enabled) {
         unregisterEscHandler?.();
         unregisterEscHandler = registerEsc(-1, () =>
-          controller.isEnabled() ? controller.unmount() : 'SKIP',
+          controller.isEnabled() && !coreCtx.store.manga.show
+            ? unmount()
+            : 'SKIP',
         );
       }
     });
@@ -109,26 +165,29 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
       },
     ]);
 
-    // 多选模式启用时，将当前选中项保存到 pending 缓存
+    // 将当前选中项同步保存到 pending 缓存里
     createEffectOn(
       [controller.isEnabled, () => controller.selectedIds().length, listId],
       ([enabled, , id]) => {
-        if (!enabled) return;
-
         const selecteds = controller.selectedIds();
         (async () => {
-          await cache.del('confirmed', id);
+          await cache.del('pending', id);
           await (selecteds.length === 0
-            ? cache.del('pending', id)
-            : cache.set('pending', { id, selecteds }));
+            ? cache.del('confirmed', id)
+            : cache.set(enabled ? 'pending' : 'confirmed', { id, selecteds }));
         })();
       },
+      // 跳过初始化，避免误删上次会话保存的 confirmed 缓存
+      { defer: true },
     );
 
-    const unlistenHotkey = listenHotkey(
+    listenHotkey(
       {
-        enter_read_mode: multiSelectLoad,
         multi_select_load: multiSelectLoad,
+        enter_read_mode: () =>
+          controller.isEnabled() || !coreCtx.canLoadComic()
+            ? multiSelectLoad()
+            : coreCtx.showComic(),
       },
       true,
     );
@@ -136,21 +195,19 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
     let oldIdSet: string[] = [];
     /** 清理副作用，但保留选中状态（用于翻页） */
     const unmount = () => {
+      setState('comicMap', '', 'imgList', undefined);
       unregisterEscHandler?.();
       // 保存当前 ID 集合供下次比对
       oldIdSet = [...registeredItems().values()];
 
       controller.unmount();
-      // 清空 registeredItems，避免旧 DOM 引用残留
-      setRegisteredItems(new Map());
-      unlistenHotkey();
     };
 
     return {
       /** 注册新的可选项，并等待至和上次的注册项不同 */
       registerItems: async (
         newId: string,
-        fillItems: (map: Map<HTMLElement, string>) => Promise<void>,
+        fillItems: (map: Map<HTMLElement, string>) => Promisable<void>,
         maxWaitTime = 5000,
       ) => {
         setListId(newId);
@@ -181,6 +238,8 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
         oldIdSet = [];
         unmount();
         controller.dispose();
+        // 清空 registeredItems，避免旧 DOM 引用残留
+        setRegisteredItems(new Map());
         dispose();
       },
       /** 页面切换时的清理策略 */
@@ -194,6 +253,11 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
             multiSelectLoadController = undefined;
           }
         },
+      load: multiSelectLoad,
+      isEnabled: controller.isEnabled,
+      selectedIds: controller.selectedIds,
+      clear: controller.clear,
+      setSelectedIds: controller.setSelectedIds,
     };
   });
 
@@ -212,5 +276,6 @@ export const useMultiSelectLoad = async <T extends Record<string, any>>(
     coreCtx,
     options,
   );
+  coreCtx.setMultiSelect(multiSelectLoadController);
   return multiSelectLoadController;
 };

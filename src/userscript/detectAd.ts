@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import { log, onec, waitImgLoad } from 'helper';
+import { log, once, waitImgLoad } from 'helper';
 import { downloadImg } from 'request';
 import { type Promisable } from 'type-fest';
 import * as worker from 'worker/detectAd';
@@ -94,7 +94,7 @@ export const getAdPageByContent = (
     adList,
   );
 
-const initWorker = onec(() => {
+const initWorker = once(() => {
   const mainFn = { log } satisfies worker.MainFn;
   if (isDevMode) Object.assign(mainFn, { showCanvas, showGrayList });
   worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));

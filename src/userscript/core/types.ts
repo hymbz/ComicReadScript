@@ -4,7 +4,7 @@ import { type SetStateFunction } from 'helper';
 import { type Accessor, type JSX } from 'solid-js';
 import { type Promisable } from 'type-fest';
 
-import { type MultiSelectExternalController } from '../multiSelect/useMultiSelectLoad';
+import { type MultiSelectLoadController } from '../multiSelect/useMultiSelectLoad';
 
 export type SpeedDialButton = {
   /** 按钮名称/提示文本 */
@@ -64,6 +64,8 @@ export type CoreStore<T extends Record<string, any>> = {
     needAutoShow: boolean;
     /** 当前是否有对应的页面处理逻辑 */
     hasPageHandler: boolean;
+    /** 当前页面是否支持多选加载 */
+    canMultiSelect: boolean;
   };
 };
 
@@ -82,7 +84,10 @@ export type CoreContext<T extends Record<string, any> = Record<string, any>> = {
   canMultiSelect: Accessor<boolean>;
 
   /** 多选管理器，由 getMultiSelectLoadController 注入 */
-  multiSelect?: MultiSelectExternalController;
+  multiSelect?: MultiSelectLoadController;
+
+  /** 设置多选管理器 */
+  setMultiSelect: (value: MultiSelectLoadController | undefined) => void;
 
   /** 动态加载图片列表 */
   dynamicLoad: (
@@ -100,11 +105,5 @@ export type CoreContext<T extends Record<string, any> = Record<string, any>> = {
     id?: string | number;
     /** 并发数 */
     concurrency?: number;
-    /** 加载完成一个后触发的回调 */
-    onLoad?: (
-      img: string | ComicImgData,
-      index: number,
-      imgList: (string | ComicImgData)[],
-    ) => void;
   }) => Promise<MangaProps['imgList']>;
 };

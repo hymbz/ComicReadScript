@@ -264,6 +264,8 @@ export default defineConfig({
     'unicorn/prefer-top-level-await': 'off',
     // 要求在 switch case 子句中使用花括号
     'unicorn/switch-case-braces': 'off',
+    // 禁止将 await 表达式的结果作为成员表达式的一部分
+    'unicorn/no-await-expression-member': 'off',
 
     // Promise
 

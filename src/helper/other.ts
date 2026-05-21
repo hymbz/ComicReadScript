@@ -51,15 +51,17 @@ export const isArray = (val: unknown): val is unknown[] => Array.isArray(val);
 export const approx = (val: number, target: number, range = 1) =>
   Math.abs(target - val) <= range;
 
-/** 创建一个只会执行一次的函数 */
-export const onec = (fn: () => void) => {
-  let hasRun = false;
-
-  return () => {
-    if (hasRun) return;
-    hasRun = true;
-    fn();
+/** 创建一个只会执行一次的函数，并缓存首次调用的返回值 */
+export const once = <T extends (...args: any[]) => any>(
+  fn: T,
+): ((...args: Parameters<T>) => ReturnType<T>) => {
+  let wrapper = (...args: Parameters<T>): ReturnType<T> => {
+    const result = fn(...args);
+    wrapper = () => result;
+    return result;
   };
+
+  return (...args: Parameters<T>) => wrapper(...args);
 };
 
 /** 创建顺序递增的数组 */

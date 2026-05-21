@@ -2,6 +2,7 @@ import {
   ReactiveSet,
   createRootMemo,
   isImageElement,
+  once,
   querySelectorAll,
   useStyle,
 } from 'helper';
@@ -105,10 +106,12 @@ export const detectAd: GalleryHandler<DetectAdReturn | undefined> = (
     }),
   );
 
-  // 返回在图片加载时检查图片的函数
   return {
-    checkFileName: () =>
+    checkFileName: once(() =>
       getAdPageByFileName(fileNameList, store.comicMap[''].adList!),
-    checkContent: () => getAdPageByContent(imgList, store.comicMap[''].adList!),
+    ),
+    checkContent: once(() =>
+      getAdPageByContent(imgList, store.comicMap[''].adList!),
+    ),
   };
 };

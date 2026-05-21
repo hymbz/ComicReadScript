@@ -5,7 +5,7 @@ import {
   ensureGmValue,
   getImageData,
   log,
-  onec,
+  once,
   t,
   wait,
 } from 'helper';
@@ -109,7 +109,7 @@ const getModel = async () => {
   }
 };
 
-const initWorker = onec(() => {
+const initWorker = once(() => {
   const mainFn = {
     log,
     toast,

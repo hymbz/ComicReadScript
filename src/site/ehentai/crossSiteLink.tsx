@@ -64,7 +64,7 @@ const nhentai: SiteFn = async ({ setState }, { galleryTitle, galleryId }) => {
         showText: `${id}`,
         title: japanese_title || english_title,
         href: `https://nhentai.net/g/${id}`,
-        class: `${galleryId}` === media_id ? 'gt' : 'gtl',
+        class: galleryId === media_id ? 'gt' : 'gtl',
       };
     })
     .toSorted(

@@ -9,7 +9,6 @@ export {
   createMultiSelectLoadController,
 } from './useMultiSelectLoad';
 export type {
-  MultiSelectExternalController,
   MultiSelectLoadOptions,
   MultiSelectLoadController,
 } from './useMultiSelectLoad';

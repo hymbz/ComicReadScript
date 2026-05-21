@@ -65,8 +65,8 @@ export const useFab = <T extends Record<string, any>>(
       () => nowImgList()?.length,
       coreCtx.canLoadComic,
       coreCtx.canMultiSelect,
-      () => coreCtx.multiSelect?.isEnabled?.(),
-      () => coreCtx.multiSelect?.selectedIds?.().length,
+      () => coreCtx.multiSelect?.isEnabled(),
+      () => coreCtx.multiSelect?.selectedIds().length,
       () => options.hiddenFab,
     ],
     ([
@@ -102,6 +102,8 @@ export const useFab = <T extends Record<string, any>>(
             { name: t('other.exit'), onClick: ms.unmount, icon: <MdClose /> },
             { name: t('other.clear'), onClick: ms.clear, icon: <MdClearAll /> },
           ];
+          if (doneNum !== undefined && totalNum !== undefined)
+            state.fab.progress = doneNum / totalNum || 0;
           return;
         }
 

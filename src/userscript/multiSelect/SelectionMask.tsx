@@ -91,6 +91,7 @@ export const SelectionMask: Component<{
         onPointerOver={withEventStop()}
         onMouseOver={withEventStop()}
         onContextMenu={withEventStop()}
+        onClick={withEventStop()}
       >
         <span class="selection-mask-order">
           {props.selection.getOrder(id()) ?? <DashedRoundedSquare />}

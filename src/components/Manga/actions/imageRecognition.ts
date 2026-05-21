@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import { getImageData, log, onec, throttle, wait } from 'helper';
+import { getImageData, log, once, throttle, wait } from 'helper';
 import { unwrap } from 'solid-js/store';
 import { showCanvas, showColorArea, showGrayList } from 'worker/helper';
 import { type MainFn } from 'worker/ImageRecognition';
@@ -32,7 +32,7 @@ export const handleImgRecognition = async (
   }
 };
 
-const initWorker = onec(() => {
+const initWorker = once(() => {
   const mainFn = {
     log,
     updatePageData: throttle(() => setState(updatePageData), 1000),

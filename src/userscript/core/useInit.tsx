@@ -7,11 +7,13 @@ import {
   createRootMemo,
   difference,
   log,
+  once,
   range,
   setInitLang,
   t,
   useStore,
 } from 'helper';
+import { createSignal } from 'solid-js';
 
 import { handleEsc } from './escManager';
 import { type CoreContext, type CoreStore, type SiteOptions } from './types';
@@ -69,6 +71,7 @@ export const useInit = async <T extends Record<string, unknown>>(
       isStored: saveOptions !== undefined,
       needAutoShow: true,
       hasPageHandler: false,
+      canMultiSelect: false,
     },
   });
   setDefaultHotkeys((_hotkeys) => ({
@@ -126,11 +129,7 @@ export const useInit = async <T extends Record<string, unknown>>(
     setState('manga', 'show', true);
   };
 
-  let inited = false;
-  const init = (autoShow = true) => {
-    if (inited) return;
-    inited = true;
-
+  const init = once((autoShow = true) => {
     setState('fab', {
       onClick: () => void showComic(),
     });
@@ -153,7 +152,7 @@ export const useInit = async <T extends Record<string, unknown>>(
       },
       true,
     );
-  };
+  });
 
   // 首次设置默认漫画的加载函数时，进行初始化
   createEffectOn(
@@ -164,12 +163,13 @@ export const useInit = async <T extends Record<string, unknown>>(
 
   const canLoadComic = createRootMemo(() =>
     Object.entries(store.comicMap).some(
-      ([key, entry]) =>
-        key !== 'multiSelect' && entry.getImgList?.name !== 'init',
+      ([, entry]) => entry.getImgList?.name !== 'init',
     ),
   );
 
-  const canMultiSelect = createRootMemo(() => 'multiSelect' in store.comicMap);
+  const canMultiSelect = createRootMemo(() => store.flag.canMultiSelect);
+
+  const [multiSelect, setMultiSelect] = createSignal<any>();
 
   const coreCtx: CoreContext<T> = {
     store,
@@ -181,6 +181,11 @@ export const useInit = async <T extends Record<string, unknown>>(
     init,
     canLoadComic,
     canMultiSelect,
+
+    get multiSelect() {
+      return multiSelect();
+    },
+    setMultiSelect,
 
     dynamicLoad: async (loadImgFn, length, id = '') => {
       if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
@@ -201,13 +206,7 @@ export const useInit = async <T extends Record<string, unknown>>(
       return store.comicMap[id].imgList!;
     },
 
-    dynamicLazyLoad: async ({
-      loadImg,
-      length,
-      id = '',
-      concurrency = 4,
-      onLoad,
-    }) => {
+    dynamicLazyLoad: async ({ loadImg, length, id = '', concurrency = 4 }) => {
       if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
 
       const imgNum = typeof length === 'number' ? length : length();
@@ -217,7 +216,6 @@ export const useInit = async <T extends Record<string, unknown>>(
           const img = await loadImg(i);
           setState('comicMap', id, 'imgList', (list) => list!.with(i, img));
           resolve();
-          onLoad?.(img, i, store.comicMap[id].imgList!);
         }, concurrency);
 
         setState((state) => {

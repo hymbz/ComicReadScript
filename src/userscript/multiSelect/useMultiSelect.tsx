@@ -1,6 +1,7 @@
 import { plimit } from 'helper';
 import { type Accessor, createRoot, createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
+import { type Promisable } from 'type-fest';
 
 import { SelectionMask } from './SelectionMask';
 import { useDragSelect } from './useDragSelect';
@@ -97,7 +98,7 @@ export const useMultiSelect = ({
       },
       /** 结束多选模式，并发处理所有选中项并返回结果列表 */
       collect: async <T,>(
-        process: (id: string) => Promise<T>,
+        process: (id: string) => Promisable<T>,
         limit?: number,
       ) => {
         const ids = selectionController.selectedIds();
