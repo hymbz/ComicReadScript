@@ -12,12 +12,13 @@ const DashedRoundedSquare: Component = () => (
     height="1.5em"
     fill="none"
     opacity="0.4"
+    style={{ display: 'inline', 'vertical-align': '-0.15em' }}
   >
     <rect
-      x="4"
-      y="4"
-      width="16"
-      height="16"
+      x="2"
+      y="2"
+      width="20"
+      height="20"
       rx="5"
       stroke="currentColor"
       stroke-width="1.3"
@@ -48,7 +49,7 @@ export const SelectionMask: Component<{
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 2147483647;
+        z-index: 2147483646;
         cursor: pointer;
         display: flex;
         align-items: center;

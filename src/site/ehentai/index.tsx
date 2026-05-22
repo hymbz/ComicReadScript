@@ -219,7 +219,7 @@ setupSiteAdapter<EhPageContext, EhOptions>({
     // 自动调整阅读配置
     auto_adjust_option: ({ options, setState }, pageCtx) => {
       if (pageCtx.type !== 'gallery') return;
-      if (!isInCategories('Doujinshi', 'Manga', 'Non-H')) return;
+      if (isInCategories('Doujinshi', 'Manga', 'Non-H')) return;
       let option: MangaProps['defaultOption'] = {
         pageNum: 1, // 使用单页模式
         imgRecognition: { enabled: false }, // 关闭图像识别
