@@ -42,7 +42,7 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
   coreCtx: CoreContext<T>,
   { id: initListId, onStart, allItemIds, getImgList }: MultiSelectLoadOptions,
 ) =>
-  createRoot(async (dispose) => {
+  createRoot(async (rootDispose) => {
     const { setState, showComic } = coreCtx;
     const cache = await useCache<MultiSelectCache>(
       { pending: 'id', confirmed: 'id' },
@@ -89,40 +89,43 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
       return ids;
     };
 
-    setState('comicMap', '', {
-      getImgList: async () => {
-        if (coreCtx.store.comicMap[''].imgList?.length)
-          return coreCtx.store.comicMap[''].imgList;
+    const reSetStore = () => {
+      setState('comicMap', '', {
+        getImgList: Object.assign(
+          async () => {
+            if (coreCtx.store.comicMap[''].imgList?.length)
+              return coreCtx.store.comicMap[''].imgList;
 
-        await new Promise<void>((resolve) => {
-          const queue = new PQueue<string>(async (id) => {
-            try {
-              urlMap[id] = await getImgList(id);
-            } catch (error) {
-              console.error(error);
-            }
-            setState('comicMap', '', 'imgList', computeImgList());
-            resolve();
-          }, 4);
+            await new Promise<void>((resolve) => {
+              const queue = new PQueue<string>(async (id) => {
+                try {
+                  urlMap[id] = await getImgList(id);
+                } catch (error) {
+                  console.error(error);
+                }
+                setState('comicMap', '', 'imgList', computeImgList());
+                resolve();
+              }, 4);
 
-          setState((state) => {
-            state.comicMap[''].imgList = computeImgList();
-            state.manga.onWaitUrlImgs = (imgs) => {
-              queue.set(...getItemIdsFromIndices(imgs));
-            };
-          });
+              setState((state) => {
+                state.comicMap[''].imgList = computeImgList();
+                state.manga.onWaitUrlImgs = (imgs) => {
+                  queue.set(...getItemIdsFromIndices(imgs));
+                };
+              });
 
-          // 如果已经有图片url加载好了，就直接 resolve
-          // 避免全部加载完毕后再次 getImgList 时无法触发 onWaitUrlImgs
-          if (targetIds().some((id) => urlMap[id])) resolve();
-        });
+              // 如果已经有图片url加载好了，就直接 resolve
+              // 避免全部加载完毕后再次 getImgList 时无法触发 onWaitUrlImgs
+              if (targetIds().some((id) => urlMap[id])) resolve();
+            });
 
-        return coreCtx.store.comicMap[''].imgList!;
-      },
-    });
-
-    // 标记当前页面支持多选加载
-    setState('flag', 'canMultiSelect', true);
+            return coreCtx.store.comicMap[''].imgList!;
+          },
+          allItemIds ? {} : { type: 'multiSelect' as const },
+        ),
+      });
+    };
+    reSetStore();
 
     const multiSelectLoad = singleThreaded(async () => {
       if (!controller.isEnabled()) {
@@ -203,7 +206,18 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
       controller.unmount();
     };
 
+    const completeDispose = () => {
+      oldIdSet = [];
+      unmount();
+      controller.dispose();
+      // 清空 registeredItems，避免旧 DOM 引用残留
+      setRegisteredItems(new Map());
+      coreCtx.setMultiSelect(undefined);
+      rootDispose();
+    };
+
     return {
+      reSetStore,
       /** 注册新的可选项，并等待至和上次的注册项不同 */
       registerItems: async (
         newId: string,
@@ -234,14 +248,7 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
       },
       unmount,
       /** 完全清理所有状态和副作用 */
-      dispose: () => {
-        oldIdSet = [];
-        unmount();
-        controller.dispose();
-        // 清空 registeredItems，避免旧 DOM 引用残留
-        setRegisteredItems(new Map());
-        dispose();
-      },
+      dispose: completeDispose,
       /** 页面切换时的清理策略 */
       createCleanup:
         (id: string) => (nextPageCtx?: { type: string; id: string }) => {
@@ -249,7 +256,7 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
           unmount();
           // 切换到不同页面时，完全清理
           if (nextPageCtx?.type !== 'list' || nextPageCtx?.id !== id) {
-            dispose();
+            completeDispose();
             multiSelectLoadController = undefined;
           }
         },
@@ -271,7 +278,10 @@ export const useMultiSelectLoad = async <T extends Record<string, any>>(
   coreCtx: CoreContext<T>,
   options: MultiSelectLoadOptions,
 ) => {
-  if (multiSelectLoadController) return multiSelectLoadController;
+  if (multiSelectLoadController) {
+    multiSelectLoadController.reSetStore();
+    return multiSelectLoadController;
+  }
   multiSelectLoadController = await createMultiSelectLoadController(
     coreCtx,
     options,

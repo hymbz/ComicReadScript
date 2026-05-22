@@ -44,9 +44,11 @@ export type CoreStore<T extends Record<string, any>> = {
     {
       /** undefined 表示还未开始加载，空数组表示刚开始加载 */
       imgList?: MangaProps['imgList'];
-      getImgList: (
+      getImgList: ((
         coreCtx: CoreContext<T>,
-      ) => Promisable<MangaProps['imgList']>;
+      ) => Promisable<MangaProps['imgList']>) & {
+        type?: 'init' | 'multiSelect';
+      };
       adList?: Set<number>;
     }
   >;
@@ -64,8 +66,6 @@ export type CoreStore<T extends Record<string, any>> = {
     needAutoShow: boolean;
     /** 当前是否有对应的页面处理逻辑 */
     hasPageHandler: boolean;
-    /** 当前页面是否支持多选加载 */
-    canMultiSelect: boolean;
   };
 };
 
@@ -87,7 +87,7 @@ export type CoreContext<T extends Record<string, any> = Record<string, any>> = {
   multiSelect?: MultiSelectLoadController;
 
   /** 设置多选管理器 */
-  setMultiSelect: (value: MultiSelectLoadController | undefined) => void;
+  setMultiSelect: (value: any) => void;
 
   /** 动态加载图片列表 */
   dynamicLoad: (

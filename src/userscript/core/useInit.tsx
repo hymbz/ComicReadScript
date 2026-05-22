@@ -59,10 +59,7 @@ export const useInit = async <T extends Record<string, unknown>>(
     } as T & SiteOptions,
     comicMap: {
       '': {
-        // oxlint-disable-next-line func-name-matching
-        getImgList: function init() {
-          return [];
-        },
+        getImgList: Object.assign(() => [], { type: 'init' as const }),
       },
     },
     nowComic: '',
@@ -71,7 +68,6 @@ export const useInit = async <T extends Record<string, unknown>>(
       isStored: saveOptions !== undefined,
       needAutoShow: true,
       hasPageHandler: false,
-      canMultiSelect: false,
     },
   });
   setDefaultHotkeys((_hotkeys) => ({
@@ -110,7 +106,7 @@ export const useInit = async <T extends Record<string, unknown>>(
   const showComic = async (id: string | number = store.nowComic) => {
     if (!Reflect.has(store.comicMap, id)) throw new Error('comic not found');
     // 如果 getImgList 还是默认的空函数，说明还未准备好，直接 return 防止报错
-    if (store.comicMap[id].getImgList?.name === 'init') return;
+    if (store.comicMap[id].getImgList?.type === 'init') return;
     if (id !== store.nowComic) setState('nowComic', id);
 
     switch (store.comicMap[id].imgList?.length) {
@@ -162,14 +158,13 @@ export const useInit = async <T extends Record<string, unknown>>(
   );
 
   const canLoadComic = createRootMemo(() =>
-    Object.entries(store.comicMap).some(
-      ([, entry]) => entry.getImgList?.name !== 'init',
+    Object.values(store.comicMap).some(
+      (entry) => entry.getImgList?.type === undefined,
     ),
   );
 
-  const canMultiSelect = createRootMemo(() => store.flag.canMultiSelect);
-
   const [multiSelect, setMultiSelect] = createSignal<any>();
+  const canMultiSelect = createRootMemo(() => Boolean(multiSelect()));
 
   const coreCtx: CoreContext<T> = {
     store,

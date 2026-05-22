@@ -176,10 +176,7 @@ export const setupSiteAdapter = async <
       // 页面类型切换时重置 comicMap，触发响应式更新
       state.comicMap = {
         '': {
-          // oxlint-disable-next-line func-name-matching no-shadow
-          getImgList: function init() {
-            return [];
-          },
+          getImgList: Object.assign(() => [], { type: 'init' as const }),
         },
       };
     });
