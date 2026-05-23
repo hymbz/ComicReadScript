@@ -100,6 +100,8 @@ export default defineConfig({
     ],
     // 禁止使用三元运算符
     'no-ternary': 'off',
+    // 禁止无副作用的表达式，但允许标签模板
+    'no-unused-expressions': ['error', { allowTaggedTemplates: true }],
     // 禁止声明但未使用的变量
     'no-unused-vars': [
       'warn',
@@ -282,22 +284,21 @@ export default defineConfig({
 
     // 禁止在测试中使用条件语句（if/switch 等）
     'jest/no-conditional-in-test': 'off',
+    'vitest/no-conditional-in-test': 'off',
     // 禁止使用测试 hooks（beforeEach/afterEach 等）
     'jest/no-hooks': 'off',
+    'vitest/no-hooks': 'off',
     // 禁止在测试文件顶层使用 expect（应放在测试用例内）
     'jest/no-standalone-expect': 'off',
+    'vitest/no-standalone-expect': 'off',
     // 要求使用 expect.assertions() 或 expect.hasAssertions()
     'jest/prefer-expect-assertions': 'off',
+    'vitest/prefer-expect-assertions': 'off',
     // 要求使用 setup/teardown hooks
     'jest/require-hook': 'off',
-    // 禁止在测试中使用条件语句
-    'vitest/no-conditional-in-test': 'off',
-    // 禁止使用测试 hooks
-    'vitest/no-hooks': 'off',
-    // 禁止在测试文件顶层使用 expect
-    'vitest/no-standalone-expect': 'off',
-    // 要求使用 expect.assertions()
-    'vitest/prefer-expect-assertions': 'off',
+    // 禁止在单个测试中使用过多的 expect
+    'jest/max-expects': 'off',
+    'vitest/max-expects': 'off',
     // 要求使用严格的布尔匹配器（toBeTrue/toBeFalse）
     'vitest/prefer-strict-boolean-matchers': 'error',
     // 要求使用 toBeFalsy 代替 toBe(false)

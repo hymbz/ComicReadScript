@@ -1,4 +1,4 @@
-import { useStyle } from 'helper';
+import { css } from 'helper';
 import { type Component, type JSX, mergeProps } from 'solid-js';
 
 import classes from './index.module.css';
@@ -39,7 +39,7 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
 
   return (
     <div
-      ref={(ref) => useStyle(style, ref)}
+      ref={(ref) => css(style, ref)}
       class={classes.iconButtonItem}
       data-show={props.showTip}
     >

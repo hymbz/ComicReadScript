@@ -22,7 +22,7 @@
     "release": "tsx scripts/release.ts",
     "release:push": "tsx scripts/release.ts push",
     "test": "vitest",
-    "check": "tsc -noEmit && oxlint -f stylish --fix . && oxfmt . && stylelint \"**/*.css\"",
+    "check": "tsc -noEmit && oxlint -f stylish --fix . && oxfmt . && stylelint \"**/*.css\" \"**/*.ts\" \"**/*.tsx\"",
     "pwa-assets-generator": "pwa-assets-generator",
     "pwa:dev": "vite serve src/pwa",
     "pwa:build": "vite build src/pwa",
@@ -99,6 +99,7 @@
     "postcss-import": "^16.1.1",
     "postcss-modules": "^6.0.1",
     "postcss-nesting": "^13.0.2",
+    "postcss-styled-syntax": "^0.7.1",
     "radash": "^12.1.1",
     "release-it": "^19.0.5",
     "rfdc": "^1.4.1",
@@ -124,7 +125,7 @@
     "vite-plugin-pwa": "^1.3.0",
     "vite-plugin-solid": "^2.11.10",
     "vitepress": "^2.0.0-alpha.17",
-    "vitest": "^4.0.15",
+    "vitest": "^4.1.7",
     "wdio-vscode-service": "^6.1.4"
   },
   "pnpm": {

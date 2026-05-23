@@ -1,6 +1,7 @@
 import { type MangaProps, listenHotkey } from 'components/Manga';
 import { type SetupOptions, request, setup, toast } from 'core';
 import {
+  css,
   fileType,
   isUrl,
   log,
@@ -12,7 +13,6 @@ import {
   scrollIntoView,
   sleep,
   t,
-  useStyle,
   wait,
 } from 'helper';
 import { getInitLang } from 'helper/languages';
@@ -225,7 +225,11 @@ try {
       }
 
       // 让切换章节的提示可以显示在漫画页上
-      useStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
+      css`
+        #smh-msg-box {
+          z-index: 2147483647 !important;
+        }
+      `;
 
       const createChapterNav = (cid: number) => {
         if (cid === 0) return;

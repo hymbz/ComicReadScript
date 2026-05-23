@@ -3,7 +3,7 @@ import { type JSX } from 'solid-js';
 
 import classes from '../index.module.css';
 import { store } from '../store';
-import { useStyleMemo } from './useStyle';
+import { css } from './useStyle';
 
 // TODO: 使用 light-dark()
 // https://developer.mozilla.org/docs/Web/CSS/color_value/light-dark
@@ -74,7 +74,7 @@ export const useCssVar = () => {
     '--i18n-touch-area-menu': `"${t('touch_area.menu')}"`,
   });
 
-  useStyleMemo(`.${classes.root}`, [
+  css(`.${classes.root}`, [
     {
       '--bg': () =>
         store.option.customBackground ??

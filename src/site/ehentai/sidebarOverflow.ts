@@ -1,4 +1,4 @@
-import { querySelector, useStyle } from 'helper';
+import { css, querySelector } from 'helper';
 
 import { type EhFeatureHandler } from './helper';
 
@@ -18,25 +18,47 @@ export const sidebarOverflow: EhFeatureHandler = (_, pageCtx) => {
   });
   resizeObserver.observe(sidebar);
 
-  useStyle(`
+  css`
     #gd5[data-long] {
-      --scrollbar-slider: ${getComputedStyle(querySelector('.gm')!).borderColor};
+      --scrollbar-slider: ${getComputedStyle(querySelector('.gm')!)
+        .borderColor};
+
       scrollbar-color: var(--scrollbar-slider) transparent;
       scrollbar-width: thin;
       overflow: auto;
       max-height: 352px;
-      &::-webkit-scrollbar { width: 5px; height: 10px; }
-      &::-webkit-scrollbar-track { background: transparent; }
-      &::-webkit-scrollbar-thumb { background: var(--scrollbar-slider); }
+
+      &::-webkit-scrollbar {
+        width: 5px;
+        height: 10px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-slider);
+      }
     }
+
     /* 在显示 ehs 时隐藏 gd5 上的滚动条，避免同时显示两个滚动条 */
-    #gd5[data-long]:has(#ehs-introduce-box .ehs-content) { overflow: hidden; }
-    #gmid #ehs-introduce-box { width: 100%; }
+    #gd5[data-long]:has(#ehs-introduce-box .ehs-content) {
+      overflow: hidden;
+    }
+
+    #gmid #ehs-introduce-box {
+      width: 100%;
+    }
 
     /*
       消除 ehs 针对按钮太多时的解决办法，用脚本的处理方式就好了，避免在浮动标签栏时导致滚动
       https://github.com/EhTagTranslation/EhSyringe/commit/009054cc34ee818972d2a042990bf89bdff1895a
     */
-    body #gmid #gd5 { --ehs-gap: 1; justify-content: unset; }
-  `);
+    body #gmid #gd5 {
+      --ehs-gap: 1;
+
+      justify-content: unset;
+    }
+  `;
 };

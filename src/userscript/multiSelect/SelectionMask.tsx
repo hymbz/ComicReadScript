@@ -1,4 +1,4 @@
-import { useStyle, useStyleMemo, withEventStop } from 'helper';
+import { css, withEventStop } from 'helper';
 import { type Accessor, type Component, Show } from 'solid-js';
 
 import { type DragSession } from './useDragSelect';
@@ -41,39 +41,44 @@ export const SelectionMask: Component<{
   const id = () => props.registeredItems().get(props.dom)!;
   const isSelected = () => props.selection.isSelected(id());
 
-  useStyle(
-    `
-      .selection-mask {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 2147483646;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        container-type: size;
-        font-size: 4cqmin;
-        overflow: clip;
-        user-select: none;
-        touch-action: none;
-        background: rgba(0, 0, 0, 0.6);
-        cursor: cell;
-      }
+  css`
+    ${props.dom}
+    .selection-mask {
+      touch-action: none;
+      cursor: pointer;
+      cursor: cell;
+      user-select: none;
 
-      .selection-mask-order {
-        font-size: 2em;
-        font-family: sans-serif;
-        font-weight: bold;
-        -webkit-text-stroke: none;
-        text-shadow: none;
-      }`,
-    props.dom,
-  );
+      position: absolute;
+      z-index: 2147483646;
+      top: 0;
+      left: 0;
 
-  useStyleMemo(
+      container-type: size;
+      overflow: clip;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 100%;
+      height: 100%;
+
+      font-size: 4cqmin;
+
+      background: rgb(0 0 0 / 60%);
+    }
+
+    .selection-mask-order {
+      font-family: sans-serif;
+      font-size: 2em;
+      font-weight: bold;
+      text-shadow: none;
+
+      -webkit-text-stroke: 0;
+    }
+  `;
+
+  css(
     '.selection-mask',
     { color: () => (isSelected() ? '#ffffffbf' : '#fffb') },
     props.dom,

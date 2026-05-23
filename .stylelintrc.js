@@ -1,4 +1,10 @@
 export default {
+  overrides: [
+    {
+      files: ['**/*.ts', '**/*.tsx'],
+      customSyntax: 'postcss-styled-syntax',
+    },
+  ],
   ignoreFiles: [
     '**/node_modules/**',
     '**/dist/**',
@@ -16,6 +22,9 @@ export default {
     'custom-property-pattern': null,
     // 允许任意类型的命名方式
     'selector-class-pattern': null,
+    // 允许任意类型的 id 选择器命名方式
+    'selector-id-pattern': null,
+    // 允许任意类型的动画帧命名方式
     'keyframes-name-pattern': null,
     // 允许重复的 css 动画帧
     'keyframe-block-no-duplicate-selectors': null,

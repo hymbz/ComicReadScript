@@ -1,11 +1,11 @@
 import {
   createEqualsSignal,
   createRootMemo,
+  css,
   hijackFn,
   querySelector,
   singleThreaded,
   t,
-  useStyle,
 } from 'helper';
 import { type Component, For, Show, createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
@@ -39,12 +39,12 @@ export const tagLint: EhFeatureHandler = (_, pageCtx) => {
   >;
   const [warnList, setWarnList] = createSignal<WarnList>({});
 
-  useStyle(`
-    #comidread-tag-lint [id^=td_] {
-      display: inline-block;
+  css`
+    #comidread-tag-lint [id^='td_'] {
       float: none;
+      display: inline-block;
     }
-  `);
+  `;
 
   const getTagClass = (tag: string, weak?: boolean) => {
     if (weak === undefined)
@@ -228,7 +228,7 @@ export const tagLint: EhFeatureHandler = (_, pageCtx) => {
 
   // 输入标签高亮
   const [inputTagList, setInputTagList] = createEqualsSignal<string[]>([]);
-  useStyle(
+  css(
     createRootMemo(() =>
       inputTagList()
         .map(

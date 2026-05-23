@@ -1,6 +1,6 @@
 import MDLaunch from '@material-design-icons/svg/round/launch.svg';
 import { registerEsc, request } from 'core';
-import { domParse, hijackFn, querySelector, useStyle } from 'helper';
+import { css, domParse, hijackFn, querySelector } from 'helper';
 import { type JSX, Show, createSignal } from 'solid-js';
 import { createMutable } from 'solid-js/store';
 import { render } from 'solid-js/web';
@@ -54,16 +54,18 @@ export const quickTagDefine: EhFeatureHandler = (_, pageCtx) => {
     );
   };
 
-  useStyle(`
+  css`
     #comidread-tag-define {
       position: absolute;
       z-index: 1;
       top: 0;
       left: 0;
-      width: 100%;
-      text-align: start;
-      padding: 0 1em;
+
       box-sizing: border-box;
+      width: 100%;
+      padding: 0 1em;
+
+      text-align: start;
     }
 
     #taglist {
@@ -71,8 +73,8 @@ export const quickTagDefine: EhFeatureHandler = (_, pageCtx) => {
     }
 
     #comidread-tag-define h1 {
-      border-bottom: 1px solid #a2a9b1;
       margin: 0.4em 0;
+      border-bottom: 1px solid #a2a9b1;
     }
 
     #comidread-tag-define h1 svg {
@@ -101,7 +103,7 @@ export const quickTagDefine: EhFeatureHandler = (_, pageCtx) => {
       margin-top: 0.2em;
       margin-bottom: 0.5em;
     }
-  `);
+  `;
 
   const [show, setShow] = createSignal(false);
 

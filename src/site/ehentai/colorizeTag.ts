@@ -1,4 +1,4 @@
-import { debounce, ensureGmValue, hijackFn, useStyle } from 'helper';
+import { css, debounce, ensureGmValue, hijackFn } from 'helper';
 
 import { type EhFeatureHandler } from './helper';
 import { type Tag, handleMyTagsChange, updateMyTags } from './myTags';
@@ -21,26 +21,26 @@ export const updateTagColor = async (tagList: Tag[]) => {
     (colorMap[fontColor] ||= new Set()).add(title);
   }
 
-  let css = '';
+  let cssText = '';
   for (const [background, tags] of Object.entries(backgroundMap)) {
-    css += `:is(${buildTagList(tags, '#td_')})`;
-    css += `{ background: #${Number(background).toString(16).padStart(6, '0')}; }\n\n`;
+    cssText += `:is(${buildTagList(tags, '#td_')})`;
+    cssText += `{ background: #${Number(background).toString(16).padStart(6, '0')}; }\n\n`;
   }
   for (const [border, tags] of Object.entries(borderMap)) {
     // 强标签直接覆盖边框颜色
-    css += `:is(${buildTagList(tags, '#td_')}).gt`;
-    css += `{ border-color: ${border}; }\n\n`;
+    cssText += `:is(${buildTagList(tags, '#td_')}).gt`;
+    cssText += `{ border-color: ${border}; }\n\n`;
   }
   for (const [color, tags] of Object.entries(colorMap)) {
     // 弱标签将边框颜色改为字体颜色突出显示
-    css += `:is(${buildTagList(tags, '#td_')}):not(.gt)`;
-    css += `{ border-color: ${color}; }\n\n`;
+    cssText += `:is(${buildTagList(tags, '#td_')}):not(.gt)`;
+    cssText += `{ border-color: ${color}; }\n\n`;
 
-    css += `#taglist a:is(${buildTagList(tags, '#ta_')})`;
-    css += `{ color: ${color} !important; position: relative; }\n\n`;
+    cssText += `#taglist a:is(${buildTagList(tags, '#ta_')})`;
+    cssText += `{ color: ${color} !important; position: relative; }\n\n`;
   }
 
-  css += `
+  cssText += `
     /* 禁用 eh 的变色效果，必须使用 !important */
     #taglist a[id] { color: var(--tag) !important; position: relative; }
     #taglist a[id]:hover { color: var(--tag-hover) !important; }
@@ -62,8 +62,8 @@ export const updateTagColor = async (tagList: Tag[]) => {
     #taglist div:is(.gt, .gtl, .gtw) { margin-top: 1px; }
   `;
 
-  await GM.setValue('ehTagColorizeCss', css);
-  return css;
+  await GM.setValue('ehTagColorizeCss', cssText);
+  return cssText;
 };
 
 /** 标签染色 */
@@ -71,14 +71,15 @@ export const colorizeTag: EhFeatureHandler = async (_, pageCtx) => {
   handleMyTagsChange.add(updateTagColor);
 
   switch (pageCtx.type) {
+    case 't':
     case 'gallery': {
-      let css =
+      let cssText =
         getComputedStyle(document.body).backgroundColor === 'rgb(52, 53, 59)'
           ? '--tag: #DDDDDD; --tag-hover: #EEEEEE; --tup: #00E639; --tdn: #FF3333;'
           : '--tag: #5C0D11; --tag-hover: #8F4701; --tup: green; --tdn: red;';
-      css = `#taglist { ${css} }\n\n`;
-      css += await ensureGmValue('ehTagColorizeCss', updateMyTags);
-      useStyle(css);
+      cssText = `#taglist { ${cssText} }\n\n`;
+      cssText += await ensureGmValue('ehTagColorizeCss', updateMyTags);
+      css(cssText);
       break;
     }
 

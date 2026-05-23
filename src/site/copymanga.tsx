@@ -1,11 +1,11 @@
 // oxlint-disable i18next/no-literal-string
 import { request, setupSiteAdapter, toast } from 'core';
 import {
+  css,
   log,
   querySelector,
   querySelectorAll,
   querySelectorClick,
-  useStyle,
   wait,
 } from 'helper';
 import { type Component, For, Match, Show, Switch } from 'solid-js';
@@ -337,9 +337,13 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
       root = querySelector('main')!;
       root.textContent = '';
 
-      useStyle(
-        `ul .btn { height: fit-content; width: fit-content; margin: 1em; }`,
-      );
+      css`
+        ul .btn {
+          width: fit-content;
+          height: fit-content;
+          margin: 1em;
+        }
+      `;
       break;
   }
 

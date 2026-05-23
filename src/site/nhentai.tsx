@@ -1,14 +1,14 @@
-﻿import { request, setupSiteAdapter } from 'core';
+import { request, setupSiteAdapter } from 'core';
 import {
   ReactiveSet,
   createEffectOn,
+  css,
   domParse,
   querySelector,
   querySelectorAll,
   scrollIntoView,
   singleThreaded,
   t,
-  useStyle,
   waitDom,
 } from 'helper';
 import { getAdPageByContent } from 'userscript/detectAd';
@@ -99,7 +99,7 @@ setupSiteAdapter({
       );
 
       // 模糊广告页的缩略图
-      useStyle(() => {
+      css(() => {
         if (!store.comicMap['']?.adList?.size) return '';
         return [...store.comicMap[''].adList]
           .map(
@@ -116,7 +116,11 @@ setupSiteAdapter({
     /** 彻底屏蔽漫画 */
     block_totally: (_, pageCtx) => {
       if (pageCtx.type !== 'list') return;
-      useStyle('.blacklisted.gallery { display: none; }');
+      css`
+        .blacklisted.gallery {
+          display: none;
+        }
+      `;
     },
 
     /** 在新页面中打开链接 */
@@ -136,12 +140,32 @@ setupSiteAdapter({
       let lastUrl = location.href;
       if (!nextUrl) return;
 
-      useStyle(`
-        hr { bottom: 1px; box-sizing: border-box; margin: -1em auto 2em; }
-        hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
-        hr:not(:last-child) { display: none; }
-        @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
-      `);
+      css`
+        hr {
+          bottom: 1px;
+          box-sizing: border-box;
+          margin: -1em auto 2em;
+        }
+
+        hr:last-child {
+          position: relative;
+          animation: load 0.8s linear alternate infinite;
+        }
+
+        hr:not(:last-child) {
+          display: none;
+        }
+
+        @keyframes load {
+          0% {
+            transform: scaleX(1);
+          }
+
+          100% {
+            transform: scaleX(0);
+          }
+        }
+      `;
       const contentDom = document.getElementById('content')!;
       const getObserveDom = () =>
         contentDom.querySelector(

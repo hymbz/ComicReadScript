@@ -1,10 +1,10 @@
 import {
   ReactiveSet,
   createRootMemo,
+  css,
   isImageElement,
   once,
   querySelectorAll,
-  useStyle,
 } from 'helper';
 import { downloadImg } from 'request';
 import { getAdPageByContent, getAdPageByFileName } from 'userscript/detectAd';
@@ -91,7 +91,7 @@ export const detectAd: GalleryHandler<DetectAdReturn | undefined> = (
   })();
 
   // 模糊广告页的缩略图
-  useStyle(
+  css(
     createRootMemo(() => {
       if (!store.comicMap['']?.adList?.size) return '';
       return [...store.comicMap[''].adList]

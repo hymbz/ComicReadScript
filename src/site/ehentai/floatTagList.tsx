@@ -5,12 +5,11 @@ import {
   approx,
   clamp,
   createEffectOn,
+  css,
   hijackFn,
   querySelector,
   useDrag,
   useStore,
-  useStyle,
-  useStyleMemo,
 } from 'helper';
 import { type Writable } from 'type-fest';
 
@@ -54,59 +53,60 @@ export const floatTagList: EhFeatureHandler = (
   /** 边框样式 */
   const border = `1px solid ${borderColor}`;
 
-  useStyle(`
-      #comicread-tag-box {
-        position: fixed;
-        z-index: 2147483647;
+  css`
+    #comicread-tag-box {
+      position: fixed;
+      z-index: 2147483647;
 
-        font-size: 12px;
-        text-align: justify;
+      font-size: 12px;
+      text-align: justify;
 
-        background: ${background};
-        box-shadow: 0 0 15px -3px #0004;
-      }
+      background: ${background};
+      box-shadow: 0 0 15px -3px #0004;
+    }
 
-      #comicread-tag-box > #gd4 {
-        margin: 0;
-        padding: 0;
-        border: none;
-      }
+    #comicread-tag-box > #gd4 {
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
 
-      #comicread-tag-box > #ehs-introduce-box {
-        position: relative;
-        width: 161px;
-        height: 100%;
-        border-left: ${border};
-      }
+    /* 确保始终显示在最上层，防止和其他脚本冲突 */
+    #ehs-introduce-box {
+      z-index: 1;
+    }
 
-      /* 确保始终显示在最上层，防止和其他脚本冲突 */
-      #ehs-introduce-box { z-index: 1; }
+    #comicread-tag-box > #ehs-introduce-box {
+      position: relative;
+      width: 161px;
+      height: 100%;
+      border-left: ${border};
+    }
 
-      #comicread-tag-box-placeholder {
-        cursor: pointer;
+    #comicread-tag-box-placeholder {
+      cursor: pointer;
 
-        float: left;
-        display: flex;
-        grid-area: gd4;
-        justify-content: center;
+      float: left;
+      display: flex;
+      grid-area: gd4;
+      justify-content: center;
 
-        margin: 0 0 0 10px;
-        padding: 0 0 0 5px;
+      margin: 0 0 0 10px;
+      padding: 0 0 0 5px;
+      border-right: 1px solid ${borderColor};
+      border-left: 1px solid ${borderColor};
+    }
 
-        border-right: 1px solid ${borderColor};
-        border-left: 1px solid ${borderColor};
-      }
+    #comicread-tag-box-placeholder svg {
+      width: 17em;
+      opacity: 0.5;
+    }
 
-      #comicread-tag-box-placeholder svg {
-        width: 17em;
-        opacity: 0.5;
-      }
-
-      /* 防止在窗口变小时确认按钮被挤出范围 */
-      #tagmenu_new {
-        width: fit-content;
-      }
-    `);
+    /* 防止在窗口变小时确认按钮被挤出范围 */
+    #tagmenu_new {
+      width: fit-content;
+    }
+  `;
 
   const { store, setState } = useStore({
     open: false,
@@ -146,7 +146,7 @@ export const floatTagList: EhFeatureHandler = (
   window.addEventListener('resize', hadnleResize);
   hadnleResize();
 
-  useStyleMemo('#comicread-tag-box', {
+  css('#comicread-tag-box', {
     display: () => (store.open ? undefined : 'none'),
     top: () => `${store.top}px`,
     left: () => `${store.left}px`,

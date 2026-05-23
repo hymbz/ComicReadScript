@@ -11,12 +11,11 @@ import {
   type UseDrag,
   createEffectOn,
   createRootMemo,
+  css,
   isNumber,
   mountComponents,
   t,
   useDrag,
-  useStyle,
-  useStyleMemo,
 } from 'helper';
 import { type Accessor, createEffect } from 'solid-js';
 
@@ -29,19 +28,18 @@ export const useFab = <T extends Record<string, any>>(
 ) => {
   const { store, setState, options, setOptions, showComic } = coreCtx;
 
-  useStyle(`
+  css`
     #fab {
       --text-bg: transparent;
 
       position: fixed;
       right: calc(3vw - var(--left, 0px));
       bottom: calc(6vh - var(--top, 0px));
-
       font-size: clamp(12px, 1.5vw, 16px);
     }
-  `);
+  `;
 
-  useStyleMemo('#fab', {
+  css('#fab', {
     '--left': () => `${options.fabPosition.left}px`,
     '--top': () => `${options.fabPosition.top}px`,
   });

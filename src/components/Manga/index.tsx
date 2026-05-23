@@ -23,7 +23,7 @@ import { TouchArea } from './components/TouchArea';
 import { stopPropagation } from './helper';
 import { useCssVar } from './hooks/useCssVar';
 import { useInit } from './hooks/useInit';
-import { useStyle } from './hooks/useStyle';
+import { css } from './hooks/useStyle';
 import classes from './index.module.css';
 import style from './index.module.css?inline';
 import { type ComicImg, type FillEffect } from './store/image';
@@ -63,7 +63,7 @@ export type MangaProps = {
 
 /** 漫画组件 */
 export const Manga: Component<MangaProps> = (props) => {
-  useStyle(style);
+  css(style);
   useCssVar();
   onMount(() => useInit(props));
 

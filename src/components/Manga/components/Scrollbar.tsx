@@ -26,7 +26,7 @@ import {
   sliderTop,
   watchDomSize,
 } from '../actions';
-import { useStyleMemo } from '../hooks/useStyle';
+import { css } from '../hooks/useStyle';
 import classes from '../index.module.css';
 import { refs, store } from '../store';
 import { ScrollbarPageStatus } from './ScrollbarPageStatus';
@@ -79,7 +79,7 @@ export const Scrollbar: Component = () => {
     return tipList.join('   ');
   });
 
-  useStyleMemo(`.${classes.scrollbar}`, {
+  css(`.${classes.scrollbar}`, {
     'pointer-events': () =>
       penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
     '--scroll-length': () => `${scrollDomLength()}px`,

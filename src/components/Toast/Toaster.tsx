@@ -1,4 +1,4 @@
-import { mountComponents, useStyle } from 'helper';
+import { css, mountComponents } from 'helper';
 import {
   type Component,
   For,
@@ -18,7 +18,7 @@ export const Toaster: Component = () => {
   );
 
   onMount(() => {
-    useStyle(style, store.ref!);
+    css(style, store.ref);
 
     const handleVisibilityChange = () => {
       setVisible(document.visibilityState === 'visible');

@@ -1,5 +1,5 @@
 import { request, toast } from 'core';
-import { querySelectorAll, t, useStyle } from 'helper';
+import { css, querySelectorAll, t } from 'helper';
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
 
@@ -26,14 +26,13 @@ export const quickRating: EhFeatureHandler = (_, pageCtx) => {
       return;
   }
 
-  useStyle(`
+  css`
     .comidread-quick-rating {
       position: absolute;
       width: 100%;
       height: 100%;
-      pointer-events: click;
     }
-  `);
+  `;
 
   const coordsList = [
     '0,0,7,16',

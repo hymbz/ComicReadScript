@@ -9,11 +9,11 @@ import {
   WakeLock,
   createEffectOn,
   createRootMemo,
+  css,
   mountComponents,
   querySelector,
   setInitLang,
   useStore,
-  useStyle,
 } from 'helper';
 import * as helper from 'helper';
 import { type ErrorResponse, type Response } from 'request';
@@ -99,7 +99,7 @@ export const initComicReader = ({
   const dom = mountComponents('ComicRead', () => <Manga {...props} />);
   dom.style.setProperty('z-index', '2147483647', 'important');
 
-  useStyle(`
+  css`
     #ComicRead {
       position: fixed;
       top: 0;
@@ -124,9 +124,11 @@ export const initComicReader = ({
     #ComicRead[show] {
       transform: scale(1);
       opacity: 1;
-      transition: opacity 300ms, transform 100ms;
+      transition:
+        opacity 300ms,
+        transform 100ms;
     }
-  `);
+  `;
 
   // 确保 toast 可以显示在漫画之上
   const toastDom = querySelector('#toast');

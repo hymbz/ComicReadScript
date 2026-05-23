@@ -1,6 +1,6 @@
 import { listenHotkey, setDefaultHotkeys } from 'components/Manga';
 import { request } from 'core';
-import { domParse, querySelector, querySelectorAll, useStyle } from 'helper';
+import { css, domParse, querySelector, querySelectorAll } from 'helper';
 import { createSignal } from 'solid-js';
 
 import { colorizeTag } from './colorizeTag';
@@ -10,30 +10,51 @@ import { type EhFeatureHandler } from './helper/context';
 export const expandTagList: EhFeatureHandler = (_, pageCtx) => {
   if (pageCtx.type !== 't') return;
 
-  useStyle(`
+  css`
     #taglist {
+      --scrollbar-slider: ${getComputedStyle(querySelector('.ido')!)
+        .backgroundColor};
+
+      scrollbar-color: var(--scrollbar-slider) transparent;
+      scrollbar-width: thin;
+
       height: auto;
       max-height: 230px;
       padding: 0 3px;
 
-      --scrollbar-slider: ${getComputedStyle(querySelector('.ido')!).backgroundColor};
-      scrollbar-color: var(--scrollbar-slider) transparent;
-      scrollbar-width: thin;
-      &::-webkit-scrollbar { width: 5px; height: 10px; }
-      &::-webkit-scrollbar-track { background: transparent; }
-      &::-webkit-scrollbar-thumb { background: var(--scrollbar-slider); }
-    }
-    .gl1t[data-tag-list-loading], .gl1t[data-tag-list-loading] * { cursor: progress; }
-    .gl1t[data-show-tag-list] .gl6t { display: none; }
-    .gl1t:not([data-show-tag-list]) #taglist { display: none; }
+      &::-webkit-scrollbar {
+        width: 5px;
+        height: 10px;
+      }
 
-    /* 长标签换行 */
-    #taglist [id^=td_] a[id^=ta_] {
-      text-wrap: balance;
-      word-break: keep-all;
-      overflow-wrap: anywhere;
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-slider);
+      }
+
+      /* 长标签换行 */
+      [id^='td_'] a[id^='ta_'] {
+        text-wrap: balance;
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+      }
     }
-  `);
+
+    .gl1t {
+      &[data-tag-list-loading],
+      &[data-tag-list-loading] * {
+        cursor: progress;
+      }
+
+      &[data-show-tag-list] .gl6t,
+      &:not([data-show-tag-list]) #taglist {
+        display: none;
+      }
+    }
+  `;
 
   const tagListMap = new Map<HTMLElement, HTMLElement>();
 

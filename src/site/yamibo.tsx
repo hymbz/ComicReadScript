@@ -1,12 +1,12 @@
-﻿import { request, setupSiteAdapter, toast } from 'core';
+import { request, setupSiteAdapter, toast } from 'core';
 import {
   createEffectOn,
+  css,
   hijackFn,
   querySelector,
   querySelectorAll,
   scrollIntoView,
   useCache,
-  useStyle,
 } from 'helper';
 /* oxlint-disable i18next/no-literal-string */
 import { Show, createMemo, createSignal } from 'solid-js';
@@ -71,50 +71,50 @@ setupSiteAdapter({
   },
   handlers: {
     all: () => {
-      useStyle(
-        () => `
-          #fab { --fab: #6E2B19; }
+      css`
+        #fab {
+          --fab: #6e2b19;
+        }
 
-          .historyTag {
-            white-space: nowrap;
+        .historyTag {
+          border: 2px solid #6e2b19;
+          white-space: nowrap;
+        }
 
-            border: 2px solid #6e2b19;
-          }
+        a.historyTag {
+          margin-left: 1em;
+          padding: 1px 4px;
+          border-radius: 4px 0 0 4px;
 
-          a.historyTag {
-            font-weight: bold;
+          font-weight: bold;
+          color: #6e2b19;
+        }
 
-            margin-left: 1em;
-            padding: 1px 4px;
+        a.historyTag:last-child {
+          border-radius: 4px;
+        }
 
-            color: #6e2b19;
-            border-radius: 4px 0 0 4px;
-          }
-          a.historyTag:last-child {
-            border-radius: 4px;
-          }
+        div.historyTag {
+          display: initial;
 
-          div.historyTag {
-            display: initial;
+          margin-left: -0.4em;
+          padding: 1px;
+          border-radius: 0 4px 4px 0;
 
-            margin-left: -.4em;
-            padding: 1px;
+          color: #ffedbb;
 
-            color: RGB(255, 237, 187);
-            border-radius: 0 4px 4px 0;
-            background-color: #6e2b19;
-          }
+          background-color: #6e2b19;
+        }
 
-          #threadlisttableid tbody:nth-child(2n) div.historyTag {
-            color: RGB(255, 246, 215);
-          }
+        #threadlisttableid tbody:nth-child(2n) div.historyTag {
+          color: #fff6d7;
+        }
 
-          /* 将「回复/查看」列加宽一点 */
-          .tl .num {
-            width: 80px !important;
-          }
-        `,
-      );
+        /* 将「回复/查看」列加宽一点 */
+        .tl .num {
+          width: 80px !important;
+        }
+      `;
     },
 
     // 漫画阅读模式
@@ -253,7 +253,11 @@ setupSiteAdapter({
   },
   features: {
     固定导航条: () =>
-      useStyle('.header-stackup { position: fixed !important }'),
+      css`
+        .header-stackup {
+          position: fixed !important;
+        }
+      `,
 
     关闭快捷导航的跳转: () =>
       querySelector('#qmenu a')?.setAttribute('href', 'javascript:;'),

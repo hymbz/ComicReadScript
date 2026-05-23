@@ -10,11 +10,11 @@ import {
   WakeLock,
   createEffectOn,
   createRootMemo,
+  css,
   difference,
   mountComponents,
   querySelector,
   t,
-  useStyle,
 } from 'helper';
 import { type Component } from 'solid-js';
 
@@ -32,7 +32,7 @@ export const useManga = <T extends Record<string, any>>({
   options,
   setOptions,
 }: CoreContext<T>) => {
-  useStyle(`
+  css`
     #comicRead {
       position: fixed;
       top: 0;
@@ -57,18 +57,23 @@ export const useManga = <T extends Record<string, any>>({
     #comicRead[show] {
       transform: scale(1);
       opacity: 1;
-      transition: opacity 300ms, transform 100ms;
+      transition:
+        opacity 300ms,
+        transform 100ms;
     }
 
     /* 防止其他扩展的元素显示到漫画上来 */
     #comicRead[show] ~ :not(#fab, #toast, .comicread-ignore) {
-      display: none !important;
       pointer-events: none !important;
+
+      z-index: 1 !important;
+
+      display: none !important;
+
       visibility: hidden !important;
       opacity: 0 !important;
-      z-index: 1 !important;
     }
-  `);
+  `;
 
   setState('manga', {
     show: false,

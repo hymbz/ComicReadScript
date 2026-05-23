@@ -1,5 +1,5 @@
 import { request, toast } from 'core';
-import { domParse, querySelector, querySelectorAll, t, useStyle } from 'helper';
+import { css, domParse, querySelector, querySelectorAll, t } from 'helper';
 import { type Accessor, For, Show, createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
 
@@ -199,7 +199,7 @@ export const quickFavorite: EhFeatureHandler = (_, pageCtx) => {
 
   switch (pageCtx.type) {
     case 'gallery': {
-      useStyle(style);
+      css(style);
       addQuickFavorite({
         root: querySelector('#gd3')!,
         button: querySelector('#gdf')!,
@@ -211,7 +211,7 @@ export const quickFavorite: EhFeatureHandler = (_, pageCtx) => {
     }
 
     case 't': {
-      useStyle(style);
+      css(style);
       for (const item of querySelectorAll('.gl1t')) {
         const button = item.querySelector<HTMLElement>('[id^=posted_]')!;
         const top =
@@ -233,7 +233,7 @@ export const quickFavorite: EhFeatureHandler = (_, pageCtx) => {
     }
 
     case 'e': {
-      useStyle(style);
+      css(style);
       for (const item of querySelectorAll('.gl1e')) {
         const button =
           item.nextElementSibling!.querySelector<HTMLElement>('[id^=posted_]')!;

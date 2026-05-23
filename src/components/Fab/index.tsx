@@ -1,5 +1,5 @@
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
-import { throttle, useStyle } from 'helper';
+import { css, throttle } from 'helper';
 import {
   type Component,
   For,
@@ -76,7 +76,7 @@ export const Fab: Component<FabProps> = (_props) => {
 
   return (
     <div
-      ref={(ref) => useStyle(style, ref)}
+      ref={(ref) => css(style, ref)}
       class={classes.fabRoot}
       data-show={props.show ?? show()}
       data-trans={props.autoTrans}

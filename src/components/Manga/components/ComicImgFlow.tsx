@@ -34,7 +34,7 @@ import {
   touches,
 } from '../actions';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
-import { useStyle, useStyleMemo } from '../hooks/useStyle';
+import { css } from '../hooks/useStyle';
 import classes from '../index.module.css';
 import { refs, setState, store } from '../store';
 import { ComicImg } from './ComicImg';
@@ -133,7 +133,7 @@ export const ComicImgFlow: Component = () => {
           .join(' ')}"`;
   });
 
-  useStyleMemo(`.${classes.mangaBox}`, {
+  css(`.${classes.mangaBox}`, {
     transform: () =>
       `translate(${store.option.zoom.offset.x}px, ${store.option.zoom.offset.y}px)
         scale(${store.option.zoom.ratio / 100})`,
@@ -147,7 +147,7 @@ export const ComicImgFlow: Component = () => {
     return x;
   });
 
-  useStyleMemo(`#${classes.mangaFlow}`, {
+  css(`#${classes.mangaFlow}`, {
     // 不能使用 transform 来移动，不然在 Safari 浏览器上悬浮显示时
     // 每次滚动底下的网页时 mangaFlow 都会闪烁一下，在简易模式下会频繁触发
     left: () => `${pageX()}px`,
@@ -185,7 +185,7 @@ export const ComicImgFlow: Component = () => {
       isEnableBg() ? getImg(activeImgIndex())?.background : undefined,
   });
 
-  useStyle(imgAreaStyle);
+  css(imgAreaStyle);
 
   return (
     <div

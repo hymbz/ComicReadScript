@@ -1,4 +1,5 @@
 import {
+  css,
   descRange,
   extractRange,
   inRange,
@@ -9,7 +10,6 @@ import {
   range,
   singleThreaded,
   t,
-  useStyle,
 } from 'helper';
 
 import { useMultiSelectLoad } from '../../userscript/multiSelect';
@@ -29,7 +29,11 @@ export const multiSelectLoad: GalleryHandler<
 > = async (coreCtx, pageCtx) => {
   const { setState, showComic } = coreCtx;
 
-  useStyle('#gdt > a [title] { position: relative; }');
+  css`
+    #gdt > a [title] {
+      position: relative;
+    }
+  `;
 
   const totalPageNum = Number(
     querySelector('.ptt td:nth-last-child(2)')!.textContent,
