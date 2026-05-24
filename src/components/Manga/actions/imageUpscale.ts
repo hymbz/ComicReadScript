@@ -37,7 +37,7 @@ const findUpscaleImage = async (
   for (let i = start; i < end; i++) {
     const img = typeof i === 'number' ? getImg(i) : i;
     if (img.upscaleUrl !== undefined) continue;
-    const imgEle = await wait(() => getImgEle(i), 1000);
+    const imgEle = await wait(() => getImgEle(img.src), 1000);
     if (imgEle) return [img.src, imgEle];
   }
 };

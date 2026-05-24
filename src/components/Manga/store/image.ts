@@ -36,5 +36,13 @@ export const imgState = {
   renderRange: [0, 0] as [number, number],
   loadingRange: [0, 0] as [number, number],
 
+  /**
+   * 图片显示状态
+   *
+   * 0 - 页面中的第一张图片
+   * 1 - 页面中的最后一张图片
+   * '' - 页面中的唯一一张图片
+   */
+  imgShowState: {} as Partial<Record<number, 0 | 1 | ''>>,
   defaultImgType: '' as ComicImg['type'],
 };

@@ -1,4 +1,5 @@
 import { clamp, createEffectOn, createRootMemo, throttle } from 'helper';
+import { reconcile } from 'solid-js/store';
 
 import { type State, setState, store } from '../store';
 import {
@@ -100,34 +101,26 @@ export const showImgList = createRootMemo(() =>
   getRangeImgList(store.showRange),
 );
 
-/**
- * 图片显示状态
- *
- * 0 - 页面中的第一张图片
- * 1 - 页面中的最后一张图片
- * '' - 页面中的唯一一张图片
- */
-export const imgShowState = createRootMemo<Map<number, 0 | 1 | ''>>(() => {
-  if (store.pageList.length === 0) return new Map();
-
+/** 更新每张图片在 store 中的显示状态 */
+createEffectOn([() => store.gridMode, () => store.renderRange], () => {
   const showRange = store.gridMode
     ? [0, store.pageList.length - 1]
     : store.renderRange;
 
-  const stateList = new Map<number, 0 | 1 | ''>();
+  const newState: Record<number, 0 | 1 | ''> = {};
   for (let [i] = showRange; i <= showRange[1]; i++) {
     const page = store.pageList[i];
     if (!page) continue;
     const [a, b] = page;
 
-    if (b === undefined) {
-      stateList.set(a, '');
-    } else {
-      stateList.set(a, 0);
-      stateList.set(b, 1);
+    if (b === undefined) newState[a] = '';
+    else {
+      newState[a] = 0;
+      newState[b] = 1;
     }
   }
-  return stateList;
+
+  setState('imgShowState', reconcile(newState));
 });
 
 // 卷轴模式下，将当前显示的第一页作为当前页

@@ -1,20 +1,30 @@
-import { type Component, For, Show, createMemo } from 'solid-js';
+import {
+  type Component,
+  For,
+  Show,
+  createEffect,
+  createMemo,
+  onCleanup,
+} from 'solid-js';
 
 import {
   abreastArea,
+  getImgEle,
   getImgTip,
   handleImgError,
   handleImgLoaded,
-  imgShowState,
   isAbreastMode,
   isEnableBg,
 } from '../actions';
 import classes from '../index.module.css';
-import { store } from '../store';
+import { refs, store } from '../store';
 import { type ComicImg as TComicImg } from '../store/image';
 
 export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
-  const showState = () => imgShowState().get(img.index);
+  const showState = () => store.imgShowState[img.index];
+
+  // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
+  createEffect(() => src() && getImgEle(img.src)?.decode());
 
   const src = () => {
     if (img.loadType === 'wait') return '';
@@ -71,14 +81,21 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
       <picture style={styles().picture}>
         <Show when={img.loadType !== 'wait' && src()}>
           <img
+            ref={(el) => {
+              const set = (refs.imgEleMap[img.src] ??= new Set());
+              set.add(el);
+              onCleanup(() => {
+                set.delete(el);
+                if (set.size === 0) delete refs.imgEleMap[img.src];
+              });
+            }}
             src={src()}
             alt={`${img.index}`}
             data-src={img.src}
             onLoad={(e) => handleImgLoaded(img.src, e.currentTarget)}
             onError={(e) => handleImgError(img.src, e.currentTarget)}
             draggable="false"
-            // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
-            decoding="sync"
+            decoding="async"
           />
         </Show>
       </picture>

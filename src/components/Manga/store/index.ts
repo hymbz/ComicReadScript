@@ -36,6 +36,9 @@ export const refs = {
   prev: undefined as unknown as HTMLButtonElement,
   next: undefined as unknown as HTMLButtonElement,
   exit: undefined as unknown as HTMLButtonElement,
+
+  /** 以图片原始 URL 为 key 的 img 元素集合，用于绕过 DOM 查询直接获取图片元素 */
+  imgEleMap: {} as Record<string, Set<HTMLImageElement>>,
 };
 
 if (isDevMode)

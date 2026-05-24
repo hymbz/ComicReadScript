@@ -18,10 +18,8 @@ export const getImgIndexs = (url: string) => {
 
 /** 找到指定 url 图片的 dom */
 export const getImgEle = (target: string | number) => {
-  const index =
-    typeof target === 'number' ? target : store.imgList.indexOf(target);
-  if (index === -1) return;
-  return refs.mangaFlow.querySelector<HTMLImageElement>(`#_${index}_0 img`);
+  const url = typeof target === 'number' ? store.imgList[target] : target;
+  return refs.imgEleMap[url]?.values().next().value;
 };
 
 /** 找到指定页面所处的图片流 */
