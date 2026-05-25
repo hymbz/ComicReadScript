@@ -172,3 +172,22 @@ export const updatePageUrl = async (pageCtx: GalleryPageContext, i: number) => {
   if (!nl) throw new Error(t('site.ehentai.fetch_img_url_failed'));
   setNl(pageCtx, i, nl);
 };
+
+/** 按需加载第 i 张图所在分页的详情页 URL */
+export const ensureImgPageUrl = async (
+  pageCtx: GalleryPageContext,
+  index: number,
+) => {
+  if (pageCtx.pageList[index]) return;
+
+  const pageNum = Math.floor(index / pageCtx.imagesPerPage) || 0;
+  const pageList = await getImgPageUrl(pageNum);
+
+  // 将第一页的图片数作为 imagesPerPage 来初始化
+  pageCtx.imagesPerPage ||= pageList.length;
+
+  const startIndex = pageNum * pageCtx.imagesPerPage;
+  for (let i = 0; i < pageList.length; i++)
+    [pageCtx.pageList[startIndex + i], pageCtx.fileNameList[startIndex + i]] =
+      pageList[i];
+};

@@ -71,6 +71,7 @@ export const getPageContext = async () => {
     galleryTitle: querySelector('#gn')?.textContent || undefined,
     japanTitle: querySelector('#gj')?.textContent || undefined,
     imgNum,
+    imagesPerPage: 0,
 
     imgList: range(imgNum, ''),
     pageList: [],
@@ -90,6 +91,7 @@ export type GalleryPageContext = {
   galleryTitle?: string;
   japanTitle?: string;
   imgNum: number;
+  imagesPerPage: number;
 
   imgList: string[];
   pageList: string[];

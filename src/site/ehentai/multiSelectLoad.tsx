@@ -4,8 +4,6 @@ import {
   extractRange,
   inRange,
   log,
-  plimit,
-  querySelector,
   querySelectorAll,
   range,
   singleThreaded,
@@ -18,7 +16,7 @@ import { type GalleryHandler } from './helper';
 import {
   checkMpvKey,
   checkShowkey,
-  getImgPageUrl,
+  ensureImgPageUrl,
   getImgUrl,
 } from './helper/api';
 
@@ -35,10 +33,6 @@ export const multiSelectLoad: GalleryHandler<
     }
   `;
 
-  const totalPageNum = Number(
-    querySelector('.ptt td:nth-last-child(2)')!.textContent,
-  );
-
   const checkAd = detectAd(coreCtx, pageCtx);
 
   // 在加载到最后十页时，再使用图片内容来检查广告页
@@ -52,23 +46,8 @@ export const multiSelectLoad: GalleryHandler<
   });
 
   const ensureSetup = singleThreaded(async () => {
-    // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
-    // 所以只能一次性获取所有页数上的图片页地址
-    // TODO: 真不行吗？
-    if (pageCtx.pageList.length !== totalPageNum) {
-      const allPageList = await plimit(
-        range(totalPageNum, (pageNum) => () => getImgPageUrl(pageNum)),
-      );
-      pageCtx.pageList.length = 0;
-      pageCtx.fileNameList.length = 0;
-      for (const pageList of allPageList) {
-        for (const [url, fileName] of pageList) {
-          pageCtx.pageList.push(url);
-          pageCtx.fileNameList.push(fileName);
-        }
-      }
-      void checkAd?.checkFileName();
-    }
+    await ensureImgPageUrl(pageCtx, 0);
+    void checkAd?.checkFileName();
 
     try {
       await checkMpvKey(pageCtx);
@@ -84,6 +63,7 @@ export const multiSelectLoad: GalleryHandler<
     getImgList: async (id) => {
       await ensureSetup();
       const i = Number(id);
+      await ensureImgPageUrl(pageCtx, i);
       pageCtx.imgList[i] ||= await getImgUrl(pageCtx, i);
       return [{ src: pageCtx.imgList[i], name: pageCtx.fileNameList[i] }];
     },
