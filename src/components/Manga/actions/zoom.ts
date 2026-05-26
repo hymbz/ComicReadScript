@@ -1,4 +1,5 @@
 import {
+  AnimationFrame,
   type PointerState,
   type UseDrag,
   approx,
@@ -60,76 +61,73 @@ export const zoom = (
 /** 摩擦系数 */
 const FRICTION_COEFF = 0.91;
 
-const mouse = { x: 0, y: 0 };
-const last = { x: 0, y: 0 };
-const velocity = { x: 0, y: 0 };
+/** 逐帧根据鼠标坐标移动元素，并计算速率 */
+const zoomDragAnim = new (class extends AnimationFrame {
+  mouse = { x: 0, y: 0 };
+  last = { x: 0, y: 0 };
+  velocity = { x: 0, y: 0 };
 
-let animationId: number | null = null;
-const cancelAnimation = () => {
-  if (!animationId) return;
-  cancelAnimationFrame(animationId);
-  animationId = null;
-};
+  frame = () => {
+    // 当停着不动时退出循环
+    if (
+      this.mouse.x === store.option.zoom.offset.x &&
+      this.mouse.y === store.option.zoom.offset.y
+    ) {
+      this.animationId = 0;
+      return;
+    }
 
-let lastTime: DOMHighResTimeStamp = 0;
+    setOption((draftOption, state) => {
+      this.last.x = draftOption.zoom.offset.x;
+      this.last.y = draftOption.zoom.offset.y;
+
+      draftOption.zoom.offset.x = this.mouse.x;
+      draftOption.zoom.offset.y = this.mouse.y;
+      checkBound(state);
+
+      this.velocity.x = draftOption.zoom.offset.x - this.last.x;
+      this.velocity.y = draftOption.zoom.offset.y - this.last.y;
+    });
+
+    this.call(true);
+  };
+
+  /** 一段时间没有移动后应该将速率归零 */
+  resetVelocity = debounce(() => {
+    this.velocity.x = 0;
+    this.velocity.y = 0;
+  }, 200);
+})();
 
 /** 逐帧计算惯性滑动 */
-const handleSlideAnima = (timestamp: DOMHighResTimeStamp) => {
-  // 当速率足够小时停止计算动画
-  if (approx(velocity.x, 0, 1) && approx(velocity.y, 0, 1)) {
-    animationId = null;
-    return;
-  }
+const zoomSlideAnim = new (class extends AnimationFrame {
+  lastTime: DOMHighResTimeStamp = 0;
 
-  // 在拖拽后模拟惯性滑动
-  setOption((draftOption, state) => {
-    draftOption.zoom.offset.x += velocity.x;
-    draftOption.zoom.offset.y += velocity.y;
-    checkBound(state);
-
-    // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
-    if (timestamp - lastTime > 16) {
-      velocity.x *= FRICTION_COEFF;
-      velocity.y *= FRICTION_COEFF;
-
-      lastTime = timestamp;
+  frame = (timestamp: DOMHighResTimeStamp) => {
+    // 当速率足够小时停止计算动画
+    if (approx(zoomDragAnim.velocity.x, 0, 1) && approx(zoomDragAnim.velocity.y, 0, 1)) {
+      this.animationId = 0;
+      return;
     }
-  });
 
-  animationId = requestAnimationFrame(handleSlideAnima);
-};
+    // 在拖拽后模拟惯性滑动
+    setOption((draftOption, state) => {
+      draftOption.zoom.offset.x += zoomDragAnim.velocity.x;
+      draftOption.zoom.offset.y += zoomDragAnim.velocity.y;
+      checkBound(state);
 
-/** 逐帧根据鼠标坐标移动元素，并计算速率 */
-const handleDragAnima = () => {
-  // 当停着不动时退出循环
-  if (
-    mouse.x === store.option.zoom.offset.x &&
-    mouse.y === store.option.zoom.offset.y
-  ) {
-    animationId = null;
-    return;
-  }
+      // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
+      if (timestamp - this.lastTime > 16) {
+        zoomDragAnim.velocity.x *= FRICTION_COEFF;
+        zoomDragAnim.velocity.y *= FRICTION_COEFF;
 
-  setOption((draftOption, state) => {
-    last.x = draftOption.zoom.offset.x;
-    last.y = draftOption.zoom.offset.y;
+        this.lastTime = timestamp;
+      }
+    });
 
-    draftOption.zoom.offset.x = mouse.x;
-    draftOption.zoom.offset.y = mouse.y;
-    checkBound(state);
-
-    velocity.x = draftOption.zoom.offset.x - last.x;
-    velocity.y = draftOption.zoom.offset.y - last.y;
-  });
-
-  animationId = requestAnimationFrame(handleDragAnima);
-};
-
-/** 一段时间没有移动后应该将速率归零 */
-const resetVelocity = debounce(() => {
-  velocity.x = 0;
-  velocity.y = 0;
-}, 200);
+    this.call(true);
+  };
+})();
 
 /** 是否正在双指捏合缩放中 */
 let pinchZoom = false;
@@ -144,34 +142,37 @@ export const handleZoomDrag: UseDrag = ({
 
   switch (type) {
     case 'down': {
-      mouse.x = store.option.zoom.offset.x;
-      mouse.y = store.option.zoom.offset.y;
-      if (animationId) cancelAnimation();
+      zoomDragAnim.velocity.x = 0;
+      zoomDragAnim.velocity.y = 0;
+      zoomDragAnim.mouse.x = store.option.zoom.offset.x;
+      zoomDragAnim.mouse.y = store.option.zoom.offset.y;
+      zoomSlideAnim.cancel();
+      zoomDragAnim.cancel();
       break;
     }
 
     case 'move': {
-      if (animationId) cancelAnimation();
-      mouse.x += x - lx;
-      mouse.y += y - ly;
-      animationId ??= requestAnimationFrame(handleDragAnima);
-      resetVelocity();
+      zoomDragAnim.cancel();
+      zoomDragAnim.mouse.x += x - lx;
+      zoomDragAnim.mouse.y += y - ly;
+      zoomDragAnim.call();
+      zoomDragAnim.resetVelocity();
       break;
     }
 
     case 'up': {
-      resetVelocity.clear();
+      zoomDragAnim.resetVelocity.clear();
 
       // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
       if (pinchZoom) {
         pinchZoom = false;
-        mouse.x = store.option.zoom.offset.x;
-        mouse.y = store.option.zoom.offset.y;
+        zoomDragAnim.mouse.x = store.option.zoom.offset.x;
+        zoomDragAnim.mouse.y = store.option.zoom.offset.y;
         return;
       }
 
-      if (animationId) cancelAnimationFrame(animationId);
-      animationId = requestAnimationFrame(handleSlideAnima);
+      zoomDragAnim.cancel();
+      zoomSlideAnim.call();
     }
   }
 };
@@ -180,31 +181,31 @@ export const handleZoomDrag: UseDrag = ({
 // 双指捏合缩放
 //
 
-/** 初始双指距离 */
-let initDistance = 0;
-/** 初始缩放比例 */
-let initScale = 100;
-
 /** 获取两个指针之间的距离 */
 const getDistance = (a: PointerState, b: PointerState) =>
   Math.hypot(b.xy[0] - a.xy[0], b.xy[1] - a.xy[1]);
 
 /** 逐帧计算当前屏幕上两点之间的距离，并换算成缩放比例 */
-const handlePinchZoomAnima = () => {
-  if (touches.size < 2) {
-    animationId = null;
-    return;
-  }
+const pinchZoomAnim = new (class extends AnimationFrame {
+  initDistance = 0;
+  initScale = 100;
 
-  const [a, b] = [...touches.values()];
-  const distance = getDistance(a, b);
-  zoom((distance / initDistance) * initScale, {
-    x: (a.xy[0] + b.xy[0]) / 2,
-    y: (a.xy[1] + b.xy[1]) / 2,
-  });
+  frame = () => {
+    if (touches.size < 2) {
+      this.animationId = 0;
+      return;
+    }
 
-  animationId = requestAnimationFrame(handlePinchZoomAnima);
-};
+    const [a, b] = [...touches.values()];
+    const distance = getDistance(a, b);
+    zoom((distance / this.initDistance) * this.initScale, {
+      x: (a.xy[0] + b.xy[0]) / 2,
+      y: (a.xy[1] + b.xy[1]) / 2,
+    });
+
+    this.call(true);
+  };
+})();
 
 /** 处理双指捏合缩放 */
 export const handlePinchZoom: UseDrag = ({ type }) => {
@@ -214,25 +215,25 @@ export const handlePinchZoom: UseDrag = ({ type }) => {
     case 'down': {
       pinchZoom = true;
       const [a, b] = [...touches.values()];
-      initDistance = getDistance(a, b);
-      initScale = store.option.zoom.ratio;
+      pinchZoomAnim.initDistance = getDistance(a, b);
+      pinchZoomAnim.initScale = store.option.zoom.ratio;
       break;
     }
 
     case 'up': {
       const [a, b] = [...touches.values()];
-      initDistance = getDistance(a, b);
+      pinchZoomAnim.initDistance = getDistance(a, b);
       break;
     }
 
     case 'move': {
-      animationId ??= requestAnimationFrame(handlePinchZoomAnima);
+      pinchZoomAnim.call();
       break;
     }
 
     case 'cancel': {
       const [a, b] = [...touches.values()];
-      initDistance = getDistance(a, b);
+      pinchZoomAnim.initDistance = getDistance(a, b);
       break;
     }
   }

@@ -81,7 +81,7 @@ const scrollStep = new (class extends AnimationFrame {
     if (elapsed >= this.duration)
       return this.scrollTo(this.startTop + this.distance);
     this.scrollTo(this.startTop + (elapsed / this.duration) * this.distance);
-    this.call();
+    this.call(true);
   };
 
   start = (x: number) => {
@@ -110,7 +110,7 @@ export const constantScroll = new (class extends AnimationFrame {
       this.scrollTo(scrollTop() + scrollDelta);
     }
     this.lastTime = timestamp;
-    this.call();
+    this.call(true);
   };
 
   start = (speed: number) => {

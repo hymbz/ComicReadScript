@@ -709,12 +709,12 @@ export const waitUrlChange = <T = unknown>(isValidUrl: () => T) =>
     });
   });
 
-// TODO: 用这个重构相关实现
 export abstract class AnimationFrame {
   animationId = 0;
   abstract frame: (timestamp: DOMHighResTimeStamp) => void;
 
-  call = () => {
+  call = (force?: boolean) => {
+    if (!force && this.animationId) return;
     this.animationId = requestAnimationFrame(this.frame);
   };
 
@@ -761,7 +761,6 @@ export const getImageData = (img: HTMLImageElement) => {
   return ctx.getImageData(0, 0, width, height);
 };
 
-// TODO: 用这个重构相关实现
 export const withEventStop =
   <T extends Event>(handler?: (e: T) => void) =>
   (e: T) => {

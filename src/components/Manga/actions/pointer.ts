@@ -1,4 +1,4 @@
-import { type UseDrag, debounce, inRange } from 'helper';
+import { AnimationFrame, type UseDrag, debounce, inRange } from 'helper';
 
 import { type Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
@@ -78,32 +78,32 @@ export const handleClick = useDoubleClick(
   doubleClickZoom,
 );
 
-let dx = 0;
-let dy = 0;
-let animationId: number | null = null;
-const handleDragAnima = () => {
-  // 当停着不动时退出循环
-  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
-    animationId = null;
-    return;
-  }
-
-  setState((state) => {
-    if (state.page.vertical) state.page.offset.y.px = dy;
-    else state.page.offset.x.px = dx;
-  });
-
-  animationId = requestAnimationFrame(handleDragAnima);
-};
-
-const handleDragEnd = (startTime?: number) => {
+const dragAnim = new (class extends AnimationFrame {
   dx = 0;
   dy = 0;
 
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
+  frame = () => {
+    // 当停着不动时退出循环
+    if (
+      this.dx === store.page.offset.x.px &&
+      this.dy === store.page.offset.y.px
+    )
+      return this.cancel();
+
+    setState((state) => {
+      if (state.page.vertical) state.page.offset.y.px = this.dy;
+      else state.page.offset.x.px = this.dx;
+    });
+
+    this.call(true);
+  };
+})();
+
+const handleDragEnd = (startTime?: number) => {
+  dragAnim.dx = 0;
+  dragAnim.dy = 0;
+
+  dragAnim.cancel();
 
   // 将拖动的页面移回正常位置
   const dir = store.page.vertical
@@ -128,18 +128,15 @@ export const handleMangaFlowDrag: UseDrag = ({
 }) => {
   switch (type) {
     case 'move': {
-      dx = store.option.dir === 'rtl' ? x - ix : ix - x;
-      dy = y - iy;
+      dragAnim.dx = store.option.dir === 'rtl' ? x - ix : ix - x;
+      dragAnim.dy = y - iy;
 
-      if (store.isDragMode) {
-        animationId ||= requestAnimationFrame(handleDragAnima);
-        return;
-      }
+      if (store.isDragMode) return dragAnim.call();
 
       // 判断滑动方向
       let slideDir: 'vertical' | 'horizontal' | undefined;
-      const dxAbs = Math.abs(dx);
-      const dyAbs = Math.abs(dy);
+      const dxAbs = Math.abs(dragAnim.dx);
+      const dyAbs = Math.abs(dragAnim.dy);
       if (dxAbs > 5 && dyAbs < 5) slideDir = 'horizontal';
       if (dyAbs > 5 && dxAbs < 5) slideDir = 'vertical';
       if (!slideDir) return;
@@ -177,20 +174,20 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
   } else retardStartTime = 0;
   lastDeltaY = absDeltaY;
 
-  dy += deltaY;
+  dragAnim.dy += deltaY;
 
   setState((state) => {
     // 滚动过一页时
-    if (dy <= -state.rootSize.height) {
-      if (turnPage('next', state)) dy += state.rootSize.height;
-    } else if (dy >= state.rootSize.height && turnPage('prev', state))
-      dy -= state.rootSize.height;
+    if (dragAnim.dy <= -state.rootSize.height) {
+      if (turnPage('next', state)) dragAnim.dy += state.rootSize.height;
+    } else if (dragAnim.dy >= state.rootSize.height && turnPage('prev', state))
+      dragAnim.dy -= state.rootSize.height;
 
     state.page.vertical = true;
     state.isDragMode = true;
     resetPage(state);
   });
-  animationId ||= requestAnimationFrame(handleDragAnima);
+  dragAnim.call();
 
   handleDragEnd.debounce();
 };

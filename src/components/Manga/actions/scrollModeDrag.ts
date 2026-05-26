@@ -1,4 +1,4 @@
-import { type UseDrag } from 'helper';
+import { AnimationFrame, type UseDrag } from 'helper';
 
 import { refs, store } from '../store';
 import { abreastScrollFill, scrollTop, setAbreastScrollFill } from './memo';
@@ -8,46 +8,46 @@ import { scrollTo } from './scroll';
 /** 摩擦系数 */
 const FRICTION_COEFF = 0.96;
 
-let lastTop = 0;
-let dy = 0;
-let lastLeft = 0;
-let dx = 0;
-let animationId: number | null = null;
-let lastTime: DOMHighResTimeStamp = 0;
+const calcVelocityAnim = new (class extends AnimationFrame {
+  lastTop = 0;
+  dy = 0;
+  lastLeft = 0;
+  dx = 0;
 
-/** 逐帧计算速率 */
-const calcVelocity = () => {
-  const nowTop = store.option.scrollMode.abreastMode
-    ? abreastScrollFill()
-    : scrollTop();
-  dy = nowTop - lastTop;
-  lastTop = nowTop;
-  dx = store.page.offset.x.px - lastLeft;
-  lastLeft = store.page.offset.x.px;
-  animationId = requestAnimationFrame(calcVelocity);
-};
+  frame = () => {
+    const nowTop = store.option.scrollMode.abreastMode
+      ? abreastScrollFill()
+      : scrollTop();
+    this.dy = nowTop - this.lastTop;
+    this.lastTop = nowTop;
+    this.dx = store.page.offset.x.px - this.lastLeft;
+    this.lastLeft = store.page.offset.x.px;
+    this.call(true);
+  };
+})();
 
-/** 逐帧计算惯性滑动 */
-const handleSlide = (timestamp: DOMHighResTimeStamp) => {
-  // 当速率足够小时停止计算动画
-  if (Math.abs(dx) + Math.abs(dy) < 1) {
-    animationId = null;
-    return;
-  }
+const slideAnim = new (class extends AnimationFrame {
+  lastTime: DOMHighResTimeStamp = 0;
 
-  // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
-  if (timestamp - lastTime > 16) {
-    dy *= FRICTION_COEFF;
-    dx *= FRICTION_COEFF;
-    lastTime = timestamp;
-  }
+  frame = (timestamp: DOMHighResTimeStamp) => {
+    if (Math.abs(calcVelocityAnim.dx) + Math.abs(calcVelocityAnim.dy) < 1) {
+      this.animationId = 0;
+      return;
+    }
 
-  if (store.option.scrollMode.abreastMode) {
-    scrollTo(scrollTop() + dx);
-    setAbreastScrollFill(abreastScrollFill() + dy);
-  } else scrollTo(scrollTop() + dy);
-  animationId = requestAnimationFrame(handleSlide);
-};
+    if (timestamp - this.lastTime > 16) {
+      calcVelocityAnim.dy *= FRICTION_COEFF;
+      calcVelocityAnim.dx *= FRICTION_COEFF;
+      this.lastTime = timestamp;
+    }
+
+    if (store.option.scrollMode.abreastMode) {
+      scrollTo(scrollTop() + calcVelocityAnim.dx);
+      setAbreastScrollFill(abreastScrollFill() + calcVelocityAnim.dy);
+    } else scrollTo(scrollTop() + calcVelocityAnim.dy);
+    this.call(true);
+  };
+})();
 
 let initTop = 0;
 let initLeft = 0;
@@ -60,11 +60,12 @@ export const handleScrollModeDrag: UseDrag = (
   if (!store.option.scrollMode.abreastMode && e.pointerType !== 'mouse') return;
   switch (type) {
     case 'down': {
-      if (animationId) cancelAnimationFrame(animationId);
+      calcVelocityAnim.cancel();
+      slideAnim.cancel();
       initTop = refs.mangaBox.scrollTop;
       initLeft = store.page.offset.x.px * (store.option.dir === 'rtl' ? 1 : -1);
       initAbreastScrollFill = abreastScrollFill();
-      requestAnimationFrame(calcVelocity);
+      calcVelocityAnim.call();
       return;
     }
 
@@ -80,9 +81,9 @@ export const handleScrollModeDrag: UseDrag = (
     }
 
     case 'up': {
-      if (animationId) cancelAnimationFrame(animationId);
+      calcVelocityAnim.cancel();
       if (performance.now() - startTime < 50) return;
-      animationId = requestAnimationFrame(handleSlide);
+      slideAnim.call();
       saveReadProgress();
     }
   }

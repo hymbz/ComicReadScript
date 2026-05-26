@@ -435,6 +435,8 @@ export default defineConfig({
       rules: {
         // 禁止匿名默认导出
         'import/no-anonymous-default-export': 'off',
+        // 允许使用硬编码字符串
+        'i18next/no-literal-string': 'off',
       },
     },
   ],

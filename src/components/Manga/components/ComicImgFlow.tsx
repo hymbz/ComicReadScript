@@ -52,7 +52,13 @@ export const ComicImgFlow: Component = () => {
   };
 
   onMount(() => {
-    useDrag({ ref: refs.mangaBox, handleDrag, handleClick, touches });
+    useDrag({
+      ref: refs.mangaBox,
+      handleDrag,
+      handleClick,
+      touches,
+      setCapture: true,
+    });
     bindScrollTop(refs.mangaBox);
   });
 

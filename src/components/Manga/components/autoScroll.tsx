@@ -41,7 +41,7 @@ const autoScroll = new (class extends AnimationFrame {
 
     progress ||= elapsed / store.option.autoScroll.interval;
     setState('autoScroll', 'progress', progress);
-    this.call();
+    this.call(true);
   };
 
   start = () => {
