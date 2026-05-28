@@ -177,8 +177,7 @@ setupSiteAdapter<EhPageContext, EhOptions>({
               return reloadImg(url);
             }
           }
-          setState('comicMap', '', 'imgList', [...pageCtx.imgList]);
-
+          setState('comicMap', '', 'imgList', i, pageCtx.imgList[i]);
           for (const img of MangaImgList())
             if (img.loadType === 'error') return reloadImg(img.src);
         },
