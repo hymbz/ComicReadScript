@@ -105,7 +105,10 @@ const zoomSlideAnim = new (class extends AnimationFrame {
 
   frame = (timestamp: DOMHighResTimeStamp) => {
     // 当速率足够小时停止计算动画
-    if (approx(zoomDragAnim.velocity.x, 0, 1) && approx(zoomDragAnim.velocity.y, 0, 1)) {
+    if (
+      approx(zoomDragAnim.velocity.x, 0, 1) &&
+      approx(zoomDragAnim.velocity.y, 0, 1)
+    ) {
       this.animationId = 0;
       return;
     }

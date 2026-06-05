@@ -1,7 +1,7 @@
 import { type FabProps } from 'components/Fab';
 import { type ComicImgData, type MangaProps } from 'components/Manga';
 import { type SetStateFunction } from 'helper';
-import { type Accessor, type JSX } from 'solid-js';
+import { type Accessor, type Component } from 'solid-js';
 import { type Promisable } from 'type-fest';
 
 import { type MultiSelectLoadController } from '../multiSelect/useMultiSelectLoad';
@@ -12,7 +12,7 @@ export type SpeedDialButton = {
   /** 点击回调 */
   onClick: () => void;
   /** 图标 */
-  icon: JSX.Element;
+  icon: Component;
 };
 
 export type SiteOptions = {

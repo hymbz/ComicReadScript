@@ -46,7 +46,15 @@ const evalCode = (code: string) => {
 };
 
 export const selfImport = (name: string) => {
-  const libCode: string = libCodeMap[name] ?? getResource(name);
+  let libCode: string = libCodeMap[name] ?? getResource(name);
+
+  // 给 solidjs 的报错加上 debugger 方便排查
+  if (isDevMode && name === 'solid-js') {
+    libCode = libCode.replace(
+      `if (Owner === null) console.warn("computations created outside a \`createRoot\` or \`render\` will never be disposed");`,
+      `if (Owner === null) {debugger;console.warn("computations created outside a \`createRoot\` or \`render\` will never be disposed");}`,
+    );
+  }
 
   if (name.startsWith('worker/') && supportWorker) {
     try {

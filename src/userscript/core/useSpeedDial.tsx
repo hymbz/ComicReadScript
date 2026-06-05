@@ -60,7 +60,7 @@ export const useSpeedDial = <
               showTip={true}
               tip={btn.name}
               onClick={btn.onClick}
-              children={btn.icon}
+              children={btn.icon({})}
             />
           )),
         );
@@ -90,7 +90,7 @@ export const useSpeedDial = <
               showTip={true}
               tip={btn.name}
               onClick={btn.onClick}
-              children={btn.icon}
+              children={btn.icon({})}
             />
           ));
         }

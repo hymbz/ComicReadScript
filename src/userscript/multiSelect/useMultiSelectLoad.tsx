@@ -164,7 +164,7 @@ export const createMultiSelectLoadController = <T extends Record<string, any>>(
       {
         name: t('hotkeys.multi_select_load'),
         onClick: multiSelectLoad,
-        icon: <MdChecklist />,
+        icon: MdChecklist,
       },
     ]);
 

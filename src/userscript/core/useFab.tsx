@@ -97,8 +97,8 @@ export const useFab = <T extends Record<string, any>>(
           state.fab.tip = t('hotkeys.multi_select_load');
           state.fab.onClick = ms.load;
           state.fab.overrideSpeedDial = [
-            { name: t('other.exit'), onClick: ms.unmount, icon: <MdClose /> },
-            { name: t('other.clear'), onClick: ms.clear, icon: <MdClearAll /> },
+            { name: t('other.exit'), onClick: ms.unmount, icon: MdClose },
+            { name: t('other.clear'), onClick: ms.clear, icon: MdClearAll },
           ];
           if (doneNum !== undefined && totalNum !== undefined)
             state.fab.progress = doneNum / totalNum || 0;
