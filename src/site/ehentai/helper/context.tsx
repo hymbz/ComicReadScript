@@ -24,7 +24,10 @@ export const featureOptions = {
   tag_lint: false,
   /** 展开标签列表 */
   expand_tag_list: true,
+
   autoShow: false,
+  // 默认开启图像识别，避免图片 url 过期后还要刷新
+  imgRecognition: { enabled: true },
 };
 
 export type EhOptions = typeof featureOptions;

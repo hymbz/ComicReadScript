@@ -71,7 +71,7 @@ setupSiteAdapter<EhPageContext, EhOptions>({
               <Show when={name} fallback={<hr />}>
                 <SettingsItemSwitch
                   name={t(`site.add_feature.${name}`)}
-                  value={options[name as keyof EhOptions]}
+                  value={options[name]}
                   onChange={(v) => setOptions({ [name]: v })}
                 />
               </Show>
@@ -216,15 +216,17 @@ setupSiteAdapter<EhPageContext, EhOptions>({
     // 关联外站
     cross_site_link: crossSiteLink,
     // 自动调整阅读配置
-    auto_adjust_option: ({ options, setState }, pageCtx) => {
+    auto_adjust_option: ({ setState }, pageCtx) => {
       if (pageCtx.type !== 'gallery') return;
       if (isInCategories('Doujinshi', 'Manga', 'Non-H')) return;
-      let option: MangaProps['defaultOption'] = {
-        pageNum: 1, // 使用单页模式
-        imgRecognition: { enabled: false }, // 关闭图像识别
-      };
-      if (options.option) option = assign(options.option, option);
-      setState('manga', 'option', option);
+      setState((state) => {
+        const option: MangaProps['defaultOption'] = { pageNum: 1 };
+        state.manga.defaultOption = assign(
+          state.manga.defaultOption ?? {},
+          option,
+        );
+        state.manga.option = assign(state.manga.option ?? {}, option);
+      });
     },
   },
 });
