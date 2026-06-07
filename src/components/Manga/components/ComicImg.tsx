@@ -47,8 +47,7 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
   });
 
   /** 是否要渲染复制图片 */
-  const renderClone = () =>
-    !store.gridMode && showState() !== undefined && cloneNum() > 0;
+  const renderClone = () => !store.gridMode && cloneNum() > 0;
 
   const styles = createMemo(() => ({
     img: {
@@ -79,7 +78,7 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
     >
       {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
       <picture style={styles().picture}>
-        <Show when={img.loadType !== 'wait' && src()}>
+        <Show when={src()}>
           <img
             ref={(el) => {
               const set = (refs.imgEleMap[img.src] ??= new Set());
@@ -119,10 +118,3 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
     </>
   );
 };
-
-// 目前即使是不显示的图片也必须挂载上，否则解析好的图片会被浏览器垃圾回收掉，
-// 导致在 ehentai 上无法正常加载图片。但这样会在图片过多时造成性能问题，
-// 虽然也尝试了将解析好的 Image 对象存储起来挂上引用和另外放到一个避免渲染的 dom 下，
-// 但也都失败了，只能暂时先不管了。
-// 之后尝试新方案时必须经过如下测试：开个几百页的漫画加载完毕后，再打开二十个标签页切换过去，
-// 等待一分钟再切回来，等待一小时后再切回来

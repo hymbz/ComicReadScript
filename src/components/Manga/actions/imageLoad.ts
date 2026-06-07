@@ -39,9 +39,6 @@ const handleTimeReload = (url: string) => {
 
 /** 图片加载完毕的回调 */
 export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
-  // 内联图片元素被创建后立刻就会触发 load 事件，如果在调用这个函数前 url 发生改变
-  // 就会导致这里获得的是上个 url 图片的尺寸
-  if (e && !e.isConnected) return;
   imgErrorMap.delete(url);
 
   const img = store.imgMap[url];

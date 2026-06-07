@@ -5,7 +5,7 @@ import {
   range,
   useDrag,
 } from 'helper';
-import { type Component, Index, createMemo, onMount } from 'solid-js';
+import { type Component, For, createMemo, onMount } from 'solid-js';
 
 import {
   abreastArea,
@@ -22,12 +22,12 @@ import {
   handleScrollModeDrag,
   handleZoomDrag,
   imgAreaStyle,
-  imgList,
   isEnableBg,
   isOnePageMode,
   isScrollMode,
   pageHeightList,
   pageTopList,
+  renderImgList,
   resetPage,
   scrollTo,
   scrollTop,
@@ -193,6 +193,15 @@ export const ComicImgFlow: Component = () => {
 
   css(imgAreaStyle);
 
+  const renderList = createMemo(() => {
+    if (store.gridMode) return range(store.imgList.length);
+    return range(store.imgList.length).filter(
+      (i) =>
+        renderImgList().has(i) ||
+        store.imgMap[store.imgList[i]]?.loadType === 'loading',
+    );
+  });
+
   return (
     <div
       ref={bindRef('mangaBox')}
@@ -220,9 +229,9 @@ export const ComicImgFlow: Component = () => {
         onTransitionEnd={handleTransitionEnd}
         tabIndex={-1}
       >
-        <Index each={imgList()} fallback={<EmptyTip />}>
-          {(img, i) => <ComicImg index={i} {...img()} />}
-        </Index>
+        <For each={renderList()} fallback={<EmptyTip />}>
+          {(i) => <ComicImg index={i} {...store.imgMap[store.imgList[i]]} />}
+        </For>
       </div>
     </div>
   );

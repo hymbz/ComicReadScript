@@ -6,11 +6,8 @@
 }
 
 .img {
-  content-visibility: hidden;
-
   position: relative;
 
-  display: none;
   align-content: center;
 
   width: 100%;
@@ -18,16 +15,9 @@
   margin-right: auto;
   margin-left: auto;
 
-  &[data-show] {
-    content-visibility: visible;
-    display: block;
-  }
-
   & > picture {
     position: absolute;
     inset: 0;
-
-    display: block;
 
     width: auto;
     max-width: 100%;
@@ -46,6 +36,12 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: 30%;
+  }
+
+  /* 已加载完毕的图片不显示灰色背景和图标 */
+  &:not([data-load-type]) > picture,
+  &:not([data-load-type]) > picture::after {
+    background: none;
   }
 
   /* 遮住默认的出错图片标识 */
