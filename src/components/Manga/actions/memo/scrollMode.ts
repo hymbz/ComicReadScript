@@ -6,32 +6,43 @@ import { getImg } from '../helper';
 import { imgList } from './img';
 import { isDoubleMode, isScrollMode } from './options';
 
-/** 卷轴模式下的每页高度 */
+/** 双页卷轴模式下的页面列表（按行分组） */
+export const scrollPageList = createRootMemo<([number] | [number, number])[][]>(
+  () => {
+    if (!isDoubleMode()) return store.pageList.map((page) => [page]);
+
+    const { pageColumns } = store.option.scrollMode;
+    if (pageColumns <= 1) return store.pageList.map((page) => [page]);
+
+    const rows: ([number] | [number, number])[][] = [];
+    for (let i = 0; i < store.pageList.length; i += pageColumns)
+      rows.push(store.pageList.slice(i, i + pageColumns));
+    return rows;
+  },
+);
+
+/** 卷轴模式下每行高度 */
 export const pageHeightList = createRootMemo(() => {
   if (!isScrollMode()) return [];
   if (!isDoubleMode()) return imgList().map((img) => img.size.height ?? 0);
 
-  const doubleWidth = store.rootSize.width / 2;
+  const { pageColumns } = store.option.scrollMode;
+  const doubleWidth = store.rootSize.width / pageColumns / 2;
 
-  return store.pageList.map((indexs) => {
-    if (indexs.length === 1) return getImg(indexs[0]).size.height;
+  const imgDisplayHeight = ({ width, height }: ComicImg['size']) =>
+    width < doubleWidth && store.option.scrollMode.adjustToWidth === 'disable'
+      ? height
+      : height * (doubleWidth / width);
 
-    // 选择更高的那张图片作为行高度，尽量放大图片
-    let targetImg: ComicImg | undefined;
-    for (const i of indexs) {
-      if (i === -1) continue;
-      const img = getImg(i);
-      if (!targetImg || img.size.height > targetImg.size.height)
-        targetImg = img;
-    }
-    if (!targetImg) throw new Error('找不到图片');
-    if (
-      targetImg.size.width < doubleWidth &&
-      store.option.scrollMode.adjustToWidth === 'disable'
-    )
-      return targetImg.size.height;
-    return targetImg.size.height * (doubleWidth / targetImg.size.width);
-  });
+  return scrollPageList().map((row) =>
+    Math.max(
+      ...row.flatMap((indexs) =>
+        indexs
+          .filter((i) => i !== -1)
+          .map((i) => imgDisplayHeight(getImg(i).size)),
+      ),
+    ),
+  );
 });
 
 /** 卷轴模式下每页位置 */
@@ -39,9 +50,13 @@ export const pageTopList = createRootMemo(() => {
   if (!isScrollMode()) return [];
 
   const list = Array.from<number>({ length: store.pageList.length });
-  for (let top = 0, i = 0; i < store.pageList.length; i++) {
-    list[i] = top;
-    top += pageHeightList()[i] + store.option.scrollMode.spacing * 7;
+  const rows = scrollPageList();
+
+  for (let top = 0, i = 0, rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+    const row = rows[rowIdx];
+    for (let col = 0; col < row.length; col++) list[i + col] = top;
+    i += row.length;
+    top += pageHeightList()[rowIdx] + store.option.scrollMode.spacing * 7;
   }
   return list;
 });

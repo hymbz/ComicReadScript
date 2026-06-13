@@ -137,6 +137,7 @@
     "option": {
       "abreast_duplicate": "每列重复比例",
       "abreast_mode": "并排卷轴模式",
+      "page_columns": "每行并排页数",
       "adjust_to_width": "自适应宽度",
       "align_edge": "滚动翻页时对齐边缘",
       "always_load_all_img": "始终加载所有图片",

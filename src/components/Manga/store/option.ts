@@ -95,6 +95,9 @@ export type Option = {
     /** 并排模式下重新显示上列结尾部分的比例 */
     abreastDuplicate: number;
 
+    /** 每行显示页数（仅双页模式） */
+    pageColumns: number;
+
     /** 双页模式 */
     doubleMode: boolean;
     /** 滚动翻页时对齐边缘 */
@@ -177,6 +180,7 @@ const _defaultOption: Readonly<Option> = {
     adjustToWidth: 'disable',
     abreastMode: false,
     abreastDuplicate: 0.1,
+    pageColumns: 2,
     doubleMode: false,
     alignEdge: false,
   },

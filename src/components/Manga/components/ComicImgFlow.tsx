@@ -29,6 +29,7 @@ import {
   pageTopList,
   renderImgList,
   resetPage,
+  scrollPageList,
   scrollTo,
   scrollTop,
   touches,
@@ -123,8 +124,16 @@ export const ComicImgFlow: Component = () => {
         return `"${range(abreastArea().columns.length, (i) => `_${i}`).join(
           ' ',
         )}"`;
-      if (store.option.scrollMode.doubleMode)
-        return store.pageList.map((page) => `"${pageToText(page)}"`).join('\n');
+      if (store.option.scrollMode.doubleMode) {
+        const { pageColumns } = store.option.scrollMode;
+        return scrollPageList()
+          .map((row) => {
+            const missNum = pageColumns * 2 - row.length * 2;
+            const pageList = [...row.map(pageToText), ...range(missNum, '.')];
+            return `"${pageList.join(' ')}"`;
+          })
+          .join('\n');
+      }
       return range(store.imgList.length, (i) => `"_${i}"`).join('\n');
     }
 
@@ -174,7 +183,8 @@ export const ComicImgFlow: Component = () => {
       if (store.option.scrollMode.enabled) {
         if (store.option.scrollMode.abreastMode)
           return `repeat(${abreastArea().columns.length}, ${abreastColumnWidth()}px)`;
-        if (store.option.scrollMode.doubleMode) return `50% 50%`;
+        if (store.option.scrollMode.doubleMode)
+          return `repeat(${store.option.scrollMode.pageColumns * 2}, 1fr)`;
         return;
       }
       if (store.page.vertical) return '50% 50%';

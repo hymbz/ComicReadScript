@@ -6,6 +6,7 @@ import { type Component, Show } from 'solid-js';
 import {
   autoPageNum,
   bindOption,
+  isDoubleMode,
   isScrollMode,
   isUseAutoScale,
   saveScrollProgress,
@@ -170,6 +171,23 @@ export const defaultSettingList: () => SettingList = () => [
               });
             }}
             value={Math.round(store.option.scrollMode.spacing)}
+          />
+        </Show>
+
+        <Show when={isDoubleMode()}>
+          <SettingsItemNumber
+            name={t('setting.option.page_columns')}
+            maxLength={1}
+            step={1}
+            onChange={(val) => {
+              if (Number.isNaN(val)) return;
+              const jump = saveScrollProgress();
+              setOption((draftOption) => {
+                draftOption.scrollMode.pageColumns = clamp(1, val, 6);
+              });
+              jump();
+            }}
+            value={store.option.scrollMode.pageColumns}
           />
         </Show>
       </>

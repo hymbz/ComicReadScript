@@ -137,6 +137,7 @@
     "option": {
       "abreast_duplicate": "Ismétlődő arány oszloponként",
       "abreast_mode": "Párhuzamos görgetési mód",
+      "page_columns": "Oldalak száma soronként",
       "adjust_to_width": "Adaptív Szélesség",
       "align_edge": "Élhez igazítás lapozáskor",
       "always_load_all_img": "Mindig töltse be az összes képet",
