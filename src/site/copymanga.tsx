@@ -8,6 +8,7 @@ import {
   querySelectorClick,
   wait,
 } from 'helper';
+import { type RequestDetails, eachApi } from 'request';
 import { type Component, For, Match, Show, Switch } from 'solid-js';
 import { render } from 'solid-js/web';
 import { decryptData, getImglistByHtml } from 'userscript/copyApi';
@@ -48,16 +49,27 @@ const mobileApi = new (class {
 
 const pcApi = new (class {
   headers = {
-    'User-Agent': navigator.userAgent,
+    'User-Agent':
+      'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36 Edg/141.0.0.0',
+    'x-requested-with': 'com.manga2020.app',
+    platform: '3',
+    version: '2024.4.28',
+    webp: '1',
+    accept: 'application/json',
     referer: location.href,
     Authorization: token ? `Token ${token}` : '',
   };
 
-  get: typeof request = (url, details, ...args) =>
-    request(
-      `https://api.2025copy.com${url}`,
-      { responseType: 'json', headers: this.headers, fetch: false, ...details },
-      ...args,
+  get = <T = any,>(url: string, details?: RequestDetails<T>) =>
+    eachApi<T>(
+      url,
+      ['apiList#copyManga'].map((host) => `https://${host}`),
+      {
+        responseType: 'json',
+        headers: this.headers,
+        fetch: false,
+        ...details,
+      },
     );
 })();
 
@@ -432,7 +444,6 @@ setupSiteAdapter({
           results: {
             chapter: {
               contents: { url: string }[];
-              words: number[];
               name: string;
               next: string | null;
               prev: string | null;
@@ -441,7 +452,7 @@ setupSiteAdapter({
           };
         };
         const res = await pcApi.get<ResData>(
-          `/api/v3/comic/${comicName}/chapter2/${id}?platform=3`,
+          `/api/v3/comic/${comicName}/chapter/${id}?platform=3`,
           { noCheckCode: true },
         );
 
@@ -475,14 +486,9 @@ setupSiteAdapter({
           });
         }
 
-        const imgList: string[] = [];
-        const { words, contents } = res.response.results.chapter;
-        for (let i = 0; i < contents.length; i++)
-          imgList[words[i]] = contents[i].url.replace(
-            /(?<=(\/|\.))c800x/,
-            'c1500x',
-          );
-        return imgList;
+        return res.response.results.chapter.contents.map(({ url }) =>
+          url.replace(/(?<=(\/|\.))c800x/, 'c1500x'),
+        );
       };
 
       setState('comicMap', '', {

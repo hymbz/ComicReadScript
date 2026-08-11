@@ -4,6 +4,7 @@ import { type RolldownPluginOption } from 'rolldown';
 import { langList } from '../../src/helper/languages';
 import { readFile } from '../lib/utils';
 import { codeEdit } from './codeEdit';
+import { copyApi } from './copyApi';
 import { ehRules } from './ehRules';
 import { siteUrl } from './siteUrl';
 
@@ -60,5 +61,6 @@ switch (lang) {
     ),
   ),
   siteUrl,
+  copyApi,
   ehRules,
 ];
