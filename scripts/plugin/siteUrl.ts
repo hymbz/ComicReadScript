@@ -11,6 +11,23 @@ const siteUrlFnMap = {
     const res = await axios<string>('https://wnacg01.link/');
     return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+(?=<\/i>)/g)].flat();
   },
+  async copymanga() {
+    const urls: string[] = [];
+
+    // 从 Aidoku 获取可用域名
+    const source =
+      'https://cdn.jsdelivr.net/gh/Aidoku-Community/sources@main/sources/zh.copymanga/res/source.json';
+    const sourceRes = await axios<{ info: { urls: string[] } }>(source);
+    urls.push(...sourceRes.data.info.urls.map((url) => new URL(url).host));
+
+    // 从官网公告获取
+    const res = await axios<string>('https://www.mangacopy.com/');
+    const noticeUrl =
+      /(?<=大陸無障礙訪問地址為[\s:：]*https:\/\/)[A-Za-z\d.-]+/.exec(res.data);
+    if (noticeUrl) urls.push(noticeUrl[0]);
+
+    return [...new Set(urls)];
+  },
 };
 
 let siteUrlMap: Record<string, string[]> | undefined;
