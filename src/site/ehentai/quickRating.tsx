@@ -32,6 +32,21 @@ export const quickRating: EhFeatureHandler = (_, pageCtx) => {
       width: 100%;
       height: 100%;
     }
+
+    .comidread-blink {
+      animation: comidread-blink 1.2s ease-in-out infinite;
+    }
+
+    @keyframes comidread-blink {
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.25;
+      }
+    }
   `;
 
   const coordsList = [
@@ -101,6 +116,8 @@ export const quickRating: EhFeatureHandler = (_, pageCtx) => {
     index: number,
   ) => {
     let basePosition = ir.style.backgroundPosition;
+    // 请求进行中，忽略期间的其他点击，避免并发请求
+    let isRequesting = false;
 
     render(
       () => (
@@ -120,13 +137,25 @@ export const quickRating: EhFeatureHandler = (_, pageCtx) => {
                   coords={coords}
                   onMouseOver={() => updateRatingImage(ir, i())}
                   onClick={async () => {
-                    const res = await editRating(
-                      item.querySelector('a')!.href,
-                      i() + 1,
-                    );
-                    ir.className = res.rating_cls;
-                    updateRatingImage(ir, res.rating_usr * 2 - 1);
-                    basePosition = ir.style.backgroundPosition;
+                    if (isRequesting) return;
+                    isRequesting = true;
+                    // 请求期间让星星缓慢闪烁，提示正在修改
+                    ir.classList.add('comidread-blink');
+                    try {
+                      const res = await editRating(
+                        item.querySelector('a')!.href,
+                        i() + 1,
+                      );
+                      ir.className = res.rating_cls;
+                      updateRatingImage(ir, res.rating_usr * 2 - 1);
+                      basePosition = ir.style.backgroundPosition;
+                    } catch {
+                      // 修改失败，恢复原评分显示（错误提示已由 editRating 弹出）
+                      ir.style.backgroundPosition = basePosition;
+                    } finally {
+                      isRequesting = false;
+                      ir.classList.remove('comidread-blink');
+                    }
                   }}
                 />
               )}

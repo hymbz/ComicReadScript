@@ -54,6 +54,20 @@ const style = `
   .gl1t > .comidread-favorites {
     padding: 1em 1.5em;
   }
+
+  .comidread-blink {
+    animation: comidread-blink 1.2s ease-in-out infinite;
+  }
+
+  @keyframes comidread-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
 `;
 
 const addQuickFavorite = ({
@@ -114,11 +128,14 @@ const addQuickFavorite = ({
         formData.append('apply', 'Apply Changes');
         formData.append('favnote', favnote());
         formData.append('update', '1');
+
+        // 请求期间让收藏按钮缓慢闪烁
+        favoriteButton.classList.add('comidread-blink');
         const res = await request(apiUrl, {
           method: 'POST',
           data: formData,
           errorText: t('site.ehentai.change_favorite_failed'),
-        });
+        }).finally(() => favoriteButton.classList.remove('comidread-blink'));
 
         toast.success(t('site.ehentai.change_favorite_success'));
 
