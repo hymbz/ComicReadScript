@@ -63,7 +63,6 @@
   "devDependencies": {
     "@percy/cli": "^1.31.5",
     "@percy/playwright": "^1.0.10",
-    "@release-it/conventional-changelog": "^9",
     "@storybook/test-runner": "^0.24.4",
     "@types/libarchive.js": "^2.0.1",
     "@types/mocha": "^10.0.10",
@@ -103,7 +102,6 @@
     "postcss-nesting": "^13.0.2",
     "postcss-styled-syntax": "^0.7.1",
     "radash": "^12.1.1",
-    "release-it": "^19.0.5",
     "rfdc": "^1.4.1",
     "rolldown": "^1.0.0",
     "serve": "^14.2.5",

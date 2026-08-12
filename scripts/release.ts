@@ -1,9 +1,8 @@
 import { writeFileSync } from 'node:fs';
-// @ts-expect-error release-it 的类型声明文件未包含 default export
-import release from 'release-it';
 import shell from 'shelljs';
 
 import packageJson from '../package.json';
+import { generateChangelog } from './lib/changelog';
 import { pathResolve, readFile } from './lib/utils';
 
 const exec = (...commands: string[]) => {
@@ -15,78 +14,60 @@ const exec = (...commands: string[]) => {
   return res;
 };
 
-void (async () => {
-  if (process.argv.slice(2).includes('push')) {
-    const { version } = packageJson;
+if (process.argv.slice(2).includes('push')) {
+  const { version } = packageJson;
 
-    // 打包代码
-    exec('pnpm build');
+  // 打包代码
+  exec('pnpm build');
 
-    // 将打包出来的脚本文件复制到根目录上
-    shell.cp(
-      '-f',
-      pathResolve('./dist/index.js'),
-      pathResolve('./ComicRead.user.js'),
-    );
-    shell.cp(
-      '-f',
-      pathResolve('./dist/adguard.js'),
-      pathResolve('./ComicRead-AdGuard.user.js'),
-    );
+  // 将打包出来的脚本文件复制到根目录上
+  shell.cp(
+    '-f',
+    pathResolve('./dist/index.js'),
+    pathResolve('./ComicRead.user.js'),
+  );
+  shell.cp(
+    '-f',
+    pathResolve('./dist/adguard.js'),
+    pathResolve('./ComicRead-AdGuard.user.js'),
+  );
 
-    shell.cp(
-      '-f',
-      pathResolve('./dist/umd.js'),
-      pathResolve('./ComicReader.umd.js'),
-    );
-    shell.cp(
-      '-f',
-      pathResolve('./dist/umd.d.ts'),
-      pathResolve('./ComicReader.umd.d.ts'),
-    );
+  shell.cp(
+    '-f',
+    pathResolve('./dist/umd.js'),
+    pathResolve('./ComicReader.umd.js'),
+  );
+  shell.cp(
+    '-f',
+    pathResolve('./dist/umd.d.ts'),
+    pathResolve('./ComicReader.umd.d.ts'),
+  );
 
-    const code = readFile(pathResolve('./ComicRead.user.js'));
-    writeFileSync(
-      pathResolve('./ComicRead-jsDelivr.user.js'),
-      code.replaceAll(
-        /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
-        'cdn.jsdelivr.net/npm/$1@$2/$3',
-      ),
-    );
+  const code = readFile(pathResolve('./ComicRead.user.js'));
+  writeFileSync(
+    pathResolve('./ComicRead-jsDelivr.user.js'),
+    code.replaceAll(
+      /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
+      'cdn.jsdelivr.net/npm/$1@$2/$3',
+    ),
+  );
 
-    // 提交上传更改
-    exec(
-      'git add .',
-      `git commit -m "chore: :bookmark: Release ${version}"`,
-      `git tag --annotate v${version} --message="Release ${version}"`,
-      'git push --follow-tags',
-      'npm publish',
-    );
-    return;
-  }
-
+  // 提交上传更改
+  exec(
+    'git add .',
+    `git commit -m "chore: :bookmark: Release ${version}"`,
+    `git tag --annotate v${version} --message="Release ${version}"`,
+    'git push --follow-tags',
+    'npm publish',
+  );
+} else {
   // 测试
   exec('pnpm check');
   exec('pnpm test run');
 
-  // 使用 release-it 更新版本，并获得更新日志
-  const { changelog } = await release({
-    ci: true,
-    npm: { publish: false },
-    git: {
-      requireCommits: true,
-      commit: false,
-      tag: false,
-      push: false,
-    },
-    plugins: {
-      '@release-it/conventional-changelog': {
-        preset: 'conventionalcommits',
-        infile: 'docs/.other/CHANGELOG.md',
-      },
-    },
-  });
+  // 生成新版本的 CHANGELOG，更新 package.json 的版本号
+  const changelog = generateChangelog();
 
   // 将最新的更改日志写入 LatestChange.md
   shell.echo(changelog).to(pathResolve('./docs/.other/LatestChange.md'));
-})();
+}
