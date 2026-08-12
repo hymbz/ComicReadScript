@@ -29,11 +29,13 @@ const token = document.cookie
   ?.replace('token=', '');
 
 const mobileApi = new (class {
+  // 静态字段需与构建插件 APP_HEADERS（scripts/plugin/copyMangaApi/hosts.ts）保持一致
   headers = {
     webp: '1',
     region: '1',
     'User-Agent': 'COPY/3.0.0',
-    version: '2025.08.15',
+    // 版本号由 copyApi 插件在构建时自动注入官方最新值
+    version: 'appVersion#copyManga',
     source: 'copyApp',
     referer: 'com.copymanga.app-3.0.0',
     Authorization: token ? `Token ${token}` : '',
@@ -45,9 +47,20 @@ const mobileApi = new (class {
       { responseType: 'json', headers: this.headers, ...details },
       ...args,
     );
+
+  // 官方 APP 专有功能（评论、阅读记录等）只由官方 API 域名提供，且要求新版 APP 请求头
+  // 主机列表由 copyApi 插件在构建时注入
+  eachGet = <T = any,>(url: string, details?: RequestDetails<T>) =>
+    eachApi<T>(url, ['apiList#copyMangaMobile'], {
+      responseType: 'json',
+      headers: { ...this.headers, accept: 'application/json' },
+      fetch: false,
+      ...details,
+    });
 })();
 
 const pcApi = new (class {
+  // 静态字段需与构建插件 HEADERS（scripts/plugin/copyMangaApi/hosts.ts）保持一致
   headers = {
     'User-Agent':
       'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36 Edg/141.0.0.0',
@@ -60,17 +73,13 @@ const pcApi = new (class {
     Authorization: token ? `Token ${token}` : '',
   };
 
-  get = <T = any,>(url: string, details?: RequestDetails<T>) =>
-    eachApi<T>(
-      url,
-      ['apiList#copyManga'].map((host) => `https://${host}`),
-      {
-        responseType: 'json',
-        headers: this.headers,
-        fetch: false,
-        ...details,
-      },
-    );
+  eachGet = <T = any,>(url: string, details?: RequestDetails<T>) =>
+    eachApi<T>(url, ['apiList#copyManga'], {
+      responseType: 'json',
+      headers: this.headers,
+      fetch: false,
+      ...details,
+    });
 })();
 
 // 在目录页显示上次阅读记录
@@ -97,27 +106,34 @@ const handleLastChapter = (comicName: string) => {
 
     a.textContent = '獲取中';
     a.removeAttribute('href');
-    const res = await pcApi.get(`/api/v3/comic2/${comicName}/query?platform=3`);
+    try {
+      const res = await mobileApi.eachGet(
+        `/api/v3/comic2/${comicName}/query?platform=3`,
+        { errorText: '獲取閱讀記錄失敗' },
+      );
 
-    const data = res.response?.results?.browse;
-    if (!data) {
-      a.textContent = data === null ? '無' : '未返回數據';
-      return;
-    }
+      const data = res.response?.results?.browse;
+      if (!data) {
+        a.textContent = data === null ? '無' : '未返回數據';
+        return;
+      }
 
-    const lastChapterId = data.chapter_id as string;
-    if (!lastChapterId) {
-      a.textContent = '接口異常';
-      return;
-    }
+      const lastChapterId = data.chapter_id as string;
+      if (!lastChapterId) {
+        a.textContent = '接口異常';
+        return;
+      }
 
-    await stylesheet.replace(`ul a[href*="${lastChapterId}"] {
+      await stylesheet.replace(`ul a[href*="${lastChapterId}"] {
         color: #fff !important;
         background: #1790E6;
       }`);
 
-    a.href = `${location.pathname}/chapter/${lastChapterId}`;
-    a.textContent = data.chapter_name as string;
+      a.href = `${location.pathname}/chapter/${lastChapterId}`;
+      a.textContent = data.chapter_name as string;
+    } catch {
+      a.textContent = '獲取閱讀記錄失敗';
+    }
   };
 
   setTimeout(updateLastChapter);
@@ -430,7 +446,7 @@ setupSiteAdapter({
   },
 
   handlers: {
-    manga: async ({ setState }, { comicName, id }) => {
+    manga: ({ setState }, { comicName, id }) => {
       /** 漫画不存在时才会出现的提示 */
       const titleDom = querySelector('main .img+.title');
       if (titleDom)
@@ -451,7 +467,7 @@ setupSiteAdapter({
             comic: { name: string };
           };
         };
-        const res = await pcApi.get<ResData>(
+        const res = await pcApi.eachGet<ResData>(
           `/api/v3/comic/${comicName}/chapter/${id}?platform=3`,
           { noCheckCode: true },
         );
@@ -510,7 +526,7 @@ setupSiteAdapter({
             const imgList = await getImglistByHtml(
               `${location.origin}/comic/${comicName}/chapter/${id}`,
             );
-            if (imgList.length === 0) throw new Error('解析网页变量失败');
+            if (imgList.length === 0) throw new Error('解析網頁變量失敗');
             return imgList;
           } catch (error) {
             log.error(error);
@@ -521,16 +537,21 @@ setupSiteAdapter({
 
       const getCommentList = async (commentList: string[] = []) => {
         const chapter_id = location.pathname.split('/').at(-1);
-        const res = await pcApi.get<Blob>(
+        const res = await mobileApi.eachGet<Blob>(
           `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=${commentList.length}&_update=true`,
-          { errorText: '获取漫画评论失败', responseType: 'blob' },
+          { errorText: '獲取漫畫評論失敗', responseType: 'blob' },
         );
         const { list, total } = JSON.parse(await res.response.text()).results;
         for (const { comment } of list) commentList.push(comment);
         if (commentList.length < total) return getCommentList(commentList);
         return commentList;
       };
-      setState('manga', 'commentList', await getCommentList());
+
+      // 评论异步获取，不影响其他功能
+      void (async () => {
+        const comments = await getCommentList();
+        if (comments.length > 0) setState('manga', 'commentList', comments);
+      })();
     },
 
     // 目录页
