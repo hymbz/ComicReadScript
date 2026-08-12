@@ -945,7 +945,7 @@ try {
       break;
     }
 
-    // #Fanbox[kemono](https://kemono.su)
+    // #Fanbox[kemono](https://kemono.su) <sup>合订</sup>
     // test: https://kemono.cr/fanbox/user/41106591/post/6813818
     case 'kemono.cr':
     case 'kemono.su':
@@ -969,7 +969,7 @@ try {
       break;
     }
 
-    // #其他[Pixiv](https://www.pixiv.net)
+    // #其他[Pixiv](https://www.pixiv.net) <sup>合订</sup>
     // test: https://www.pixiv.net/artworks/128841242
     case 'www.pixiv.net': {
       selfImport('site/pixiv');

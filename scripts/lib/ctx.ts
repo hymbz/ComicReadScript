@@ -87,7 +87,7 @@ export const meta = {
   namespace: 'ComicRead',
   version: pkg.version,
   description: `${zh.description}${getSupportSiteList()
-    .map((site) => site.replace(/^[^[]*\[([^\]]+)\]\([^)]+\)/, '$1'))
+    .map((site) => site.replace(/^[^[]*\[([^\]]+)\]\([^)]+\).*$/, '$1'))
     .join('、')}`,
   'description:en': `${en.description} ${enSupportSite.join(' | ')}`,
   'description:ru': ru.description,

@@ -46,19 +46,19 @@ flowchart LR
 
 ## 目录结构
 
-| 目录 | 职责 |
-| --- | --- |
-| [src/index.ts](src/index.ts) | 核心入口。简单站点的适配代码直接写在这里；复杂站点通过 `selfImport('site/xxx')` 加载模块 |
-| [src/site/](src/site/) | 复杂站点的适配代码，每个站点独立打包为一个模块 |
-| [src/helper/](src/helper/) | 通用 helper 代码，强调通用性 |
-| [src/userscript/](src/userscript/) | 油猴脚本特有模块（core、detectAd、copyApi、otherSite、ehTagRules 等），其中部分特定网站专用的代码只是为了打包成模块才放在这里 |
-| [src/worker/](src/worker/) | 适合放进 worker 运行的代码（detectAd、ImageRecognition、ImageUpscale）。优先在 worker 中运行，但部分网站禁用 worker 时会降级为普通模块在主线程调用，保证功能可用（见 [src/userscript/import.ts](src/userscript/import.ts#L59-L105)） |
-| [src/components/](src/components/) | 各类 UI 组件；[components/Manga](src/components/Manga) 是最重要的阅读器，大部分状态集中在 `store/` 管理，具体逻辑集中在 `actions/` |
-| [src/pwa/](src/pwa/) | PWA 网站代码 |
-| [src/umd.tsx](src/umd.tsx) | UMD 包入口 |
-| [src/stories/](src/stories/) | UI 组件展示兼测试，配合 percy 做视觉回归 |
-| [scripts/](scripts/) | 构建相关代码 |
-| [dist/](dist/) | 构建产物 |
+| 目录                               | 职责                                                                                                                                                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [src/index.ts](src/index.ts)       | 核心入口。简单站点的适配代码直接写在这里；复杂站点通过 `selfImport('site/xxx')` 加载模块                                                                                                                                             |
+| [src/site/](src/site/)             | 复杂站点的适配代码，每个站点独立打包为一个模块                                                                                                                                                                                       |
+| [src/helper/](src/helper/)         | 通用 helper 代码，强调通用性                                                                                                                                                                                                         |
+| [src/userscript/](src/userscript/) | 油猴脚本特有模块（core、detectAd、copyApi、otherSite、ehTagRules 等），其中部分特定网站专用的代码只是为了打包成模块才放在这里                                                                                                        |
+| [src/worker/](src/worker/)         | 适合放进 worker 运行的代码（detectAd、ImageRecognition、ImageUpscale）。优先在 worker 中运行，但部分网站禁用 worker 时会降级为普通模块在主线程调用，保证功能可用（见 [src/userscript/import.ts](src/userscript/import.ts#L59-L105)） |
+| [src/components/](src/components/) | 各类 UI 组件；[components/Manga](src/components/Manga) 是最重要的阅读器，大部分状态集中在 `store/` 管理，具体逻辑集中在 `actions/`                                                                                                   |
+| [src/pwa/](src/pwa/)               | PWA 网站代码                                                                                                                                                                                                                         |
+| [src/umd.tsx](src/umd.tsx)         | UMD 包入口                                                                                                                                                                                                                           |
+| [src/stories/](src/stories/)       | UI 组件展示兼测试，配合 percy 做视觉回归                                                                                                                                                                                             |
+| [scripts/](scripts/)               | 构建相关代码                                                                                                                                                                                                                         |
+| [dist/](dist/)                     | 构建产物                                                                                                                                                                                                                             |
 
 ## Manga 阅读器结构
 

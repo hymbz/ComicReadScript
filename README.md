@@ -172,12 +172,11 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 可以点击切换选中状态，也可以通过长按并滑动来范围选择。
 
-默认快捷键是 `Shift + v`，在选择好以后也可以使用「进入阅读模式」的快捷键（默认是 `v`）来确认加载。
+默认快捷键是 `Shift + v`，按下快捷键后即可进入多选模式，选择好以后再次按下「多选模式」或「进入阅读模式」的快捷键即可确认。
 
-目前支持的网站有：
+也可以通过浮动按钮的菜单进入多选模式并确认。
 
-- 在列表页选择多个作品合并加载：pixiv、kemono
-- 在缩略图页选择要加载的页数：ehentai
+支持多选的网站见下方「[支持网站](#支持网站)」中的上标标记：<sup>合订</sup> 表示可合并加载多个作品，<sup>选页</sup> 表示可选择指定页加载。
 
 ## 支持网站
 
@@ -190,7 +189,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
   - [修正点击页数时的跳转判定](#修正点击页数时的跳转判定)
   - 自动签到
 - [百合会新站](https://www.yamibo.com)
-- [E-Hentai](https://e-hentai.org)
+- [E-Hentai](https://e-hentai.org) <sup>选页</sup>
   - [关联外站](#关联外站)
   - [快捷收藏](#快捷收藏)
   - [标签染色](#标签染色)
@@ -228,11 +227,11 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ### Fanbox
 
-<a href="https://kemono.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://kemono.su&size=16" style="width:1em;height:1em;" loading="lazy"> kemono</a> · <a href="https://nekohouse.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nekohouse.su&size=16" style="width:1em;height:1em;" loading="lazy"> nekohouse</a>
+<a href="https://kemono.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://kemono.su&size=16" style="width:1em;height:1em;" loading="lazy"> kemono</a> <sup>合订</sup> · <a href="https://nekohouse.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nekohouse.su&size=16" style="width:1em;height:1em;" loading="lazy"> nekohouse</a>
 
 ### 其他
 
-<a href="https://www.pixiv.net"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.pixiv.net&size=16" style="width:1em;height:1em;" loading="lazy"> Pixiv</a> · <a href="https://comic.hypergryph.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://comic.hypergryph.com&size=16" style="width:1em;height:1em;" loading="lazy"> 明日方舟泰拉记事社</a> · <a href="https://sai-zen-sen.jp"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://sai-zen-sen.jp&size=16" style="width:1em;height:1em;" loading="lazy"> 最前線</a> · <a href="https://geinou-nude.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://geinou-nude.com&size=16" style="width:1em;height:1em;" loading="lazy"> 芸能ヌード</a>
+<a href="https://www.pixiv.net"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.pixiv.net&size=16" style="width:1em;height:1em;" loading="lazy"> Pixiv</a> <sup>合订</sup> · <a href="https://comic.hypergryph.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://comic.hypergryph.com&size=16" style="width:1em;height:1em;" loading="lazy"> 明日方舟泰拉记事社</a> · <a href="https://sai-zen-sen.jp"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://sai-zen-sen.jp&size=16" style="width:1em;height:1em;" loading="lazy"> 最前線</a> · <a href="https://geinou-nude.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://geinou-nude.com&size=16" style="width:1em;height:1em;" loading="lazy"> 芸能ヌード</a>
 
 ### 自部署
 

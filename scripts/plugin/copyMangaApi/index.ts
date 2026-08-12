@@ -1,5 +1,4 @@
 import { codeEdit } from '../codeEdit';
-
 import { fetchValidHosts } from './hosts';
 
 let hostsCache: Awaited<ReturnType<typeof fetchValidHosts>> | undefined;
@@ -10,13 +9,11 @@ export const copyApi = codeEdit('self-copyApi', async (code) => {
   return code
     .replace(
       /['"]apiList#copyManga['"]/,
-      () =>
-        `'${hosts.content.map((host) => `https://${host}`).join("', '")}'`,
+      () => `'${hosts.content.map((host) => `https://${host}`).join("', '")}'`,
     )
     .replace(
       /['"]apiList#copyMangaMobile['"]/,
-      () =>
-        `'${hosts.mobile.map((host) => `https://${host}`).join("', '")}'`,
+      () => `'${hosts.mobile.map((host) => `https://${host}`).join("', '")}'`,
     )
     .replace(/['"]appVersion#copyManga['"]/, () => `'${hosts.appVersion}'`);
 });

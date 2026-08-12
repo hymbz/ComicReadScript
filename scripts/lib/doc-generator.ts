@@ -18,12 +18,12 @@ export const docGeneratorPlugin = (): RolldownPlugin => ({
       [...categoryMap.entries()]
         .map(([category, links]) => {
           const linkWithFavicon = (link: string) => {
-            const match = /\[(.+?)\]\((.+?)\)/.exec(link);
+            const match = /\[(.+?)\]\((.+?)\)(.*)/.exec(link);
             if (!match) return link;
-            const [, text, url] = match;
+            const [, text, url, note] = match;
             const { origin } = new URL(url);
             const faviconUrl = `https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=16`;
-            return `<a href="${url}"><img src="${faviconUrl}" style="width:1em;height:1em;" loading="lazy"> ${text}</a>`;
+            return `<a href="${url}"><img src="${faviconUrl}" style="width:1em;height:1em;" loading="lazy"> ${text}</a>${note}`;
           };
           return `### ${category}\n\n${Array.from(links, linkWithFavicon).join(' · ')}`;
         })
