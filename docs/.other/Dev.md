@@ -39,9 +39,15 @@ pnpm dev
 
 ## 支持新站点
 
-> 首先到 `src\index.tsx` 里参考其他网站增加站点对应的 url 和 `// #站点代码文件名` 的注释，再到 `src\site` 里创建 `站点代码文件名.tsx` 的文件，之后再开始编写里面的代码
+> 首先到 `src/index.ts` 里参考其他网站增加站点对应的 url 判断，并在 `case` 上方加上两行注释，再到 `src/site` 里创建 `站点代码文件名.tsx` 的文件，之后再开始编写里面的代码
+>
+> 注释第一行是 `#` + 站点分类 + md 格式的网站链接和名字（如 `// #漫画站（中文）[再漫画](https://manhua.zaimanhua.com/)`），分类必须复用现有的分类；第二行是测试用的指定章节链接（`// test: https://...`）
+>
+> 这两行注释会被 [doc-generator](../scripts/lib/doc-generator.ts) 在打包时自动解析，用于更新 README.md 和 docs/index.md 中的支持站点列表
 
-先在站点漫画页的网页控制台执行下列代码找出网页内的自定义全局变量
+获取图片 url 列表的方式按以下优先级依次尝试：
+
+1. **通过网页的自定义全局变量直接获取**（最快）。在站点漫画页的网页控制台执行下列代码找出网页内的自定义全局变量
 
 ```js
 const iframe = document.createElement('iframe', { url: 'about:blank' });
@@ -53,16 +59,21 @@ Object.fromEntries(
 );
 ```
 
-手动检视一遍看能不能通过变量直接获取所有图片的链接，如果可以就参考 [manhuagui.ts](../src/site/manhuagui.tsx) 的代码，否则参考 [mangabz.ts](../src/site/mangabz.tsx) 的代码
+手动检视一遍看能不能通过变量直接获取所有图片的链接，可以的话就直接用，参考 [jm.ts](../src/site/jm.tsx) 的代码
 
-> ！！！复制代码后一定要记得修改传给 useInit 的站点名
+2. **通过分析网页源码或发起请求获取**。检查图片的 url、网页的源码，看网页本身是如何获取图片 url 的，可能要发起请求，参考 [pixiv.ts](../src/site/pixiv.tsx) 的代码
+
+3. **搜索现成的适配方案**。以上都找不到时，优先搜索 [greasyfork](https://greasyfork.org)、[sleazyfork](https://sleazyfork.org) 上有没有该网站的脚本，其次是搜索 github 上的项目，最后才是在搜索引擎上搜索
+
+> ！！！复制代码后一定要记得修改传给 `setupSiteAdapter` 的站点名
 
 一般的代码逻辑流程是这样的
 
-1. 通过页面变量或 url 的判断，跳过漫画页以外的页面
-2. 使用 `useInit` 函数进行初始化，参数名为网站名，将会作为保存读取配置时的 id
-3. 如果有上下一话的按钮，就通过 `setManga` 修改 onNext、onPrev 两个参数。注意如果按钮存在但无法点击的话，应该传递空值或直接不传
-4. 向 `init` 函数传一个返回所有图片链接的函数
+1. 在 `src/index.ts` 里增加站点对应的 url 判断，用 `selfImport('site/xxx')` 加载站点模块
+2. 使用 `setupSiteAdapter` 函数进行初始化，参数名为网站名，将会作为保存读取配置时的 id
+3. 通过 `getPageContext` 里的 url 或页面变量判断，跳过漫画页以外的页面
+4. 在 `handlers.manga` 里向 `setState('comicMap', '', { getImgList })` 传一个返回所有图片链接的函数
+5. 如果有上/下话切换功能，优先找到准确获取对应按钮的方式，通过 `setState('manga', { onNext, onPrev })` 传入。无法稳定获取按钮时，再改用直接跳转上/下话链接的方式切换；如果连上/下话的链接也获取不到，那就只能放弃上/下话切换功能了
 
 ## 循环 debugger 的应对方式
 
@@ -74,23 +85,9 @@ let id = setInterval(() => {}, 0);
 while (id--) clearInterval(id);
 ```
 
+或者简单点，使用火狐浏览器，在「调试器」的「断点」里取消勾选「在调试器语句上暂停」，直接无视 debugger 语句。
+
 ---
-
-## 动态导入外部库
-
-`src\helper\import.ts`
-创建一个自定义的 require 函数放在脚本开头，再让 rollup 导出 cjs 模块规范的代码，就能直接在脚本里使用 cjs、umd 模块了。
-不过因为有些 cjs 会使用 node 环境特有的变量、在模块里再 require() 其他模块（这种情况下也需要将其依赖模块在 @resource 中声明），所以尽量还是选择 umd 的代码。
-
-另外为了尽量减少在无关页面浪费时间，components、helper 下的代码会被打包视为外部库 `'main'` 来使用，如果只需要其中一段代码则通过 `helper/XXX` 来导入即可。
-
-## pnpm dev
-
-这个命令总共会做三件事
-
-1. 打包代码到 dist
-2. 创建 dist 的文件服务器，用于在浏览器获取最新的脚本代码
-3. 使用 vite 加载 src\components\display.tsx 以便单独测试组件
 
 ## 浏览器测试
 
