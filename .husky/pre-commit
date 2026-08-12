@@ -1,0 +1,8 @@
+set -e
+pnpm check
+
+# 不存在已跟踪文件的未暂存修改时（忽略 untracked），
+# 自动暂存 check 产生的修复；用 git add -u 避免误加 untracked 文件
+if ! git status --porcelain | awk 'substr($0,2,1)!=" " && substr($0,2,1)!="?" {exit 1}'; then
+  git add -u
+fi
