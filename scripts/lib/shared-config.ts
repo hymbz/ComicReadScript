@@ -1,32 +1,13 @@
 import browserslistToEsbuild from 'browserslist-to-esbuild';
-import { parse as parseMd } from 'marked';
 import { type RolldownOptions, type RolldownPluginOption } from 'rolldown';
 import Solid from 'unplugin-solid/rolldown';
 
+import latestChanges from '../../docs/.other/CHANGELOG.json' with { type: 'json' };
 import { cssModules, outputPlugins, solidSvg } from '../plugin';
 import { type TransformFn, codeEdit } from '../plugin/codeEdit';
 import { isDevMode, meta } from './ctx';
 import { packlist } from './packlist.json' with { type: 'json' };
-import { buildLoggerPlugin, pathResolve, readFile } from './utils';
-
-const latestChangeHtml = await parseMd(
-  readFile(pathResolve('docs/.other/LatestChange.md'))
-    .match(/^### [^[].+$|^\* .+$/gm)!
-    .map((mdText) => {
-      switch (mdText[0]) {
-        case '#':
-          return mdText
-            .replaceAll('Features', '新增')
-            .replaceAll('Bug Fixes', '修复')
-            .replaceAll('Performance Improvements', '优化');
-        case '*':
-          return mdText.replaceAll(/(?<=^\* ):\w+: |(?<=^.*)\(\[.*/g, '');
-        default:
-          return '';
-      }
-    })
-    .join('\n\n'),
-);
+import { buildLoggerPlugin, pathResolve } from './utils';
 
 /** 单个构建项配置 */
 type BundleItemOpts = {
@@ -75,7 +56,7 @@ export const createBundleConfigs = (
       define: {
         isDevMode: isDevMode ? 'true' : 'false',
         'process.env.NODE_ENV': isDevMode ? "'development'" : "'production'",
-        __LATEST_CHANGE_HTML__: JSON.stringify(latestChangeHtml),
+        __LATEST_CHANGES__: JSON.stringify(latestChanges),
         scriptVersion: JSON.stringify(meta.version),
       },
     },

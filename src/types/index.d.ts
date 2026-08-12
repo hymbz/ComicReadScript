@@ -6,7 +6,10 @@ declare global {
 
   declare const scriptVersion: string;
 
-  declare const __LATEST_CHANGE_HTML__: string;
+  declare const __LATEST_CHANGES__: Record<
+    string,
+    { date: string; feat?: string[]; fix?: string[]; perf?: string[] }
+  >;
 
   type EventHandler<T = HTMLElement> = JSX.DOMAttributes<T>;
 

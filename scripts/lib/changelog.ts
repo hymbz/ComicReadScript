@@ -26,14 +26,18 @@ type Ref = {
   url: string;
 };
 
+/** 收集进 CHANGELOG 的提交类型，也决定 CHANGELOG.json 的分组与展示顺序 */
+const changeTypes = ['feat', 'fix', 'perf'] as const;
+type ChangeType = (typeof changeTypes)[number];
+
 type ParsedCommit = {
-  type: 'feat' | 'fix' | 'perf';
+  type: ChangeType;
   subject: string;
   breaking: boolean;
   refs: Ref[];
 };
 
-const sectionTitle: Record<ParsedCommit['type'], string> = {
+const sectionTitle: Record<ChangeType, string> = {
   feat: 'Features',
   fix: 'Bug Fixes',
   perf: 'Performance Improvements',
@@ -170,7 +174,7 @@ export const generateChangelog = () => {
   );
 
   // 生成新版本段落
-  const sections = (['feat', 'fix', 'perf'] as const)
+  const sections = changeTypes
     .map((type) => {
       const items = parsedList
         .filter((item) => item.parsed.type === type)
@@ -191,6 +195,39 @@ export const generateChangelog = () => {
     ? oldChangelog.replace(/^# Changelog\n\n/, `# Changelog\n\n${section}\n\n`)
     : `# Changelog\n\n${section}\n\n${oldChangelog}`;
   writeFileSync(changelogPath, newChangelog);
+
+  // 生成记录到 CHANGELOG.json 的变更数据，只保留描述
+  const changeJson: Record<string, string[]> = {};
+  for (const type of changeTypes) {
+    const items = parsedList
+      .filter((item) => item.parsed.type === type)
+      .map((item) => item.parsed.subject.replace(/^:\w+: /, '').trim());
+    if (items.length > 0) changeJson[type] = items;
+  }
+
+  // 将新版本记录到 CHANGELOG.json 顶部，并裁剪掉 3 个月前的记录
+  const changesPath = pathResolve('docs/.other/CHANGELOG.json');
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - 3);
+  const changes: Record<string, { date: string }> = JSON.parse(
+    readFile(changesPath),
+  );
+  const nextChanges = {
+    [newVersion]: { date: formatDate(new Date()), ...changeJson },
+    ...changes,
+  };
+  writeFileSync(
+    changesPath,
+    `${JSON.stringify(
+      Object.fromEntries(
+        Object.entries(nextChanges).filter(
+          ([, entry]) => entry.date >= formatDate(cutoff),
+        ),
+      ),
+      null,
+      2,
+    )}\n`,
+  );
 
   return section;
 };

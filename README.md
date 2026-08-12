@@ -13,6 +13,9 @@
   <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">
     <img src="https://img.shields.io/github/issues/hymbz/ComicReadScript">
   </a>
+  <a href="https://github.com/hymbz/ComicReadScript/blob/master/docs/.other/CHANGELOG.md" target="_blank">
+    <img src="https://img.shields.io/badge/CHANGELOG-%E6%9B%B4%E6%96%B0%E6%97%A5%E5%BF%97-blue">
+  </a>
   <a href="https://hosted.weblate.org/engage/comic_read_script/-/en/">
     <img src="https://hosted.weblate.org/widget/comic_read_script/main/en/svg-badge.svg">
   </a>

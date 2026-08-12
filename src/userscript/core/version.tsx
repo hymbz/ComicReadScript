@@ -1,8 +1,17 @@
 import { toast } from 'components/Toast';
 import { ensureGmValue, lang, versionLt } from 'helper';
-import { Show } from 'solid-js';
+import { For } from 'solid-js';
 
 import { migration } from './migration';
+
+/** 分组顺序与标题，需与 scripts/lib/changelog.ts 的 changeTypes 保持一致 */
+const changeTypes = ['feat', 'fix', 'perf'] as const;
+type ChangeType = (typeof changeTypes)[number];
+const changeSectionTitle: Record<ChangeType, string> = {
+  feat: '新增',
+  fix: '修复',
+  perf: '优化',
+};
 
 /** 处理版本更新相关 */
 export const handleVersionUpdate = async () => {
@@ -14,21 +23,33 @@ export const handleVersionUpdate = async () => {
   // 只在语言为中文时弹窗提示最新更新内容
   if (lang() === 'zh') {
     toast(
-      () => (
-        /* oxlint-disable i18next/no-literal-string */
-        <>
-          <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
-          {__LATEST_CHANGE_HTML__}
-          <Show when={versionLt(version, '12')}>
-            <h3>新增</h3>
-            <ul>
-              <li>实现图片放大功能（需要打开「图像识别」功能）</li>
-              <li>增加 ehentai 在缩略图列表页里展开标签列表功能</li>
-            </ul>
-          </Show>
-        </>
-        /* eslint-enable i18next/no-literal-string */
-      ),
+      () => {
+        // 找出比上次记录版本更新的所有版本
+        const changes = Object.entries(__LATEST_CHANGES__)
+          .filter(([changeVersion]) => versionLt(version, changeVersion))
+          .map(([, change]) => change);
+        return (
+          /* oxlint-disable i18next/no-literal-string */
+          <>
+            <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
+            <For each={changeTypes}>
+              {(type) => {
+                const items = changes.flatMap((change) => change[type] ?? []);
+                if (items.length === 0) return null;
+                return (
+                  <section>
+                    <h3>{changeSectionTitle[type]}</h3>
+                    <ul>
+                      <For each={items}>{(item) => <li>{item}</li>}</For>
+                    </ul>
+                  </section>
+                );
+              }}
+            </For>
+          </>
+          /* eslint-enable i18next/no-literal-string */
+        );
+      },
       {
         id: 'Version Tip',
         type: 'custom',
