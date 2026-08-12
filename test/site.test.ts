@@ -3,7 +3,7 @@ import { pick } from 'radash';
 import { type Promisable } from 'type-fest';
 
 import { pathResolve, readFile } from '../scripts/lib/utils';
-import { cookie } from './cookie' with { type: 'json' };
+import { cookie } from './cookie';
 
 const waitExecute = async (fn: () => Promisable<boolean>) => {
   let res = false;
@@ -90,7 +90,7 @@ const getSiteTestInfo = () => {
     /(\n\s+\/\/ #.+?)(case.+?break;\n {4}\})/gs,
   )) {
     const codeRes =
-      /inject\('site\/(\w+)'\)| options = \{.+?name: '(.+?)'/s.exec(code);
+      /selfImport\('site\/(\w+)'\)| setup\(\{.+?name: '(.+?)'/s.exec(code);
     if (!codeRes) throw new Error('index.ts 注释解析出错');
     const name = codeRes[1] || codeRes[2];
 

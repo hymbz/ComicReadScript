@@ -33,9 +33,9 @@ export const outputPlugins: RolldownPluginOption[] = [
         if (key.endsWith('.css')) Reflect.deleteProperty(bundle, key);
     },
     renderChunk: (code) =>
-      // 删除单独的 require 语句和注释
+      // 删除单独的 require 语句和注释（排除 // == 开头的油猴 meta 头标志行）
       code.replaceAll(
-        /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ .+\n(?=\n)/g,
+        /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ (?!==).+\n(?=\n)/g,
         '',
       ),
   },
