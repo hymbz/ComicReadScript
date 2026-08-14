@@ -1,3 +1,6 @@
+/** 滚动设备类型：A 类传统滚轮、B 类高精度滚轮、C 类触摸板；undefined 表示尚未确定 */
+export type ScrollDeviceType = undefined | 'a' | 'b' | 'c';
+
 export const otherState = {
   /** 漫画标题 */
   title: '',
@@ -16,6 +19,12 @@ export const otherState = {
 
   /** 卷轴模式下的滚动距离 */
   scrollTop: 0,
+
+  /** 虚拟棘轮的翻页进度（0~1），正为向下滚动 */
+  wheelProgress: 0,
+
+  /** 最近一次判定的滚动设备类型 */
+  scrollDeviceType: undefined as ScrollDeviceType,
 
   autoScroll: { play: false, progress: 0 },
 

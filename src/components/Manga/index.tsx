@@ -20,6 +20,7 @@ import { EndPage } from './components/EndPage';
 import { Scrollbar } from './components/Scrollbar';
 import { Toolbar } from './components/Toolbar';
 import { TouchArea } from './components/TouchArea';
+import { WheelProgress } from './components/WheelProgress';
 import { stopPropagation } from './helper';
 import { useCssVar } from './hooks/useCssVar';
 import { useInit } from './hooks/useInit';
@@ -91,6 +92,7 @@ export const Manga: Component<MangaProps> = (props) => {
         <ComicImgFlow />
         <TouchArea />
         <Scrollbar />
+        <WheelProgress />
         <EndPage />
         <Toolbar />
       </div>

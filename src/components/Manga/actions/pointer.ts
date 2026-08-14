@@ -4,13 +4,13 @@ import { type Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import classes from '../index.module.css';
 import { refs, setState, store } from '../store';
-import { getImg, getImgEle, openScrollLock, resetUI } from './helper';
+import { getImg, getImgEle, resetUI } from './helper';
 import { handleHotkey } from './hotkeyAction';
 import { reloadImg } from './imageLoad';
 import { showImgList } from './renderPage';
 import { jumpToImg } from './scroll';
 import { resetPage } from './show';
-import { getTurnPageDir, turnPage, turnPageAnimation } from './turnPage';
+import { getTurnPageDir, turnPageAnimation } from './turnPage';
 import { zoom } from './zoom';
 
 /** 根据坐标找出被点击到的元素 */
@@ -78,6 +78,7 @@ export const handleClick = useDoubleClick(
   doubleClickZoom,
 );
 
+/** 拖动页面的动画控制器 */
 const dragAnim = new (class extends AnimationFrame {
   dx = 0;
   dy = 0;
@@ -153,41 +154,4 @@ export const handleMangaFlowDrag: UseDrag = ({
     case 'up':
       return handleDragEnd(startTime);
   }
-};
-
-let lastDeltaY = 0;
-let retardStartTime = 0;
-
-export const handleTrackpadWheel = (e: WheelEvent) => {
-  if (store.option.scrollMode.enabled) return;
-
-  openScrollLock();
-  let deltaY = Math.floor(-e.deltaY);
-  let absDeltaY = Math.abs(deltaY);
-
-  // 加速度小于指定值后逐渐缩小滚动距离，实现减速效果
-  if (Math.abs(absDeltaY - lastDeltaY) <= 6) {
-    retardStartTime ||= Date.now();
-    deltaY *= 1 - Math.min(1, ((Date.now() - retardStartTime) / 10) * 0.002);
-    absDeltaY = Math.abs(deltaY);
-    if (absDeltaY < 2) return;
-  } else retardStartTime = 0;
-  lastDeltaY = absDeltaY;
-
-  dragAnim.dy += deltaY;
-
-  setState((state) => {
-    // 滚动过一页时
-    if (dragAnim.dy <= -state.rootSize.height) {
-      if (turnPage('next', state)) dragAnim.dy += state.rootSize.height;
-    } else if (dragAnim.dy >= state.rootSize.height && turnPage('prev', state))
-      dragAnim.dy -= state.rootSize.height;
-
-    state.page.vertical = true;
-    state.isDragMode = true;
-    resetPage(state);
-  });
-  dragAnim.call();
-
-  handleDragEnd.debounce();
 };

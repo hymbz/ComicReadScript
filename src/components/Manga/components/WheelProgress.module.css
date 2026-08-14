@@ -1,0 +1,86 @@
+.wheelProgress {
+  pointer-events: none;
+
+  position: absolute;
+  z-index: 9;
+  top: 0;
+  right: 0;
+
+  /* 默认（向上滚动）：从下往上延伸 */
+  transform-origin: bottom;
+  transform: scaleY(var(--wheel-progress));
+
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+
+  opacity: 0;
+  background-color: #fff5;
+  mix-blend-mode: difference;
+
+  transition:
+    opacity 150ms,
+    transform 150ms;
+
+  &[data-down] {
+    /* 向下滚动：从上往下延伸 */
+    transform-origin: top;
+  }
+
+  &[data-position='top'] {
+    top: 0;
+    right: 0;
+    bottom: unset;
+    transform: scaleX(var(--wheel-progress));
+
+    width: 100%;
+    height: 2px;
+
+    &[data-dir='rtl'] {
+      /* 默认（向上滚动）：从右往左延伸 */
+      transform-origin: left;
+
+      &[data-down] {
+        transform-origin: right;
+      }
+    }
+
+    &[data-dir='ltr'] {
+      /* 默认（向上滚动）：从左往右延伸 */
+      transform-origin: right;
+
+      &[data-down] {
+        transform-origin: left;
+      }
+    }
+  }
+
+  &[data-position='bottom'] {
+    right: 0;
+    bottom: 0;
+    transform: scaleX(var(--wheel-progress));
+
+    width: 100%;
+    height: 2px;
+
+    &[data-dir='rtl'] {
+      transform-origin: left;
+
+      &[data-down] {
+        transform-origin: right;
+      }
+    }
+
+    &[data-dir='ltr'] {
+      transform-origin: right;
+
+      &[data-down] {
+        transform-origin: left;
+      }
+    }
+  }
+
+  &[data-position='hidden'] {
+    display: none;
+  }
+}
