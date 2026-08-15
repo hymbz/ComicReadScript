@@ -153,12 +153,8 @@ const formatDate = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
-/**
- * 根据最后一次发布以来的提交生成新版本的 CHANGELOG 段落，
- * 并更新 package.json 的版本号、将段落插入 docs/.other/CHANGELOG.md。
- * 返回新段落文本，供写入 LatestChange.md。
- */
-export const generateChangelog = () => {
+/** 根据最后一次发布以来的提交计算新版本号与新版本变更日志段落 */
+export const computeChangelog = () => {
   const latestTag = getLatestTag();
   const commits = getCommits(latestTag);
   if (commits.length === 0) throw new Error('自上次发布后没有新的提交');
@@ -176,12 +172,7 @@ export const generateChangelog = () => {
     parsedList.map((item) => item.parsed),
   );
 
-  // 更新 package.json 的版本号
-  pkg.version = newVersion;
-  writeFileSync(
-    pathResolve('package.json'),
-    `${JSON.stringify(pkg, null, 2)}\n`,
-  );
+  const date = formatDate(new Date());
 
   // 生成新版本段落
   const sections = changeTypes
@@ -196,24 +187,69 @@ export const generateChangelog = () => {
     .filter(Boolean)
     .join('\n\n');
 
-  const section = `## [${newVersion}](${repoUrl}/compare/v${oldVersion}...v${newVersion}) (${formatDate(new Date())})\n\n${sections}`;
+  const section = `## [${newVersion}](${repoUrl}/compare/v${oldVersion}...v${newVersion}) (${date})\n\n${sections}`;
 
-  // 将新段落插入 CHANGELOG.md 的标题之下
+  return { section, version: newVersion, date };
+};
+
+/** 将新版本变更日志段落写入 LatestChange.md */
+export const writeLatestChange = (section: string) => {
+  writeFileSync(pathResolve('docs/.other/LatestChange.md'), `${section}\n`);
+};
+
+/** 从 LatestChange.md 的条目行解析出变更描述（去掉 emoji 与 commit 链接） */
+const parseBullet = (line: string) =>
+  line
+    .replace(/^-\s+/u, '')
+    .replace(/,\s*closes\s+.+$/u, '')
+    .replace(
+      /\(\[[0-9a-f]{7,40}\]\(https:\/\/github\.com\/hymbz\/ComicReadScript\/commit\/[0-9a-f]{40}\)\)/u,
+      '',
+    )
+    .replace(/^:\w+: /u, '')
+    .trim();
+
+/**
+ * 根据用户编辑后的 LatestChange.md 生成 CHANGELOG.md、CHANGELOG.json，
+ * 并更新 package.json 的版本号。
+ */
+export const finalizeChangelog = (newVersion: string, date: string) => {
+  const latestChange = readFile(pathResolve('docs/.other/LatestChange.md'));
+
+  // 解析编辑后的变更条目，写入 CHANGELOG.json 的新版本记录
+  const changeJson: Record<string, string[]> = {};
+  let currentType: ChangeType | undefined;
+  for (const line of latestChange.split('\n')) {
+    const sectionMatch = /^###\s+(?<title>.+)$/u.exec(line);
+    if (sectionMatch) {
+      currentType = changeTypes.find(
+        (t) => sectionTitle[t] === sectionMatch.groups.title,
+      );
+      continue;
+    }
+    if (currentType && line.startsWith('- ')) {
+      const desc = parseBullet(line);
+      if (desc) (changeJson[currentType] ??= []).push(desc);
+    }
+  }
+
+  // 更新 package.json 的版本号
+  pkg.version = newVersion;
+  writeFileSync(
+    pathResolve('package.json'),
+    `${JSON.stringify(pkg, null, 2)}\n`,
+  );
+
+  // 将编辑后的段落插入 CHANGELOG.md 的标题之下
   const changelogPath = pathResolve('docs/.other/CHANGELOG.md');
   const oldChangelog = readFile(changelogPath);
   const newChangelog = oldChangelog.startsWith('# Changelog\n\n')
-    ? oldChangelog.replace(/^# Changelog\n\n/u, `# Changelog\n\n${section}\n\n`)
-    : `# Changelog\n\n${section}\n\n${oldChangelog}`;
+    ? oldChangelog.replace(
+        /^# Changelog\n\n/u,
+        `# Changelog\n\n${latestChange.trim()}\n\n`,
+      )
+    : `# Changelog\n\n${latestChange.trim()}\n\n${oldChangelog}`;
   writeFileSync(changelogPath, newChangelog);
-
-  // 生成记录到 CHANGELOG.json 的变更数据，只保留描述
-  const changeJson: Record<string, string[]> = {};
-  for (const type of changeTypes) {
-    const items = parsedList
-      .filter((item) => item.parsed.type === type)
-      .map((item) => item.parsed.subject.replace(/^:\w+: /u, '').trim());
-    if (items.length > 0) changeJson[type] = items;
-  }
 
   // 将新版本记录到 CHANGELOG.json 顶部，并裁剪掉 3 个月前的记录
   const changesPath = pathResolve('docs/.other/CHANGELOG.json');
@@ -223,7 +259,7 @@ export const generateChangelog = () => {
     readFile(changesPath),
   );
   const nextChanges = {
-    [newVersion]: { date: formatDate(new Date()), ...changeJson },
+    [newVersion]: { date, ...changeJson },
     ...changes,
   };
   writeFileSync(
@@ -238,6 +274,4 @@ export const generateChangelog = () => {
       2,
     )}\n`,
   );
-
-  return section;
 };

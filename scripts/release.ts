@@ -1,8 +1,13 @@
 import { writeFileSync } from 'node:fs';
+import { stdin, stdout } from 'node:process';
+import { createInterface } from 'node:readline/promises';
 import shell from 'shelljs';
 
-import packageJson from '../package.json';
-import { generateChangelog } from './lib/changelog';
+import {
+  computeChangelog,
+  finalizeChangelog,
+  writeLatestChange,
+} from './lib/changelog';
 import { pathResolve, readFile } from './lib/utils';
 
 const exec = (...commands: string[]) => {
@@ -14,60 +19,71 @@ const exec = (...commands: string[]) => {
   return res;
 };
 
-if (process.argv.slice(2).includes('push')) {
-  const { version } = packageJson;
+/** 在终端打印提示，等待用户回车后继续 */
+const confirm = async (message: string) => {
+  const rl = createInterface({ input: stdin, output: stdout });
+  try {
+    return await rl.question(message);
+  } finally {
+    rl.close();
+  }
+};
 
-  // 打包代码
-  exec('pnpm build');
+// 前置检查
+exec('pnpm check');
+exec('pnpm test run');
 
-  // 将打包出来的脚本文件复制到根目录上
-  shell.cp(
-    '-f',
-    pathResolve('./dist/index.js'),
-    pathResolve('./ComicRead.user.js'),
-  );
-  shell.cp(
-    '-f',
-    pathResolve('./dist/adguard.js'),
-    pathResolve('./ComicRead-AdGuard.user.js'),
-  );
+// 计算新版本与变更日志段落，并写入 LatestChange.md
+const { section, version, date } = computeChangelog();
+writeLatestChange(section);
+await confirm('已生成 LatestChange.md，回车继续…');
 
-  shell.cp(
-    '-f',
-    pathResolve('./dist/umd.js'),
-    pathResolve('./ComicReader.umd.js'),
-  );
-  shell.cp(
-    '-f',
-    pathResolve('./dist/umd.d.ts'),
-    pathResolve('./ComicReader.umd.d.ts'),
-  );
+// 根据编辑后的 LatestChange.md 生成 CHANGELOG.md、CHANGELOG.json，并更新 package.json
+finalizeChangelog(version, date);
+await confirm(
+  '已更新 CHANGELOG.md、CHANGELOG.json 与 package.json，确认无误后回车开始发布…',
+);
 
-  const code = readFile(pathResolve('./ComicRead.user.js'));
-  writeFileSync(
-    pathResolve('./ComicRead-jsDelivr.user.js'),
-    code.replaceAll(
-      /registry\.npmmirror\.com\/(?<pkg>.+)\/(?<version>\d+\.\d+\.\d)\/files\/(?<file>.+)/gu,
-      'cdn.jsdelivr.net/npm/$<pkg>@$<version>/$<file>',
-    ),
-  );
+// 打包代码
+exec('pnpm build');
 
-  // 提交上传更改
-  exec(
-    'git add .',
-    `git commit -m "chore: :bookmark: Release ${version}"`,
-    `git tag --annotate v${version} --message="Release ${version}"`,
-    'git push --follow-tags',
-    'npm publish',
-  );
-} else {
-  // 测试
-  exec('pnpm check');
-  exec('pnpm test run');
+// 将打包出来的脚本文件复制到根目录上
+shell.cp(
+  '-f',
+  pathResolve('./dist/index.js'),
+  pathResolve('./ComicRead.user.js'),
+);
+shell.cp(
+  '-f',
+  pathResolve('./dist/adguard.js'),
+  pathResolve('./ComicRead-AdGuard.user.js'),
+);
 
-  // 生成新版本的 CHANGELOG，更新 package.json 的版本号
-  const changelog = generateChangelog();
+shell.cp(
+  '-f',
+  pathResolve('./dist/umd.js'),
+  pathResolve('./ComicReader.umd.js'),
+);
+shell.cp(
+  '-f',
+  pathResolve('./dist/umd.d.ts'),
+  pathResolve('./ComicReader.umd.d.ts'),
+);
 
-  // 将最新的更改日志写入 LatestChange.md
-  shell.echo(changelog).to(pathResolve('./docs/.other/LatestChange.md'));
-}
+const code = readFile(pathResolve('./ComicRead.user.js'));
+writeFileSync(
+  pathResolve('./ComicRead-jsDelivr.user.js'),
+  code.replaceAll(
+    /registry\.npmmirror\.com\/(?<pkg>.+)\/(?<version>\d+\.\d+\.\d)\/files\/(?<file>.+)/gu,
+    'cdn.jsdelivr.net/npm/$<pkg>@$<version>/$<file>',
+  ),
+);
+
+// 提交上传更改
+exec(
+  'git add .',
+  `git commit -m "chore: :bookmark: Release ${version}"`,
+  `git tag --annotate v${version} --message="Release ${version}"`,
+  'git push --follow-tags',
+  'npm publish',
+);

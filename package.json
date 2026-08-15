@@ -20,7 +20,6 @@
     "dev": "tsx scripts/build.ts --dev",
     "build": "tsx scripts/build.ts",
     "release": "tsx scripts/release.ts",
-    "release:push": "tsx scripts/release.ts push",
     "test": "vitest",
     "check": "oxlint -f stylish --fix --type-check . && oxfmt . && stylelint --fix \"**/*.css\" \"**/*.ts\" \"**/*.tsx\"",
     "prepare": "husky",
