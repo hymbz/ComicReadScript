@@ -66,11 +66,14 @@ export const selfImport = (name: string) => {
 
       // 统计 require 导入的模块，统一放到 moduleMap 里
       const handleCode = (code: string) =>
-        code.replaceAll(/require\(['"](.+?)['"]\)/g, (_, moduleName) => {
-          if (!importModule.has(moduleName))
-            importModule.set(moduleName, handleCode(getResource(moduleName)));
-          return `moduleMap['${moduleName}']`;
-        });
+        code.replaceAll(
+          /require\(['"](?<moduleName>.+?)['"]\)/gu,
+          (_, moduleName) => {
+            if (!importModule.has(moduleName))
+              importModule.set(moduleName, handleCode(getResource(moduleName)));
+            return `moduleMap['${moduleName}']`;
+          },
+        );
       const moduleCode = handleCode(libCode);
 
       let workerCode = `const moduleMap = {};\n`;

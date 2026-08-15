@@ -140,7 +140,7 @@ const addQuickFavorite = ({
         toast.success(t('site.ehentai.change_favorite_success'));
 
         // 修改收藏按钮样式的 js 代码
-        const updateCode = /\nif\(window.opener.document.+\n/
+        const updateCode = /\nif\(window.opener.document.+\n/u
           .exec(res.responseText)?.[0]
           ?.replaceAll('window.opener.document', 'window.document');
         if (updateCode) eval(updateCode); // oxlint-disable-line no-eval
@@ -237,7 +237,7 @@ export const quickFavorite: EhFeatureHandler = (_, pageCtx) => {
         const bottom =
           item.lastElementChild!.getBoundingClientRect().top -
           item.getBoundingClientRect().top;
-        const [apiUrl] = /http.+?(?=')/.exec(button.getAttribute('onclick')!)!;
+        const [apiUrl] = /http.+?(?=')/u.exec(button.getAttribute('onclick')!)!;
         addQuickFavorite({
           root: item,
           top,
@@ -254,8 +254,9 @@ export const quickFavorite: EhFeatureHandler = (_, pageCtx) => {
       for (const item of querySelectorAll('.gl1e')) {
         const button =
           item.nextElementSibling!.querySelector<HTMLElement>('[id^=posted_]')!;
+        // oxlint-disable-next-line unicorn/prefer-number-coercion
         const height = Number.parseInt(getComputedStyle(item).height, 10);
-        const [apiUrl] = /http.+?(?=')/.exec(button.getAttribute('onclick')!)!;
+        const [apiUrl] = /http.+?(?=')/u.exec(button.getAttribute('onclick')!)!;
         addQuickFavorite({ root: item, button, height, apiUrl });
       }
       break;

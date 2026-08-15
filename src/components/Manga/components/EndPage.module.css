@@ -37,11 +37,11 @@
     transform: translateY(10em);
   }
 
-  .endPageBody {
+  & .endPageBody {
     transform: translate(0, var(--drag-y, 0));
     transition: transform 200ms;
 
-    button {
+    & button {
       cursor: pointer;
 
       transform-origin: center;
@@ -59,7 +59,7 @@
       }
     }
 
-    .tip {
+    & .tip {
       position: absolute;
       margin: auto;
     }

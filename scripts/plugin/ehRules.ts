@@ -8,7 +8,7 @@ export const ehRules: RolldownPluginOption = codeEdit(
   (code, chunk) => {
     if (chunk.fileName !== 'ehTagRules.js') return;
 
-    return code.replace(/(?<=const \S+ = )\{.+?\}(?=;)/s, (json) => {
+    return code.replace(/(?<=const \S+ = )\{.+?\}(?=;)/su, (json) => {
       // oxlint-disable-next-line no-eval
       const data = eval(`(${json})`) as Record<
         string,

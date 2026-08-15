@@ -31,9 +31,9 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
 
     return await Promise.all(
       Object.entries(res).map(async ([name, data]) => {
-        const filtType = await fileTypeFromBuffer(data.buffer as ArrayBuffer);
+        const filtType = await fileTypeFromBuffer(data.buffer);
         const url = await createObjectURL(
-          new Blob([data.buffer as ArrayBuffer], {
+          new Blob([data.buffer], {
             type: filtType?.mime || 'image/jpeg',
           }),
         );

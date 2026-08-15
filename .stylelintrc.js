@@ -28,6 +28,10 @@ export default {
     'keyframes-name-pattern': null,
     // 允许重复的 css 动画帧
     'keyframe-block-no-duplicate-selectors': null,
+    // 统一使用显式嵌套记法（& 前缀），更清晰可读
+    'relative-selector-nesting-notation': 'explicit',
+    // 禁止使用已废弃的选择器
+    'selector-no-deprecated': true,
 
     // 防止使用低性能的动画和过度属性
     'plugin/no-low-performance-animation-properties': true,

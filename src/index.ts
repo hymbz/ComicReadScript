@@ -53,7 +53,7 @@ try {
         const res = await request(
           `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
         );
-        return /(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/
+        return /(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/u
           .exec(res.responseText)![0]
           .replaceAll('&amp;', '&')
           .replaceAll('http://', 'https://');
@@ -197,7 +197,7 @@ try {
     case 'm.manhuagui.com':
     case 'www.mhgui.com':
     case 'www.manhuagui.com': {
-      if (!/\/comic\/\d+\/\d+\.html/.test(location.pathname)) break;
+      if (!/\/comic\/\d+\/\d+\.html/u.test(location.pathname)) break;
 
       let comicInfo: {
         sl: Record<string, string>;
@@ -214,7 +214,7 @@ try {
         comicInfo = JSON.parse(
           // 只能通过 eval 获得数据
           // oxlint-disable-next-line no-eval
-          eval(dataScript.innerHTML.slice(26)).match(/(?<=\()\{.+\}/)[0],
+          eval(dataScript.innerHTML.slice(26)).match(/(?<=\()\{.+\}/u)[0],
         );
       } catch {
         toast.error(t('site.changed_load_failed'));
@@ -231,7 +231,7 @@ try {
       const createChapterNav = (cid: number) => {
         if (cid === 0) return;
         const newUrl = location.pathname.replace(
-          /(?<=\/)\d+(?=\.html)/,
+          /(?<=\/)\d+(?=\.html)/u,
           `${cid}`,
         );
         return () => location.assign(newUrl);
@@ -427,10 +427,11 @@ try {
       setup({
         name: 'komiic',
         isMangaPage: () => {
-          const match = /comic\/(\d+)\/chapter\/(\d+)\/images\//.exec(
-            location.href,
-          );
-          if (match) return { comicId: match[1], chapterId: match[2] };
+          const match =
+            /comic\/(?<comicId>\d+)\/chapter\/(?<chapterId>\d+)\/images\//u.exec(
+              location.href,
+            )?.groups as { comicId: string; chapterId: string } | null;
+          return match ?? false;
         },
         getImgList: async (_, { chapterId }) => {
           const res = await request('/api/query', {
@@ -439,7 +440,7 @@ try {
             headers: { 'content-type': 'application/json' },
             data: JSON.stringify({
               operationName: 'imagesByChapterId',
-              variables: { chapterId: `${chapterId}` },
+              variables: { chapterId },
               query,
             }),
           });
@@ -459,13 +460,13 @@ try {
     case 'a.twobili.com':
     case 'articles.onemoreplace.tw':
     case 'www.8comic.com': {
-      if (!/^\/(?:online|ReadComic|comic)\//.test(location.pathname)) break;
+      if (!/^\/(?:online|ReadComic|comic)\//u.test(location.pathname)) break;
       downloadImgHeaders.Referer = 'https://www.8comic.com/';
 
       // by: https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/241035
       const getImgList = () =>
         Array.from(
-          (unsafeWindow.xx as string).matchAll(/(?<= s=").+?(?=")/g),
+          (unsafeWindow.xx as string).matchAll(/(?<= s=").+?(?=")/gu),
           ([text]) => decodeURIComponent(text),
         );
 
@@ -493,12 +494,14 @@ try {
       let getImgList: SetupOptions['getImgList'] | undefined;
       if (location.pathname.startsWith('/photos-slide-aid-')) {
         getImgList = async () => {
-          const id = /-(\d+).html/.exec(location.pathname)?.[1];
+          const id = /-(?<id>\d+).html/u.exec(location.pathname)?.groups?.id;
           if (!id) throw new Error(t('site.changed_load_failed'));
           const res = await request<string>(`/photos-item-aid-${id}.html`);
-          const reRes = /"page_url":(\[.+\]),/.exec(res.responseText);
-          if (!reRes) throw new Error(t('site.changed_load_failed'));
-          return eval(reRes[1]) as string[]; // oxlint-disable-line no-eval
+          const pageUrl = /"page_url":(?<pageUrl>\[.+\]),/u.exec(
+            res.responseText,
+          )?.groups.pageUrl;
+          if (!pageUrl) throw new Error(t('site.changed_load_failed'));
+          return eval(pageUrl) as string[]; // oxlint-disable-line no-eval
         };
       } else if (location.pathname.startsWith('/photos-slist-aid-'))
         getImgList = () =>
@@ -585,7 +588,7 @@ try {
               '.comics-metadata-margin-top a:has(span.material-icons)',
             ),
           );
-          const id = /\/g\/(\d+)\//.exec(downloadDom.href)?.[1];
+          const id = /\/g\/(?<id>\d+)\//u.exec(downloadDom.href)?.groups?.id;
           if (!id) throw new Error(t('site.changed_load_failed'));
           const data = await getNhentaiData(id);
           return toImgList(data);
@@ -638,12 +641,11 @@ try {
       setup({
         name: 'hdoujin',
         isMangaPage: () => {
-          const reRes = /\/g\/(\d+)\/(.+?)(?:\/read\/\d+)?$/.exec(
-            location.pathname,
-          );
-          if (!reRes) return false;
-          const [, galleryId, galleryKey] = reRes;
-          return { type: 'manga', galleryId, galleryKey } as const;
+          const match =
+            /\/g\/(?<galleryId>\d+)\/(?<galleryKey>.+?)(?:\/read\/\d+)?$/u.exec(
+              location.pathname,
+            )?.groups as { galleryId: string; galleryKey: string } | undefined;
+          return match ? { type: 'manga', ...match } : false;
         },
         getImgList: async ({ dynamicLazyLoad }, { galleryId, galleryKey }) => {
           type ExtraData = { id: string; key: string; size: string };
@@ -712,12 +714,11 @@ try {
       setup({
         name: 'schale',
         isMangaPage: () => {
-          const reRes = /\/g\/(\d+)\/(.+?)(?:\/read\/\d+)?$/.exec(
-            location.pathname,
-          );
-          if (!reRes) return false;
-          const [, galleryId, galleryKey] = reRes;
-          return { galleryId, galleryKey } as const;
+          const match =
+            /\/g\/(?<galleryId>\d+)\/(?<galleryKey>.+?)(?:\/read\/\d+)?$/u.exec(
+              location.pathname,
+            )?.groups as { galleryId: string; galleryKey: string } | null;
+          return match ?? false;
         },
         async getImgList({ dynamicLazyLoad }, { galleryId, galleryKey }) {
           type DetailRes = {
@@ -767,7 +768,7 @@ try {
     // #R18[nude-moon](https://nude-moon.org)
     // test: https://nude-moon.org/29885--kultkvazar-gubbai-iregyura-goodbye-irregular--pro_ay-ucedcaa.html
     case 'nude-moon.org': {
-      if (/^\/\d+-/.exec(location.pathname) === null) break;
+      if (/^\/\d+-/u.exec(location.pathname) === null) break;
 
       listenHotkey({
         scroll_right: () => unsafeWindow.nextImg(),
@@ -786,11 +787,14 @@ try {
               (e) => e.src,
             );
 
-          const url = location.href.replace(/(\/[^/-]+)(-)/, '$1-online-');
-          const html = await request(url);
+          const url = location.href.replace(
+            /(?<slug>\/[^/-]+)(?<dash>-)/u,
+            '$<slug>-online-',
+          );
+          const { response: html } = await request<string>(url);
           const imgList = Array.from(
-            html.responseText.matchAll(/images\[\d+\]\.src = '(.+?)';/g),
-            (m) => `https://nude-moon.org${m[1]}`,
+            html.matchAll(/images\[\d+\]\.src = '(?<src>.+?)';/gu),
+            ({ groups: { src } }) => `https://nude-moon.org${src}`,
           );
           if (imgList.length === 0)
             throw new Error(t('site.changed_load_failed'));
@@ -819,7 +823,7 @@ try {
       const imgUrl = imgDom.dataset.src;
       if (!imgUrl || !unsafeWindow.g_th)
         throw new Error(t('site.changed_load_failed'));
-      const baseUrl = imgUrl.replace(/\/\dt.[a-z]+$/, '');
+      const baseUrl = imgUrl.replace(/\/\dt.[a-z]+$/u, '');
 
       setup({
         name: 'HentaiEnvy',
@@ -844,10 +848,10 @@ try {
     case 'mangadex.org': {
       setup({
         name: 'mangadex',
-        isMangaPage: () => {
-          const match = /^\/chapter\/([^/]+)/.exec(location.pathname);
-          if (match) return { id: match[1] };
-        },
+        isMangaPage: () =>
+          /^\/chapter\/(?<id>[^/]+)/u.exec(location.pathname)?.groups as
+            | { id: string }
+            | undefined,
         async getImgList() {
           const chapter_id = location.pathname.split('/').at(2);
           const {
@@ -961,8 +965,8 @@ try {
       setup({
         name: 'nekohouse',
         getImgList: () =>
-          querySelectorAll<HTMLAnchorElement>('.fileThumb').map(
-            (e) => e.getAttribute('href')!,
+          querySelectorAll<HTMLAnchorElement>('.fileThumb').map((e) =>
+            e.getAttribute('href')!,
           ),
         initOptions: { autoShow: false, defaultOption: { pageNum: 1 } },
       });
@@ -980,7 +984,7 @@ try {
     // test: https://comic.hypergryph.com/comic/6253/episode/3156
     case 'comic.hypergryph.com': {
       const apiUrl = () => {
-        const apiPath = /\/comic\/.+/.exec(location.pathname)?.[0] ?? '';
+        const apiPath = /\/comic\/.+/u.exec(location.pathname)?.[0] ?? '';
         return `https://comic.hypergryph.com/api${apiPath}`;
       };
 
@@ -1015,7 +1019,7 @@ try {
     // #其他[最前線](https://sai-zen-sen.jp)
     // test: https://sai-zen-sen.jp/works/comics/karanokyoukai/01/01.html
     case 'sai-zen-sen.jp': {
-      switch (/\/[^/]+\/[^/]+\//.exec(location.pathname)?.[0]) {
+      switch (/\/[^/]+\/[^/]+\//u.exec(location.pathname)?.[0]) {
         case '/special/4pages-comics/':
         case '/works/comics/':
           setup({
@@ -1055,9 +1059,9 @@ try {
         'main img.size-medium',
       ).map((e) => {
         const src = e.dataset.src ?? '';
-        const res = /-(\d+)x(\d+)\.[a-z]+$/i.exec(src);
+        const res = /-(?<w>\d+)x(?<h>\d+)\.[a-z]+$/iu.exec(src)?.groups;
         if (!res) return src;
-        return { src, width: Number(res[1]), height: Number(res[2]) };
+        return { src, width: Number(res.w), height: Number(res.h) };
       });
       if (imgList.length === 0) break;
 
@@ -1093,5 +1097,5 @@ try {
     }
   }
 } catch (error) {
-  log.error(error as Error);
+  log.error(error);
 }

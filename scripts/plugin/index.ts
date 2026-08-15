@@ -35,15 +35,15 @@ export const outputPlugins: RolldownPluginOption[] = [
     renderChunk: (code) =>
       // 删除单独的 require 语句和注释（排除 // == 开头的油猴 meta 头标志行）
       code.replaceAll(
-        /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ (?!==).+\n(?=\n)/g,
+        /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ (?!==).+\n(?=\n)/gu,
         '',
       ),
   },
   // 实现 extractI18n 函数，单独提取指定的 i18n 语句出来使用
   codeEdit('self-extractI18n', (code) =>
     code.replaceAll(
-      /extractI18n\((["'])(.+?)\1\)/g,
-      (_, _quote, key) => `((lang) => {
+      /extractI18n\((?<quote>["'])(?<key>.+?)\k<quote>\)/gu,
+      (_, __, key) => `((lang) => {
 switch (lang) {
   ${langList
     .filter((l) => l !== 'zh')

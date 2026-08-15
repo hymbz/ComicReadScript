@@ -23,7 +23,7 @@ export const getTaglist = () => {
 const handleTagName = (tag: string) => {
   const [namespace, name] = tag.trim().split(':');
   if (!name) return ['', ''];
-  return [namespace, name.replaceAll(/[^a-z-_ ]/gi, '')];
+  return [namespace, name.replaceAll(/[^a-z-_ ]/giu, '')];
 };
 
 /** 命名空间缩写 */

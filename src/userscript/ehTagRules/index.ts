@@ -297,7 +297,7 @@ export const getTagLintRules = () => {
         ['x', 'mixed'],
         ['o', 'other'],
       ] as [string, string][]
-    ).map(([short, full]) => [new RegExp(`\\b${short}\\b(?=.*:)`), full]),
+    ).map(([short, full]) => [new RegExp(`\\b${short}\\b(?=.*:)`, 'u'), full]),
   );
   // 将缩写的命名空间转回全拼
   const getTagName = (tag: string) => {
@@ -339,7 +339,9 @@ export const getTagLintRules = () => {
 /** 拆分多个命名空间的标签 */
 export const splitTagNamespace = (tag: string) => {
   if (!tag.startsWith('(')) return [tag];
-  const [, namespaces, tagName] = /\((.+?)\)(.+)/.exec(tag)!;
+  const { namespaces, tagName } = /\((?<namespaces>.+?)\)(?<tagName>.+)/u.exec(
+    tag,
+  )!.groups;
   return namespaces.split('|').map((namespace) => `${namespace}${tagName}`);
 };
 

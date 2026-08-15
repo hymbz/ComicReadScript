@@ -2,8 +2,8 @@ import { type MangaProps } from 'components/Manga';
 import { querySelectorAll } from 'helper';
 
 const prevRe =
-  /^上一?(?:[章話话]|章节)$|^(?:prev|previous)(?:\s+chapter)?$|^前の章$/i;
-const nextRe = /^下一?(?:[章話话]|章节)$|^next(?:\s+chapter)?$|^次の章$/i;
+  /^上一?(?:[章話话]|章节)$|^(?:prev|previous)(?:\s+chapter)?$|^前の章$/iu;
+const nextRe = /^下一?(?:[章話话]|章节)$|^next(?:\s+chapter)?$|^次の章$/iu;
 
 export const getChapterSwitch = () => {
   let onPrev: MangaProps['onPrev'];
@@ -13,7 +13,7 @@ export const getChapterSwitch = () => {
     const texts = [e.textContent, e.ariaLabel!]
       .filter(Boolean)
       // 删除可能混在其中的特殊符号
-      .map((text) => text.replaceAll(/[<>()《》（）「」『』]/g, '').trim());
+      .map((text) => text.replaceAll(/[<>()《》（）「」『』]/gu, '').trim());
     if (texts.length === 0) return;
 
     for (const text of texts) {

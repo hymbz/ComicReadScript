@@ -1,3 +1,7 @@
+// 需要 reference 让 dts-bundle-generator 加载全局类型声明
+// oxlint-disable typescript/triple-slash-reference
+/// <reference path="./types/index.d.ts" />
+/// <reference path="./types/tampermonkey.d.ts" />
 import {
   Manga,
   type MangaProps,
@@ -31,7 +35,7 @@ type Request<TContext = object> = {
   fetch?: boolean;
   signal?: AbortSignal;
 
-  onabort?(): void;
+  onabort?: () => void;
   onerror?: (res?: ErrorResponse) => void;
   ontimeout?: (res: ErrorResponse) => void;
   onload?: (res: Response<TContext>) => void;
@@ -63,8 +67,11 @@ export type InitConfig = {
     GM_xmlhttpRequest?: GM_xmlhttpRequest;
 
     GM?: Partial<{
-      setValue(name: string, value: unknown): Promisable<void>;
-      getValue<TValue>(name: string, defaultValue?: TValue): Promisable<TValue>;
+      setValue: (name: string, value: unknown) => Promisable<void>;
+      getValue: <TValue>(
+        name: string,
+        defaultValue?: TValue,
+      ) => Promisable<TValue>;
     }>;
   };
   modules?: Record<string, any>;

@@ -31,7 +31,7 @@ setupSiteAdapter({
     detect_ad: true,
   },
   getPageContext: () => {
-    const galleryId = /^\/g\/(\d+)/.exec(location.pathname)?.[1];
+    const galleryId = /^\/g\/(?<id>\d+)/u.exec(location.pathname)?.groups?.id;
     if (galleryId) return { type: 'manga', galleryId } as const;
 
     if (querySelector('.container.index-container'))
@@ -49,7 +49,8 @@ setupSiteAdapter({
 
       setState('comicMap', '', {
         getImgList: async () => {
-          const galleryId = /^\/g\/(\d+)/.exec(location.pathname)?.[1];
+          const galleryId = /^\/g\/(?<id>\d+)/u.exec(location.pathname)?.groups
+            ?.id;
           if (!galleryId) throw new Error(t('site.changed_load_failed'));
           const galleryData = await getNhentaiData(galleryId);
           return toImgList(galleryData);
@@ -64,7 +65,6 @@ setupSiteAdapter({
           class="btn btn-secondary"
           onClick={() => showComic()}
         >
-          {/* oxlint-disable-next-line i18next/no-literal-string */}
           <i class="fa fa-book" /> Read
         </a>
       ) as HTMLAnchorElement;

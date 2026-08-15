@@ -59,13 +59,13 @@ export const getPageContext = async () => {
   imgNum = Number(
     querySelector('.gtb .gpc')
       ?.textContent?.replaceAll(',', '')
-      .match(/\d+/g)
+      .match(/\d+/gu)
       ?.at(-1),
   );
   // 有些脚本或插件会修改到相关 dom，此时就只能通过请求源码来获取页数了
   if (Number.isNaN(imgNum)) {
     const { responseText: html } = await request(location.href);
-    imgNum = Number(/(?<=class="gdt2">)\d+(?= pages<\/td>)/.exec(html)?.[0]);
+    imgNum = Number(/(?<=class="gdt2">)\d+(?= pages<\/td>)/u.exec(html)?.[0]);
   }
 
   const pageCtx: GalleryPageContext = {

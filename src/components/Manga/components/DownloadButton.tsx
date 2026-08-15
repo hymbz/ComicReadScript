@@ -9,7 +9,8 @@ import { imgList, isUpscale } from '../actions';
 import { downloadImg } from '../helper';
 import { store } from '../store';
 
-const getExtName = (mime: string) => /.+\/([^;]+)/.exec(mime)?.[1] ?? 'jpg';
+const getExtName = (mime: string) =>
+  /.+\/(?<ext>[^;]+)/u.exec(mime)?.groups?.ext ?? 'jpg';
 
 /** 下载按钮 */
 export const DownloadButton = () => {
@@ -70,10 +71,7 @@ export const DownloadButton = () => {
       level: 0,
       comment: location.href,
     });
-    saveAs(
-      new Blob([zipped as BlobPart]),
-      `${store.title || state.rawTitle}.zip`,
-    );
+    saveAs(new Blob([zipped]), `${store.title || state.rawTitle}.zip`);
     setState('completedNum', -1);
     toast(
       state.errorNum > 0

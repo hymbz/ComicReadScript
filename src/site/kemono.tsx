@@ -1,4 +1,4 @@
-﻿import { request, setupSiteAdapter } from 'core';
+import { request, setupSiteAdapter } from 'core';
 import {
   createEffectOn,
   querySelectorAll,
@@ -35,17 +35,18 @@ setupSiteAdapter({
     load_original_image: true,
   },
   getPageContext: () => {
-    const listId = /\/fanbox\/user\/(\w+)/.exec(location.pathname)?.[1];
+    const { listId, postId } =
+      /\/fanbox\/user\/(?<listId>\w+)|\/post\/(?<postId>\w+)/u.exec(
+        location.pathname,
+      )?.groups ?? {};
+
     if (listId) {
       const offset = Number(new URLSearchParams(location.search).get('o')) || 0;
       // 传递 offset 是为了在翻页时能被判定为页面改变
-      const result = { type: 'list', id: listId, offset } as const;
-      return result;
+      return { type: 'list', id: listId, offset } as const;
     }
 
-    const postId = /\/post\/(\w+)/.exec(location.pathname)?.[1];
-    if (!postId) return;
-    return { type: 'manga', id: postId } as const;
+    if (postId) return { type: 'manga', id: postId } as const;
   },
 
   handlers: {

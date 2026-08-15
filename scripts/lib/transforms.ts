@@ -13,7 +13,7 @@ export const transforms = {
     addWatchFile?.(importFile);
     const importCode = readFile(importFile)
       .replaceAll('require$1', 'require')
-      .replaceAll(/^exports\.(require|selfImport)+\s*=\s*.+;\n?/gm, '');
+      .replaceAll(/^exports\.(?<_>require|selfImport)+\s*=\s*.+;\n?/gmu, '');
 
     return `${createMetaHeader(meta)}\n${importCode}\n${code}`;
   },
@@ -34,27 +34,27 @@ export const transforms = {
     // 不知道为啥俄罗斯访问不了 npmmirror，只能改用 jsdelivr
     // https://github.com/hymbz/ComicReadScript/issues/170
     code = code.replaceAll(
-      /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
-      'cdn.jsdelivr.net/npm/$1@$2/$3',
+      /registry\.npmmirror\.com\/(?<pkg>.+)\/(?<version>\d+\.\d+\.\d)\/files\/(?<file>.+)/gu,
+      'cdn.jsdelivr.net/npm/$<pkg>@$<version>/$<file>',
     );
 
     // AdGuard 无法支持简易阅读模式，所以改为只在支持网站上运行
     let indexCode = readFile(pathResolve('src/index.ts'));
     indexCode = await siteUrl.renderChunk(indexCode, chunk);
     const matchList = [
-      ...indexCode.matchAll(/(?<=\n {4}case ').+?(?=':)/g),
+      ...indexCode.matchAll(/(?<=\n {4}case ').+?(?=':)/gu),
     ].flatMap(([url]) => `// @match           *://${url}/*`);
-    code = code.replace(/\/\/ @match \s+ \*:\/\/\*\/\*/, matchList.join('\n'));
+    code = code.replace(/\/\/ @match \s+ \*:\/\/\*\/\*/u, matchList.join('\n'));
 
     // 删掉不支持的菜单 api
     code = code.replaceAll(
-      /\/\/ @grant \s+ GM\.(registerMenuCommand|unregisterMenuCommand)\n/g,
+      /\/\/ @grant \s+ GM\.(?<fn>registerMenuCommand|unregisterMenuCommand)\n/gu,
       '',
     );
 
     // 把菜单 api 的调用也改掉
     code = code.replaceAll(
-      /await GM\.(registerMenuCommand|unregisterMenuCommand)/g,
+      /await GM\.(?<fn>registerMenuCommand|unregisterMenuCommand)/gu,
       'console.debug',
     );
 
@@ -67,7 +67,7 @@ export const transforms = {
     // 不知道为啥会提示 'Access to function "GM_getValue" is not allowed.'
     // 明明我用的是 GM.getValue。虽然好像对功能没有影响，但以防万一还是加上吧
     code = code.replace(
-      /\n(?=\/\/ @grant)/,
+      /\n(?=\/\/ @grant)/u,
       '\n// @grant           GM_getValue\n// @grant           GM_setValue\n',
     );
 

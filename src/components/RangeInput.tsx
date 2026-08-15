@@ -30,7 +30,7 @@ export const RangeInput: Component<RangeInputProps> = (props) => {
     offset: number,
     fn: (num: number) => number,
   ) => {
-    const isNumber = (num: number) => /\d/.test(text[num]);
+    const isNumber = (num: number) => /\d/u.test(text[num]);
 
     let start = offset;
     if (!isNumber(offset)) {

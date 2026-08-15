@@ -12,8 +12,9 @@ export const expandTagList: EhFeatureHandler = (_, pageCtx) => {
 
   css`
     #taglist {
-      --scrollbar-slider: ${getComputedStyle(querySelector('.ido')!)
-        .backgroundColor};
+      --scrollbar-slider: ${
+        getComputedStyle(querySelector('.ido')!).backgroundColor
+      };
 
       scrollbar-color: var(--scrollbar-slider) transparent;
       scrollbar-width: thin;
@@ -36,7 +37,7 @@ export const expandTagList: EhFeatureHandler = (_, pageCtx) => {
       }
 
       /* 长标签换行 */
-      [id^='td_'] a[id^='ta_'] {
+      & [id^='td_'] a[id^='ta_'] {
         text-wrap: balance;
         word-break: keep-all;
         overflow-wrap: anywhere;

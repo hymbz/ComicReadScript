@@ -93,7 +93,7 @@ export const libunrar = async (
       case 'Bad password': {
         if (password) {
           toast.error(t('pwa.alert.password_error'), {
-            throw: new Error(error as string),
+            throw: new Error(error),
           });
         }
 

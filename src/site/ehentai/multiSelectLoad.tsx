@@ -71,7 +71,7 @@ export const multiSelectLoad: GalleryHandler<
 
   await ms.registerItems(pageCtx.galleryId, (map) => {
     for (const dom of querySelectorAll<HTMLAnchorElement>('#gdt a')) {
-      const imgIndex = Number(/(?<=-)\d+(?:\?|$)/.exec(dom.href)?.[0]) - 1;
+      const imgIndex = Number(/(?<=-)\d+(?:\?|$)/u.exec(dom.href)?.[0]) - 1;
       if (!Number.isNaN(imgIndex))
         map.set(dom.querySelector('[title]')!, String(imgIndex));
     }

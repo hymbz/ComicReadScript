@@ -14,13 +14,15 @@ export const docGeneratorPlugin = (): RolldownPlugin => ({
     const readmeMd = readFile(readmePath);
 
     const newMd = readmeMd.replace(
-      /(?<=<!-- supportSiteList -->\n\n).*(?=\n\n<!-- supportSiteList -->)/s,
+      /(?<=<!-- supportSiteList -->\n\n).*(?=\n\n<!-- supportSiteList -->)/su,
       [...categoryMap.entries()]
         .map(([category, links]) => {
           const linkWithFavicon = (link: string) => {
-            const match = /\[(.+?)\]\((.+?)\)(.*)/.exec(link);
+            const match = /\[(?<text>.+?)\]\((?<url>.+?)\)(?<note>.*)/u.exec(
+              link,
+            )?.groups;
             if (!match) return link;
-            const [, text, url, note] = match;
+            const { text, url, note } = match;
             const { origin } = new URL(url);
             const faviconUrl = `https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=16`;
             return `<a href="${url}"><img src="${faviconUrl}" style="width:1em;height:1em;" loading="lazy"> ${text}</a>${note}`;

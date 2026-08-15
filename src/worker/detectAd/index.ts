@@ -1,6 +1,7 @@
 import jsQR, { type Options } from 'jsqr';
 
 import { mainFn, toGray } from './workHelper';
+
 export { type MainFn, setMainFn } from './workHelper';
 
 // jsQR 最为简洁，但不支持包含多个二维码的图片
@@ -26,18 +27,18 @@ const isColorImg = (data: Uint8ClampedArray) => {
 /** 二维码白名单 */
 const qrCodeWhiteList = [
   // fanbox
-  /^https:\/\/[^.]+\.fanbox\.cc/,
+  /^https:\/\/[^.]+\.fanbox\.cc/u,
   // twitter
-  /^https:\/\/twitter\.com/,
-  /^https:\/\/x\.com/,
+  /^https:\/\/twitter\.com/u,
+  /^https:\/\/x\.com/u,
   // fantia
-  /^https:\/\/fantia\.jp/,
+  /^https:\/\/fantia\.jp/u,
   // 棉花糖
-  /^https:\/\/marshmallow-qa\.com/,
+  /^https:\/\/marshmallow-qa\.com/u,
   // dlsite
-  /^https:\/\/www\.dlsite\.com/,
+  /^https:\/\/www\.dlsite\.com/u,
   // hitomi
-  /^https:\/\/hitomi\.la/,
+  /^https:\/\/hitomi\.la/u,
 ];
 
 const options: Options = { inversionAttempts: 'attemptBoth' };

@@ -27,10 +27,10 @@ export const startDevServer = () => {
 };
 
 const formatInputName = (input: string) =>
-  input.replace(/^.*?[/\\]src[/\\]/, '').replace(/(\/index)?\.tsx?$/, '');
+  input.replace(/^.*?[/\\]src[/\\]/u, '').replace(/(?<_>\/index)?\.tsx?$/u, '');
 
 const getDistRelative = (outputPath: string) =>
-  outputPath.replaceAll('\\', '/').replace(/^.*\/dist\/?/, '');
+  outputPath.replaceAll('\\', '/').replace(/^.*\/dist\/?/u, '');
 
 const getOutputName = (configs: RolldownOptions[]) => {
   const files = configs.map(

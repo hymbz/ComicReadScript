@@ -52,10 +52,10 @@ const manifest: Partial<ManifestOptions> = {
 export default defineConfig({
   server: { host: '0.0.0.0' },
   define: { isDevMode: 'false' },
-  build: { rollupOptions: { external: ['/unarchiver.min.js'] } },
+  build: { rolldownOptions: { external: ['/unarchiver.min.js'] } },
   css: {
     modules: {
-      globalModulePaths: [/^#/],
+      globalModulePaths: [/^#/u],
       generateScopedName: '[local]___[hash:base64:5]',
     },
   },

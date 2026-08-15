@@ -1,4 +1,3 @@
-// oxlint-disable i18next/no-literal-string
 import { request, setupSiteAdapter, toast } from 'core';
 import {
   css,
@@ -503,7 +502,7 @@ setupSiteAdapter({
         }
 
         return res.response.results.chapter.contents.map(({ url }) =>
-          url.replace(/(?<=(\/|\.))c800x/, 'c1500x'),
+          url.replace(/(?<=(?<sep>\/|\.))c800x/u, 'c1500x'),
         );
       };
 

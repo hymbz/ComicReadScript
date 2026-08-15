@@ -126,7 +126,7 @@ export const migration = async (version: string) => {
     await migrationOption('Hotkeys', (option) => {
       for (const [name, hotkeys] of Object.entries(option)) {
         option[name] = hotkeys.map((key: string) =>
-          key.replaceAll(/\b[A-Z]\b/g, (match) => match.toLowerCase()),
+          key.replaceAll(/\b[A-Z]\b/gu, (match) => match.toLowerCase()),
         );
       }
     });

@@ -16,7 +16,7 @@ export const quickTagDefine: EhFeatureHandler = (_, pageCtx) => {
   const saveTagContent = async (tag: string) => {
     if (Reflect.has(tagContent, tag)) return;
 
-    const url = `https://ehwiki.org/wiki/${tag.replaceAll(/[a-z]+:\s?/gi, '')}`;
+    const url = `https://ehwiki.org/wiki/${tag.replaceAll(/[a-z]+:\s?/giu, '')}`;
     const res = await request(url, { noCheckCode: true });
     if (res.status !== 200) {
       tagContent[tag] = <h3>{`${res.status} - ${res.statusText}`}</h3>;

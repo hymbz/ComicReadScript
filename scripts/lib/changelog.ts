@@ -86,33 +86,43 @@ const parseRefs = (body: string): Ref[] => {
 
   // 完整 URL，匹配后移除避免与短格式重复
   const urlPattern =
-    /https:\/\/sleazyfork\.org\/scripts\/\d+\/discussions\/(\d+)#comment-(\d+)/g;
+    /https:\/\/sleazyfork\.org\/scripts\/\d+\/discussions\/(?<id>\d+)#comment-(?<comment>\d+)/gu;
   const rest = body.replace(urlPattern, (url, id, comment) => {
     addRef(`${id}#comment-${comment}`, url);
     return '';
   });
 
   // sleazyfork 短格式
-  for (const m of rest.matchAll(/(?:^|\s)(\d+)#comment-(\d+)/g)) {
-    addRef(`${m[1]}#comment-${m[2]}`, sleazyforkUrl(m[1], m[2]));
+  for (const {
+    groups: { id, comment },
+  } of rest.matchAll(/(?:^|\s)(?<id>\d+)#comment-(?<comment>\d+)/gu)) {
+    addRef(`${id}#comment-${comment}`, sleazyforkUrl(id, comment));
   }
+
   // github issue
-  for (const m of rest.matchAll(/#(\d+)/g)) {
-    addRef(`#${m[1]}`, `${repoUrl}/issues/${m[1]}`);
+  for (const {
+    groups: { id },
+  } of rest.matchAll(/#(?<id>\d+)/gu)) {
+    addRef(`#${id}`, `${repoUrl}/issues/${id}`);
   }
+
   return refs;
 };
 
 /** 解析 conventional commit，非 feat/fix/perf 类型返回 null（不进入 CHANGELOG） */
 const parseCommit = (commit: CommitInfo): ParsedCommit | null => {
-  const match = /^(feat|fix|perf)(?:\(.+?\))?(!)?:\s*(.+)$/.exec(
-    commit.subject,
-  );
+  const match =
+    /^(?<type>feat|fix|perf)(?:\(.+?\))?(?<breaking>!)?:\s*(?<subject>.+)$/u.exec(
+      commit.subject,
+    )?.groups;
   if (!match) return null;
-  const type = match[1] as ParsedCommit['type'];
-  const breaking =
-    Boolean(match[2]) || /^BREAKING[\s-]CHANGE:/m.test(commit.body);
-  return { type, subject: match[3], breaking, refs: parseRefs(commit.body) };
+  return {
+    type: match.type as ParsedCommit['type'],
+    subject: match.subject,
+    breaking:
+      Boolean(match.breaking) || /^BREAKING[\s-]CHANGE:/mu.test(commit.body),
+    refs: parseRefs(commit.body),
+  };
 };
 
 const formatItem = (commit: CommitInfo, parsed: ParsedCommit) => {
@@ -160,7 +170,7 @@ export const generateChangelog = () => {
         item.parsed !== null,
     );
 
-  const oldVersion = latestTag.replace(/^v/, '');
+  const oldVersion = latestTag.replace(/^v/u, '');
   const newVersion = bumpVersion(
     oldVersion,
     parsedList.map((item) => item.parsed),
@@ -192,7 +202,7 @@ export const generateChangelog = () => {
   const changelogPath = pathResolve('docs/.other/CHANGELOG.md');
   const oldChangelog = readFile(changelogPath);
   const newChangelog = oldChangelog.startsWith('# Changelog\n\n')
-    ? oldChangelog.replace(/^# Changelog\n\n/, `# Changelog\n\n${section}\n\n`)
+    ? oldChangelog.replace(/^# Changelog\n\n/u, `# Changelog\n\n${section}\n\n`)
     : `# Changelog\n\n${section}\n\n${oldChangelog}`;
   writeFileSync(changelogPath, newChangelog);
 
@@ -201,7 +211,7 @@ export const generateChangelog = () => {
   for (const type of changeTypes) {
     const items = parsedList
       .filter((item) => item.parsed.type === type)
-      .map((item) => item.parsed.subject.replace(/^:\w+: /, '').trim());
+      .map((item) => item.parsed.subject.replace(/^:\w+: /u, '').trim());
     if (items.length > 0) changeJson[type] = items;
   }
 

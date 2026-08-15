@@ -35,7 +35,7 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
       return img.blobUrl;
     }
     // 有些浏览器不支持显示带有 hash 标识的图片 url
-    if (img.src.startsWith('blob:')) return img.src.replace(/#\..+/, '');
+    if (img.src.startsWith('blob:')) return img.src.replace(/#\..+/u, '');
     return img.src;
   };
 

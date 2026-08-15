@@ -90,6 +90,11 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js"
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".storybook/**/*.ts",
+    "docs/.vitepress/**/*.mts"
+  ],
   "exclude": ["**/dist/**", "**/public/**", "**/dev-dist/**", "**/*.js"]
 }

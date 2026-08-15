@@ -69,12 +69,12 @@ export const quickRating: EhFeatureHandler = (_, pageCtx) => {
         errorText: t('site.ehentai.change_rating_failed'),
         noTip: true,
       });
-      const reRes =
-        /api_url = "(.+?)";.+?gid = (\d+);.+?token = "(.+?)";.+?apiuid = (\d+);.+?apikey = "(.+?)"/s.exec(
+      const match =
+        /api_url = "(?<api_url>.+?)";.+?gid = (?<gid>\d+);.+?token = "(?<token>.+?)";.+?apiuid = (?<apiuid>\d+);.+?apikey = "(?<apikey>.+?)"/su.exec(
           dataRes.responseText,
-        );
-      if (!reRes) throw new Error(t('site.ehentai.change_rating_failed'));
-      const [, api_url, gid, token, apiuid, apikey] = reRes;
+        )?.groups;
+      if (!match) throw new Error(t('site.ehentai.change_rating_failed'));
+      const { api_url, gid, token, apiuid, apikey } = match;
 
       type ResData = { rating_cls: string; rating_usr: number };
       const res = await request<ResData>(api_url, {

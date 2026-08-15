@@ -227,13 +227,13 @@ export const updateMitTranslators = async (noTip = false) => {
       noTip,
       errorText: `${t('setting.option.paragraph_translation')} - ${t('alert.server_connect_failed')}`,
     });
-    const translatorsText = /(?<=validTranslators: )\[.+?\](?=,)/s.exec(
+    const translatorsText = /(?<=validTranslators: )\[.+?\](?=,)/su.exec(
       res.responseText,
     )?.[0];
     if (!translatorsText) return;
 
     const list: string[] = JSON.parse(
-      translatorsText.replaceAll(/\s|,\s*(?=\])/g, ``).replaceAll(`'`, `"`),
+      translatorsText.replaceAll(/\s|,\s*(?=\])/gu, ``).replaceAll(`'`, `"`),
     );
     setMitTranslators(
       list.map(

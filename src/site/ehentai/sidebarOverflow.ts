@@ -20,8 +20,9 @@ export const sidebarOverflow: EhFeatureHandler = (_, pageCtx) => {
 
   css`
     #gd5[data-long] {
-      --scrollbar-slider: ${getComputedStyle(querySelector('.gm')!)
-        .borderColor};
+      --scrollbar-slider: ${
+        getComputedStyle(querySelector('.gm')!).borderColor
+      };
 
       scrollbar-color: var(--scrollbar-slider) transparent;
       scrollbar-width: thin;

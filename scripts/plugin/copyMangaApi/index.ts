@@ -8,12 +8,12 @@ export const copyApi = codeEdit('self-copyApi', async (code) => {
   const hosts = (hostsCache ??= await fetchValidHosts());
   return code
     .replace(
-      /['"]apiList#copyManga['"]/,
+      /['"]apiList#copyManga['"]/u,
       () => `'${hosts.content.map((host) => `https://${host}`).join("', '")}'`,
     )
     .replace(
-      /['"]apiList#copyMangaMobile['"]/,
+      /['"]apiList#copyMangaMobile['"]/u,
       () => `'${hosts.mobile.map((host) => `https://${host}`).join("', '")}'`,
     )
-    .replace(/['"]appVersion#copyManga['"]/, () => `'${hosts.appVersion}'`);
+    .replace(/['"]appVersion#copyManga['"]/u, () => `'${hosts.appVersion}'`);
 });

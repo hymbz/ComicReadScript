@@ -10,7 +10,7 @@ import { store } from '../../../../store';
 
 /** 获取 API 基础 URL，优先使用自定义地址 */
 export const apiUrl = () =>
-  store.option.translation.mit?.localUrl?.replace(/\/$/, '') ||
+  store.option.translation.mit?.localUrl?.replace(/\/$/u, '') ||
   'http://127.0.0.1:5003';
 
 /** ngrok 代理需要的特殊请求头 */

@@ -44,7 +44,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   // 处理标注了 data-only-number 的元素
   if ((e.target as HTMLElement).dataset.onlyNumber !== undefined) {
     // 拦截能输入数字外的按键
-    if (/^(?:Shift \+ )?[a-zA-Z]$/.test(code)) {
+    if (/^(?:Shift \+ )?[a-zA-Z]$/u.test(code)) {
       e.stopPropagation();
       e.preventDefault();
     }

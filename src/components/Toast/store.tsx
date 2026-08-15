@@ -5,6 +5,8 @@ import { type Toast } from '.';
 export const { store, setState } = useStore({
   ref: null as HTMLElement | null,
   list: [] as Toast['id'][],
+  // 删除断言后 map 类型会退化为 {}，导致 setState 路径类型报错
+  // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
   map: {} as Record<Toast['id'], Toast>,
 });
 

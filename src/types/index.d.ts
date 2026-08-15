@@ -1,12 +1,12 @@
 // oxlint-disable consistent-type-definitions
-import { type Component, type JSX } from 'solid-js';
+import { type JSX } from 'solid-js';
 
 declare global {
-  declare const isDevMode: boolean;
+  const isDevMode: boolean;
 
-  declare const scriptVersion: string;
+  const scriptVersion: string;
 
-  declare const __LATEST_CHANGES__: Record<
+  const __LATEST_CHANGES__: Record<
     string,
     { date: string; feat?: string[]; fix?: string[]; perf?: string[] }
   >;
@@ -19,28 +19,41 @@ declare global {
     ReturnType<T>
   >;
 
-  declare function selfImport(name: string): void;
+  function selfImport(name: string): void;
 
   /** 将指定的 i18n 字段在打包时单独提取为一个函数，避免导入 main */
-  declare const extractI18n: (key: string) => (lang: string) => string;
-
-  declare module '*.svg' {
-    const fc: Component<JSX.HTMLAttributes<HTMLElement>>;
-    export default fc;
-  }
-
-  declare module '*.md' {
-    const md: {
-      html: string;
-    };
-    export default md;
-  }
+  const extractI18n: (key: string) => (lang: string) => string;
 
   interface Window {
     crsLib?: {
       [k: string]: any;
       GM_xmlhttpRequest: GM_xmlhttpRequest;
     };
+  }
+
+  interface String {
+    // 接口声明合并时仅方法签名能覆盖内置重载，使 groups 变为必填
+    // oxlint-disable-next-line typescript/method-signature-style
+    matchAll(
+      regexp: RegExp,
+    ): IterableIterator<
+      Omit<RegExpMatchArray, 'groups'> & { groups: Record<string, string> }
+    >;
+    // oxlint-disable-next-line typescript/method-signature-style
+    match(regexp: string | RegExp):
+      | (Omit<RegExpMatchArray, 'groups'> & {
+          groups: Record<string, string>;
+        })
+      | null;
+  }
+
+  interface RegExp {
+    // oxlint-disable-next-line typescript/method-signature-style
+    exec(string: string):
+      | (Omit<RegExpExecArray, 'groups'> & {
+          groups: Record<string, string>;
+        })
+      | null;
   }
 }
 

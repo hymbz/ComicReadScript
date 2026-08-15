@@ -28,7 +28,7 @@ export const buildUMD = async () => {
     );
 
   const siteOutPaths = siteList.map((path) =>
-    path.replace(/(\/index)?\.tsx?/, ''),
+    path.replace(/(?<_>\/index)?\.tsx?/u, ''),
   );
 
   // 提前 fetch CDN 资源，内联到 libCodeMap 中使 UMD 包完全自包含

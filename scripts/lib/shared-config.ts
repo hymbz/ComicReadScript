@@ -25,14 +25,15 @@ export const createBundleConfigs = (
       ...Object.keys(meta.resource ?? {}),
       ...packlist,
       'core',
-      /^solid/,
+      /^solid/u,
       ...packlist.map(
         (p) =>
           new RegExp(
             `^${p.replaceAll(
-              /[.*+?^${}()|[\]\\]/g,
+              /[.*+?^${}()|[\]\\]/gu,
               String.raw`\$&`,
             )}(?:[\\\\/]|$)`,
+            'u',
           ),
       ),
     ],
@@ -78,10 +79,10 @@ export const createBundleConfigs = (
         {
           name: 'self-import',
           transform(code, id) {
-            if (!/.+\.tsx?$/.test(id)) return null;
+            if (!/.+\.tsx?$/u.test(id)) return null;
             // rollldown 对 import * as 的处理会导致脚本加载机制失效，
             // 为了兼容 vite，不能直接删掉 `* as`，只能在这里修改代码。
-            return code.replaceAll(/import \* as \b/g, 'import ');
+            return code.replaceAll(/import \* as \b/gu, 'import ');
           },
         },
         ...(transforms ?? []).map((fn) => codeEdit('selfPlugin', fn)),
@@ -91,25 +92,29 @@ export const createBundleConfigs = (
       output: {
         ...(base.output as Record<string, unknown>),
         file: pathResolve(
-          file ?? `dist/${path.replace(/(\/index)?\.tsx?/, '')}.js`,
+          file ?? `dist/${path.replace(/(?<_>\/index)?\.tsx?/u, '')}.js`,
         ),
         plugins: [
           buildLoggerPlugin(),
           {
             name: 'clean-indirect',
             renderChunk(code: string) {
-              return code.replaceAll(/\(0,\s*(\w+(?:\.\w+)+)\)/g, '$1');
+              return code.replaceAll(
+                /\(0,\s*(?<name>\w+(?:\.\w+)+)\)/gu,
+                '$<name>',
+              );
             },
           },
         ],
       },
-      onwarn: (warning: { code: string }, warn: (w: unknown) => void) => {
-        switch (warning.code) {
+      onLog: (level, log, defaultHandler) => {
+        if (level !== 'warn') return defaultHandler(level, log);
+        switch (log.code) {
           case 'UNUSED_EXTERNAL_IMPORT':
           case 'EVAL':
             return;
           default:
-            warn(warning);
+            defaultHandler(level, log);
         }
       },
     }) as RolldownOptions;

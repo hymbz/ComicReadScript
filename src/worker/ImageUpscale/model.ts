@@ -16,7 +16,7 @@ let model: GraphModel | undefined;
 
 let loading = false;
 
-export const getModel = async () => {
+export const getModel = async (): Promise<GraphModel> => {
   if (model) return model;
   if (loading) return wait(() => model);
 

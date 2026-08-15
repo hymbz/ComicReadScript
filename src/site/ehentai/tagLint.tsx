@@ -68,7 +68,7 @@ export const tagLint: EhFeatureHandler = (_, pageCtx) => {
     return (
       <Show when={tags.length > 1} fallback={TagBase(props)}>
         <span>
-          {/* oxlint-disable-next-line i18next/no-literal-string */}「
+          「
           <For each={tags}>
             {(name, i) => (
               <>
@@ -77,7 +77,7 @@ export const tagLint: EhFeatureHandler = (_, pageCtx) => {
               </>
             )}
           </For>
-          {/* oxlint-disable-next-line i18next/no-literal-string */}」
+          」
         </span>
       </Show>
     );
@@ -144,9 +144,11 @@ export const tagLint: EhFeatureHandler = (_, pageCtx) => {
     const correctTags: string[] = [];
     for (const tag of weakTags) {
       // 作者、社团则要检查漫画标题中是否包含其名字
-      if (/^(?:artist|group):/.test(tag)) {
+      if (/^(?:artist|group):/u.test(tag)) {
         const title = querySelector('#gd2')!.textContent.toLowerCase();
-        if (title.includes(tag.replaceAll(/^(artist|group):|_/g, ' ').trim()))
+        if (
+          title.includes(tag.replaceAll(/^(?<_>artist|group):|_/gu, ' ').trim())
+        )
           correctTags.push(tag);
         else {
           // 也检查经过翻译的标签名

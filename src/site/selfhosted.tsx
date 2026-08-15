@@ -1,4 +1,4 @@
-﻿import { setState as setMangaStore } from 'components/Manga';
+import { setState as setMangaStore } from 'components/Manga';
 import { clamp, debounce, querySelector, range, sleep, wait } from 'helper';
 import { request } from 'request';
 import { setup } from 'userscript/core';
@@ -47,9 +47,15 @@ if (
   setup({
     name: 'Tachidesk',
     isMangaPage: () => {
-      const match = /\/manga\/(\d+)\/chapter\/(\d+)/.exec(location.pathname);
+      const match =
+        /\/manga\/(?<mangaId>\d+)\/chapter\/(?<chapterId>\d+)/u.exec(
+          location.pathname,
+        )?.groups;
       if (!match) return false;
-      return { mangaId: Number(match[1]), chapterId: Number(match[2]) };
+      return {
+        mangaId: Number(match.mangaId),
+        chapterId: Number(match.chapterId),
+      };
     },
     async getImgList({ setState }, { mangaId, chapterId }) {
       const data = await getChapters(mangaId, chapterId);

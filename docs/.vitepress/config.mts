@@ -7,8 +7,11 @@ export default defineConfig({
   title: 'ComicRead Script',
   description: 'ComicRead Script Docs',
   head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
-  // oxlint-disable-next-line typescript/strict-void-return
-  markdown: { config: (md) => md.use(imgSize) },
+  markdown: {
+    config: (md) => {
+      md.use(imgSize);
+    },
+  },
   themeConfig: {
     nav: [
       {

@@ -53,7 +53,9 @@ for (const [k, v] of Object.entries(resourceList)) {
 /** 根据 index.ts 的注释获取支持站点列表 */
 const getSupportSiteList = () => {
   const indexCode = readFileSync('src/index.ts', 'utf8');
-  return [...indexCode.matchAll(/^\s*\/\/\s#(.+)$/gm)].map((m) => m[1]);
+  return [...indexCode.matchAll(/^\s*\/\/\s#(?<site>.+)$/gmu)].map(
+    ({ groups: { site } }) => site,
+  );
 };
 
 export const categoryMap = new Map<string, string[]>();
@@ -62,9 +64,9 @@ export const updateCategoryMap = () => {
   categoryMap.clear();
   // .slice(7) 跳过 README 中手动维护的前 7 个站点（有专属文档章节的网站）
   for (const site of getSupportSiteList().slice(7)) {
-    const match = /^([^[]+)(\[.+)$/.exec(site);
+    const match = /^(?<category>[^[]+)(?<link>\[.+)$/u.exec(site)?.groups;
     if (!match) continue;
-    const [, category, link] = match;
+    const { category, link } = match;
     if (!categoryMap.has(category)) categoryMap.set(category, []);
     categoryMap.get(category)!.push(link);
   }
@@ -73,7 +75,9 @@ export const updateCategoryMap = () => {
 updateCategoryMap();
 
 const getCategory = (name: string) =>
-  (categoryMap.get(name) ?? []).map((t) => /\[(.+?)\]/.exec(t)?.[1]);
+  (categoryMap.get(name) ?? []).map(
+    (t) => /\[(?<text>.+?)\]/u.exec(t)?.groups?.text,
+  );
 
 const enSupportSite = [
   'E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.)',
@@ -87,7 +91,9 @@ export const meta = {
   namespace: 'ComicRead',
   version: pkg.version,
   description: `${zh.description}${getSupportSiteList()
-    .map((site) => site.replace(/^[^[]*\[([^\]]+)\]\([^)]+\).*$/, '$1'))
+    .map((site) =>
+      site.replace(/^[^[]*\[(?<text>[^\]]+)\]\([^)]+\).*$/u, '$<text>'),
+    )
     .join('、')}`,
   'description:en': `${en.description} ${enSupportSite.join(' | ')}`,
   'description:ru': ru.description,

@@ -18,7 +18,7 @@ const CACHE_FILE = `${TMP_DIR}/copyMangaHosts.json`;
 // dex 字符串池中 ASCII 字符串连续存储（MUTF-8 与 ASCII 一致），可直接用正则提取域名
 // 带边界的裸域名匹配，避免命中 URL 中带路径的域名与相邻字符串拼接
 const DOMAIN_REGEX =
-  /(?<![\w.])[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+\.[a-z]{2,}(?![\w./])/g;
+  /(?<![\w.])[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+\.[a-z]{2,}(?![\w./])/gu;
 
 /** 从 index.json 获取 copymanga 扩展的当前版本号与 APK 文件名 */
 const fetchApkInfo = async () => {

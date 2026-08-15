@@ -131,7 +131,7 @@ export const useInit = (props: MangaProps) => {
       for (const img of unwrap(props.imgList)) {
         // 使用相对协议路径，防止 Mixed Content 报错
         const url =
-          (typeof img === 'object' ? img.src : img)?.replace(/^http:/, '') ??
+          (typeof img === 'object' ? img.src : img)?.replace(/^http:/u, '') ??
           '';
         newImgList.push(url);
 
@@ -258,7 +258,7 @@ export const useInit = (props: MangaProps) => {
     );
     setTimeout(() => URL.revokeObjectURL(codeUrl));
     setState('supportWorker', Boolean(new Worker(codeUrl)));
-  }, 0);
+  });
 
   // 更新 fullscreen 参数
   refs.root.addEventListener('fullscreenchange', () => {

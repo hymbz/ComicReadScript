@@ -48,6 +48,9 @@ export default defineConfig({
     curly: 'off',
     // 禁止使用 TODO、FIXME 等警告注释
     'eslint/no-warning-comments': 'off',
+    // 要求正则表达式使用 Unicode 标志
+    // TODO: TS 修复 v 标志的解析 bug 后改回 v
+    'eslint/require-unicode-regexp': ['warn', { requireFlag: 'u' }],
     // 要求或禁止函数表达式有名称，仅在需要时命名
     'func-names': ['error', 'as-needed'],
     // 强制使用函数表达式而非函数声明
@@ -116,6 +119,8 @@ export default defineConfig({
         caughtErrorsIgnorePattern: '^_',
       },
     ],
+    // 要求或禁止将多个变量合并为一条声明语句
+    'one-var': 'off',
     // 要求使用 const 声明不会被重新赋值的变量
     'prefer-const': [
       'error',
@@ -235,13 +240,19 @@ export default defineConfig({
     'jsdoc/require-returns': 'off',
     // 要求 @returns 标签声明返回类型
     'jsdoc/require-returns-type': 'off',
+    // 要求 @throws 标签声明抛出的异常类型
+    'jsdoc/require-throws-description': 'off',
 
     // Unicorn
 
+    // 禁止显式指定 setTimeout/setInterval 的 delay 参数
+    'unicorn/explicit-timer-delay': ['warn', 'never'],
     // 要求将函数定义移到尽可能高的作用域
     'unicorn/consistent-function-scoping': 'off',
     // 强制文件名大小写风格
     'unicorn/filename-case': 'off',
+    // 限制嵌套函数调用的最大深度
+    'unicorn/max-nested-calls': 'off',
     // 禁止直接传递数组方法回调引用（如 arr.forEach(fn)）
     'unicorn/no-array-callback-reference': 'off',
     // 禁止使用 null，推荐使用 undefined
@@ -296,6 +307,7 @@ export default defineConfig({
     'vitest/prefer-expect-assertions': 'off',
     // 要求使用 setup/teardown hooks
     'jest/require-hook': 'off',
+    'vitest/require-hook': 'off',
     // 禁止在单个测试中使用过多的 expect
     'jest/max-expects': 'off',
     'vitest/max-expects': 'off',
@@ -387,6 +399,8 @@ export default defineConfig({
     {
       files: ['src/site/**/*'],
       rules: {
+        // 站点专属文案不需要 i18n
+        'i18next/no-literal-string': 'off',
         'no-restricted-imports': [
           'warn',
           {
@@ -451,7 +465,6 @@ export default defineConfig({
   ],
   options: {
     typeAware: true,
-    // TODO: 因为还无法正确处理 import *.css 语法，所以暂且禁用，等更新
-    // typeCheck: true,
+    typeCheck: true,
   },
 });

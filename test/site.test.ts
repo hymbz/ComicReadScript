@@ -86,20 +86,25 @@ const getSiteTestInfo = () => {
   const siteList: SiteTestInfo[] = [];
 
   const indexCode = readFile(pathResolve('src/index.ts'));
-  for (const [, comment, code] of indexCode.matchAll(
-    /(\n\s+\/\/ #.+?)(case.+?break;\n {4}\})/gs,
+  for (const {
+    groups: { comment, code },
+  } of indexCode.matchAll(
+    /(?<comment>\n\s+\/\/ #.+?)(?<code>case.+?break;\n {4}\})/gsu,
   )) {
-    const codeRes =
-      /selfImport\('site\/(\w+)'\)| setup\(\{.+?name: '(.+?)'/s.exec(code);
-    if (!codeRes) throw new Error('index.ts 注释解析出错');
-    const name = codeRes[1] || codeRes[2];
+    const match =
+      /selfImport\('site\/(?<site>\w+)'\)| setup\(\{.+?name: '(?<name>.+?)'/su.exec(
+        code,
+      )?.groups;
+    if (!match) throw new Error('index.ts 注释解析出错');
+    const name = match.site || match.name;
 
-    const commentRes = [...comment.matchAll(/\/\/ test: (.+)(?=\n)/g)];
+    const commentRes = [...comment.matchAll(/\/\/ test: (?<url>.+)(?=\n)/gu)];
     if (commentRes.length === 0) {
       skip.push(name);
       continue;
     }
-    const [[, url]] = commentRes;
+
+    const { url } = commentRes[0].groups;
     if (!url.startsWith('http')) continue;
 
     const only = comment.includes('// only');

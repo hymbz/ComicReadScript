@@ -5,11 +5,11 @@ import { codeEdit } from './codeEdit';
 const siteUrlFnMap = {
   async jm() {
     const res = await axios<string>('https://jmcomic6.org');
-    return [...res.data.matchAll(/(?<=<span>)[\da-z-.]+(?=<\/span>)/g)].flat();
+    return [...res.data.matchAll(/(?<=<span>)[\da-z-.]+(?=<\/span>)/gu)].flat();
   },
   async wnacg() {
     const res = await axios<string>('https://wnacg01.link/');
-    return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+(?=<\/i>)/g)].flat();
+    return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+(?=<\/i>)/gu)].flat();
   },
   async copymanga() {
     const urls: string[] = [];
@@ -23,7 +23,7 @@ const siteUrlFnMap = {
     // 从官网公告获取
     const res = await axios<string>('https://www.mangacopy.com/');
     const noticeUrl =
-      /(?<=大陸無障礙訪問地址為[\s:：]*https:\/\/)[A-Za-z\d.-]+/.exec(res.data);
+      /(?<=無障礙訪問地址為[\s:：]*https:\/\/)[A-Za-z\d.-]+/u.exec(res.data);
     if (noticeUrl) urls.push(noticeUrl[0]);
 
     return [...new Set(urls)];
@@ -53,7 +53,7 @@ export const siteUrl = codeEdit('self-siteUrl', async (code) => {
   siteUrlMap ??= await initSiteUrlMap();
 
   return code.replaceAll(
-    /case ['"]siteUrl#(.+?)['"]:(.+?)(?=\{)/gs,
+    /case ['"]siteUrl#(?<name>.+?)['"]:(?<other>.+?)(?=\{)/gsu,
     (_, name, other) => {
       if (!Reflect.has(siteUrlMap!, name)) {
         console.error(`未知站点: ${name}`);
@@ -64,7 +64,7 @@ export const siteUrl = codeEdit('self-siteUrl', async (code) => {
       );
 
       const otherUrlList = new Set<string>(
-        [...other.matchAll(/(?<=case ['"]).+?(?=['"]:)/g)].flat(),
+        [...other.matchAll(/(?<=case ['"]).+?(?=['"]:)/gu)].flat(),
       );
 
       return `${list

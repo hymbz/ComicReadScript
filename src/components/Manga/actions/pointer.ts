@@ -66,7 +66,7 @@ const handlePageClick = (e: MouseEvent) => {
 /** 网格模式下点击图片跳到对应页 */
 const handleGridClick = (e: MouseEvent) => {
   const target = findClickEle(refs.root.getElementsByClassName(classes.img), e);
-  if (target) jumpToImg(Number(/_(\d+)_/.exec(target.id)?.[1]));
+  if (target) jumpToImg(Number(/_(?<id>\d+)_/u.exec(target.id)?.groups?.id));
 };
 
 /** 双击放大 */

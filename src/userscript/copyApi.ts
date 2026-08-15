@@ -35,12 +35,14 @@ const getKeys = async (url?: string): Promise<[string, string]> => {
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36',
       },
     });
-    const [script] = html.responseText.match(
-      /(?<=<script>\s+)(var .+?contentKey =.+?)(?=<\/script)/gs,
-    )!;
+    const { script } = html.responseText.match(
+      /(?<=<script>\s+)(?<script>var .+?contentKey =.+?)(?=<\/script)/gsu,
+    )!.groups;
 
     const res: Record<string, string> = {};
-    for (const [, key, value] of script.matchAll(/var (\S+) = '(.+?)';\n/g))
+    for (const {
+      groups: { key, value },
+    } of script.matchAll(/var (?<key>\S+) = '(?<value>.+?)';\n/gu))
       res[key] = value;
 
     contentKey = res.contentKey; // oxlint-disable-line prefer-destructuring
@@ -75,7 +77,7 @@ export const decryptData = async (raw: string, key?: string) => {
       ['decrypt'],
     ),
     new Uint8Array(
-      cipher.match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16)),
+      cipher.match(/.{1,2}/gu)!.map((byte) => Number.parseInt(byte, 16)),
     ).buffer,
   );
   return JSON.parse(new TextDecoder().decode(decryptedBuffer));
@@ -85,5 +87,5 @@ export const decryptData = async (raw: string, key?: string) => {
 export const getImglistByHtml = async (pageUrl?: string) => {
   const keys = await getKeys(pageUrl);
   const res: { url: string }[] = await decryptData(...keys);
-  return res.map(({ url }) => url.replace(/(?<=(\/|\.))c800x/, 'c1500x'));
+  return res.map(({ url }) => url.replace(/(?<=[/.])c800x/u, 'c1500x'));
 };

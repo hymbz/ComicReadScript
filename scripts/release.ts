@@ -47,8 +47,8 @@ if (process.argv.slice(2).includes('push')) {
   writeFileSync(
     pathResolve('./ComicRead-jsDelivr.user.js'),
     code.replaceAll(
-      /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
-      'cdn.jsdelivr.net/npm/$1@$2/$3',
+      /registry\.npmmirror\.com\/(?<pkg>.+)\/(?<version>\d+\.\d+\.\d)\/files\/(?<file>.+)/gu,
+      'cdn.jsdelivr.net/npm/$<pkg>@$<version>/$<file>',
     ),
   );
 

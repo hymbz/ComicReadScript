@@ -19,10 +19,10 @@ const getDomPosition = (dom: HTMLElement) => {
   const rect = dom.getBoundingClientRect();
   const computedStyle = getComputedStyle(dom);
 
-  const leftBorder = Number.parseFloat(computedStyle.borderLeftWidth);
-  const leftPadding = Number.parseFloat(computedStyle.paddingLeft);
-  const topPadding = Number.parseFloat(computedStyle.paddingTop);
-  const topBorder = Number.parseFloat(computedStyle.borderTopWidth);
+  const leftBorder = parseFloat(computedStyle.borderLeftWidth); // oxlint-disable-line unicorn/prefer-number-coercion
+  const leftPadding = parseFloat(computedStyle.paddingLeft); // oxlint-disable-line unicorn/prefer-number-coercion
+  const topPadding = parseFloat(computedStyle.paddingTop); // oxlint-disable-line unicorn/prefer-number-coercion
+  const topBorder = parseFloat(computedStyle.borderTopWidth); // oxlint-disable-line unicorn/prefer-number-coercion
 
   return {
     left: rect.left + leftBorder + leftPadding,

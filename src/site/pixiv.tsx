@@ -1,4 +1,4 @@
-﻿import { request, setupSiteAdapter } from 'core';
+import { request, setupSiteAdapter } from 'core';
 import { createEffectOn, waitDom } from 'helper';
 
 import { useMultiSelectLoad } from '../userscript/multiSelect';
@@ -18,12 +18,14 @@ setupSiteAdapter({
     load_original_image: true,
   },
   getPageContext: async () => {
-    const listId = /^\/users\/(\d+)/.exec(location.pathname)?.[1];
+    const listId = /^\/users\/(?<listId>\d+)/u.exec(location.pathname)?.groups
+      ?.listId;
     if (listId) return { type: 'list', id: listId } as const;
 
     if (!location.pathname.startsWith('/artworks/')) return;
 
-    const id = /^\/artworks\/(\d+)/.exec(location.pathname)?.[1];
+    const id = /^\/artworks\/(?<artworkId>\d+)/u.exec(location.pathname)?.groups
+      ?.artworkId;
     if (!id) {
       imgs.length = 0;
       return;

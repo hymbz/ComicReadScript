@@ -6,9 +6,9 @@ import { type Option } from '../../store/option';
 import { activeImgIndex, activePage, imgList } from '../memo';
 import { type TranslationTask } from './TranslationTask';
 import { Cotrans } from './translator/Cotrans';
-import { MIT, updateMitTranslators } from './translator/MangaImageTranslator';
+import { MIT } from './translator/MangaImageTranslator';
 
-export { updateMitTranslators };
+export { updateMitTranslators } from './translator/MangaImageTranslator';
 export { cotransSettings } from './translator/Cotrans/settings';
 export { mitSettings } from './translator/MangaImageTranslator/settings';
 

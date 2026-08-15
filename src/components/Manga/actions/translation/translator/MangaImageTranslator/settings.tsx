@@ -111,7 +111,7 @@ export const mitSettings: Component = () => (
         value={store.option.translation.mit.localUrl}
         onChange={(e) => {
           setOption((draftOption) => {
-            const url = e.target.value.replace(/\/$/, '');
+            const url = e.target.value.replace(/\/$/u, '');
             draftOption.translation.mit.localUrl = url;
           });
         }}

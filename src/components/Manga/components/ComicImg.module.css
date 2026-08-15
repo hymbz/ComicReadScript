@@ -64,7 +64,7 @@
     background-image: var(--md-cloud-download);
 
     /* 加载中的图片先隐藏一下，避免出错图片的元素被直接显示出来 */
-    img {
+    & img {
       animation: show 100ms forwards;
     }
   }
@@ -161,7 +161,7 @@
 
   box-sizing: border-box;
 
-  .img {
+  & .img {
     cursor: pointer;
     margin-right: auto;
     margin-left: auto;
@@ -200,7 +200,7 @@
 .root[data-scroll-mode]:not([data-grid-mode]) .mangaBox {
   overflow: auto;
 
-  .mangaFlow {
+  & .mangaFlow {
     touch-action: pan-y;
     row-gap: calc(var(--scroll-mode-spacing) * 7px);
     height: fit-content;
@@ -210,12 +210,12 @@
     touch-action: none;
     overflow: hidden;
 
-    .mangaFlow {
+    & .mangaFlow {
       column-gap: calc(var(--scroll-mode-spacing) * 7px);
       align-items: start;
       height: 100%;
 
-      .img {
+      & .img {
         width: 100%;
         height: auto;
 

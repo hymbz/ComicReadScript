@@ -134,8 +134,10 @@ const hitomi: SiteFn = async ({ setState }, { galleryId }) => {
         loadImg: async (i: number) => {
           const { hash, name } = data.files[i];
           const imageId = gg.s(hash);
-          const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash)!;
-          const g = Number.parseInt(m[2] + m[1], 16);
+          const m = /[\da-f]{61}(?<hi>[\da-f]{2})(?<lo>[\da-f])/u.exec(
+            hash,
+          )!.groups;
+          const g = Number.parseInt(m.lo + m.hi, 16);
           const url = `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
           const src = await downImg(url);
           return { src, name };

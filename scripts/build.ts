@@ -35,7 +35,9 @@ const closes = await runWatcher(
         plugins: [
           virtualPacklistPlugin([
             ...packlist,
-            ...siteList.map((path) => path.replace(/(\/index)?\.tsx?/, '')),
+            ...siteList.map((path) =>
+              path.replace(/(?<_>\/index)?\.tsx?/u, ''),
+            ),
           ]),
         ],
       },

@@ -25,7 +25,7 @@ const createImgData = (oldSrc = ''): ImgData => ({
 
 /** 用于判断是否是图片 url 的正则 */
 const isImgUrlRe =
-  /^(?:(?:(?:https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/;
+  /^(?:(?:(?:https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/u;
 
 /** 找出格式为图片 url 的元素属性 */
 export const getDatasetUrl = (e: Element) => {

@@ -31,21 +31,23 @@ const extractSpriteImage = async (style: CSSStyleDeclaration) => {
     backgroundPositionY: backgroundY,
   } = style;
 
-  const urlMatch = /url\(['"]([^)]+)['"]\)/.exec(backgroundImage);
+  const urlMatch = /url\(['"](?<url>[^)]+)['"]\)/u.exec(
+    backgroundImage,
+  )?.groups;
   if (!urlMatch) throw new Error('解析不到背景图片URL');
-  const [, url] = urlMatch;
+  const { url } = urlMatch;
 
   const spriteImage = await loadImageBitmap(url);
 
-  const w = parseFloat(width);
-  const h = parseFloat(height);
+  const w = parseFloat(width); // oxlint-disable-line unicorn/prefer-number-coercion
+  const h = parseFloat(height); // oxlint-disable-line unicorn/prefer-number-coercion
   const canvas = new OffscreenCanvas(w, h);
   const ctx = canvas.getContext('2d')!;
 
   ctx.clearRect(0, 0, w, h);
 
-  const sourceX = -parseFloat(backgroundX);
-  const sourceY = -parseFloat(backgroundY);
+  const sourceX = -parseFloat(backgroundX); // oxlint-disable-line unicorn/prefer-number-coercion
+  const sourceY = -parseFloat(backgroundY); // oxlint-disable-line unicorn/prefer-number-coercion
 
   ctx.drawImage(spriteImage, sourceX, sourceY, w, h, 0, 0, w, h);
 
@@ -72,12 +74,12 @@ export const detectAd: GalleryHandler<DetectAdReturn | undefined> = (
   const thumbnailList: (ImageBitmap | HTMLImageElement)[] = [];
   (async () => {
     for (const e of querySelectorAll<HTMLAnchorElement>('#gdt > a')) {
-      const index = Number(/.+-(\d+)/.exec(e.href)?.[1]) - 1;
+      const index = Number(/.+-(?<index>\d+)/u.exec(e.href)?.groups?.index) - 1;
       if (Number.isNaN(index)) continue;
       pageList[index] = e.href;
 
       const thumbnail = e.querySelector<HTMLElement>('[title]')!;
-      [, fileNameList[index]] = thumbnail.title.split(/：|: /);
+      [, fileNameList[index]] = thumbnail.title.split(/：|: /u);
       if (isImageElement(thumbnail)) thumbnailList[index] = thumbnail;
       if (thumbnail.style.background.includes('url('))
         thumbnailList[index] = await extractSpriteImage(thumbnail.style);

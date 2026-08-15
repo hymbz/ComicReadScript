@@ -149,6 +149,8 @@ export class Cotrans extends TranslationTask {
           );
           if (result) resolve(result);
         } catch (error) {
+          // 断言以符合 prefer-promise-reject-errors 规则
+          // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
           reject(error as Error);
         }
       };

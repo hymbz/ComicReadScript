@@ -173,8 +173,8 @@
 /* 拖动滚动条时取消移动过渡动画，确保跟手 */
 .scrollbar[data-drag] {
   &::before,
-  .scrollbarPoper,
-  .scrollbarSlider {
+  & .scrollbarPoper,
+  & .scrollbarSlider {
     transition: opacity 150ms;
   }
 }

@@ -56,8 +56,8 @@
       margin-top: 1em;
     }
 
-    input,
-    textarea {
+    & input,
+    & textarea {
       width: 97%;
       margin-top: 0.3em;
     }
@@ -110,7 +110,7 @@
   &[data-disabled] {
     opacity: 0.5;
 
-    button {
+    & button {
       cursor: not-allowed;
     }
   }

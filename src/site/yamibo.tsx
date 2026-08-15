@@ -8,7 +8,6 @@ import {
   scrollIntoView,
   useCache,
 } from 'helper';
-/* oxlint-disable i18next/no-literal-string */
 import { Show, createMemo, createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
 
@@ -43,11 +42,12 @@ setupSiteAdapter({
   },
   getPageContext: () => {
     // 判断当前页是帖子
-    if (/thread(?:-\d+){3}|mod=viewthread/.test(document.URL)) {
+    if (/thread(?:-\d+){3}|mod=viewthread/u.test(document.URL)) {
       const tid =
         unsafeWindow.tid ??
         new URLSearchParams(location.search).get('tid') ??
-        /\/thread-(\d+)-\d+-\d+.html/.exec(location.pathname)?.[1];
+        /\/thread-(?<tid>\d+)-\d+-\d+.html/u.exec(location.pathname)?.groups
+          ?.tid;
       if (!tid) return;
 
       const fid =
@@ -63,7 +63,7 @@ setupSiteAdapter({
     }
 
     // 判断当前页是板块
-    if (/forum(?:-\d+){2}|mod=forumdisplay/.test(document.URL)) {
+    if (/forum(?:-\d+){2}|mod=forumdisplay/u.test(document.URL)) {
       const isMobile = !document.querySelector('#flk');
       const pageContext = { type: 'forum', isMobile } as const;
       return pageContext;
@@ -199,7 +199,7 @@ setupSiteAdapter({
         // 通过标签确定上/下一话
         if (tagDom) {
           const [, tagId] = tagDom.href.split('id=');
-          const reg = /(?<=<th>\s<a href="thread-)\d+(?=-)/g;
+          const reg = /(?<=<th>\s<a href="thread-)\d+(?=-)/gu;
           let threadList: number[] = [];
 
           // 先获取包含当前帖后一话在内的同一标签下的帖子id列表，再根据结果设定上/下一话
@@ -284,7 +284,7 @@ setupSiteAdapter({
       try {
         const res = await fetch(`plugin.php?id=zqlj_sign&sign=${sign}`);
         const body = await res.text();
-        if (!/成功！|打过卡/.test(body)) throw new Error('自动签到失败');
+        if (!/成功！|打过卡/u.test(body)) throw new Error('自动签到失败');
         toast.success('自动签到成功');
         localStorage.setItem('signDate', todayString);
       } catch {
@@ -307,6 +307,7 @@ setupSiteAdapter({
               noTip: true,
             },
           );
+          // oxlint-disable-next-line unicorn/prefer-number-coercion
           allReplies = Number.parseInt(
             res.response?.Variables?.thread?.allreplies,
             10,
@@ -314,6 +315,7 @@ setupSiteAdapter({
         } catch {}
 
         /** 当前所在页数 */
+        // oxlint-disable-next-line unicorn/prefer-number-coercion
         const currentPageNum = Number.parseInt(
           querySelector('#pgt strong')?.textContent ??
             querySelector<HTMLSelectElement>('#dumppage')?.value ??

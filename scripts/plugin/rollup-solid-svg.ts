@@ -47,10 +47,10 @@ export const solidSvg = (): Plugin => {
 
       const code = await getSvgCode(path);
       return `export default (props = {}) => ${code
-        .replaceAll(/([{}])/g, "{'$1'}")
+        .replaceAll(/(?<brace>[{}])/gu, "{'$<brace>'}")
         // oxlint-disable-next-line regexp/no-super-linear-backtracking
-        .replaceAll(/<!--\s*([\s\S]*?)\s*-->/g, '{/* $1 */}')
-        .replace(/(?<=<svg.*?)(>)/i, ' {...props}>')}`;
+        .replaceAll(/<!--\s*(?<comment>[\s\S]*?)\s*-->/gu, '{/* $<comment> */}')
+        .replace(/(?<=<svg.*?)(?<tagEnd>>)/iu, ' {...props}>')}`;
     },
 
     async transform(rawCode, path) {
@@ -63,10 +63,12 @@ export const solidSvg = (): Plugin => {
       let code = rawCode;
 
       // 将结尾带有 `?raw` 的导入替换成对应的字符串变量
-      for (const [raw, name, _path] of rawCode.matchAll(
-        /import (\w+) from '(.+\.svg)\?raw';/g,
+      for (const {
+        groups: { name, path: fromPath, raw },
+      } of rawCode.matchAll(
+        /(?<raw>import (?<name>\w+) from '(?<path>.+\.svg)\?raw';)/gu,
       )) {
-        const svgPath = (await this.resolve(_path))!.id;
+        const svgPath = (await this.resolve(fromPath))!.id;
         const svgCode = await getSvgCode(svgPath);
         code = code.replaceAll(raw, `const ${name} = \`${svgCode}\`;\n`);
       }

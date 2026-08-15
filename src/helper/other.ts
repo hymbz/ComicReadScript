@@ -37,7 +37,8 @@ export const clamp = (min: number, val: number, max: number) =>
 export const inRange = (min: number, val: number, max: number) =>
   val >= min && val <= max;
 
-export const getFileName = (url: string) => /.+\/([^?]+)/.exec(url)?.[1];
+export const getFileName = (url: string) =>
+  /.+\/(?<name>[^?]+)/u.exec(url)?.groups?.name;
 
 export const isString = (val: unknown): val is string =>
   typeof val === 'string';
@@ -550,7 +551,7 @@ export const getKeyboardCode = (e: KeyboardEvent) => {
       return key;
   }
 
-  key = key.replaceAll(/\b[A-Z]\b/g, (match) => match.toLowerCase());
+  key = key.replaceAll(/\b[A-Z]\b/gu, (match) => match.toLowerCase());
   if (e.ctrlKey) key = `Ctrl + ${key}`;
   if (e.altKey) key = `Alt + ${key}`;
   if (e.shiftKey) key = `Shift + ${key}`;
@@ -565,7 +566,7 @@ export const keyboardCodeToText = (code: string) =>
     .replace('ArrowDown', '↓')
     .replace('ArrowLeft', '←')
     .replace('ArrowRight', '→')
-    .replace(/^\s$/, 'Space');
+    .replace(/^\s$/u, 'Space');
 
 /** 将 HTML 字符串转换为 DOM 对象 */
 export const domParse = (html: string) =>
@@ -622,9 +623,9 @@ export const ensureGmValue = async <
 /** 根据范围文本提取指定范围的元素的 index */
 export const extractRange = (rangeText: string, length: number) => {
   const list = new Set<number>();
-  for (const text of rangeText.replaceAll(/[^\d,-]/g, '').split(',')) {
-    if (/^\d+$/.test(text)) list.add(Number(text) - 1);
-    else if (/^\d*-\d*$/.test(text)) {
+  for (const text of rangeText.replaceAll(/[^\d,-]/gu, '').split(',')) {
+    if (/^\d+$/u.test(text)) list.add(Number(text) - 1);
+    else if (/^\d*-\d*$/u.test(text)) {
       let [start, end] = text.split('-').map(Number);
       end ||= length;
       for (start--, end--; start <= end; start++) list.add(start);

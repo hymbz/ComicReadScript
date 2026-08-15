@@ -75,7 +75,7 @@ export const getAdPageByFileName = (
   fileNameList: (string | undefined)[],
   adList: Set<number>,
 ) =>
-  getAdPage(fileNameList, (fileName: string) => /^z+/i.test(fileName), adList);
+  getAdPage(fileNameList, (fileName: string) => /^z+/iu.test(fileName), adList);
 
 export const isAdImg = (imgBitmap: ImageBitmap) => {
   initWorker();

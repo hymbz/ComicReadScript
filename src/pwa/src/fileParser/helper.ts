@@ -36,7 +36,7 @@ export const supportExtension = new Set([
 
 /** 根据文件名判断文件是否受支持 */
 export const isSupportFile = (name: string) => {
-  const extension = /\.[^.]+$/.exec(name)?.[0];
+  const extension = /\.[^.]+$/u.exec(name)?.[0];
   if (!extension) return null;
   if (extension === '.pdf') return 'pdf';
   if (iszipExtension(extension)) return extension;

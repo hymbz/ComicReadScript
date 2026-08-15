@@ -8,6 +8,7 @@ export type UseStore = <T>(
 export const promisifyRequest = <T>(request: IDBRequest<T>): Promise<T> =>
   new Promise<T>((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
+    // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
     request.onerror = () => reject(request.error as Error);
   });
 

@@ -125,7 +125,7 @@ declare namespace Tampermonkey {
     // Events
 
     /** Callback to be executed if the request was aborted */
-    onabort?(): void;
+    onabort?: () => void;
     /** Callback to be executed if the request ended up with an error */
     onerror?: ((res?: ErrorResponse) => void) | undefined;
     /** Callback to be executed if the request started to load */
@@ -205,15 +205,15 @@ declare namespace Tampermonkey {
     /** A function to call if the download fails or is cancelled. */
     onerror?: RequestEventListener<DownloadErrorResponse>;
     /** A callback to be executed if this download failed due to a timeout. */
-    ontimeout?(): void;
+    ontimeout?: () => void;
     /** A function to call when the download has completed successfully. */
-    onload?(): void;
+    onload?: () => void;
     /** Callback to be executed if this download failed due to a timeout */
     onprogress?: RequestEventListener<DownloadProgressResponse>;
   };
 
   type AbortHandle<TReturn> = {
-    abort(): TReturn;
+    abort: () => TReturn;
   };
 
   type OpenTabOptions = {
@@ -232,9 +232,9 @@ declare namespace Tampermonkey {
 
   type OpenTabObject = {
     /** Closes tab */
-    close(): void;
+    close: () => void;
     /** Set closed listener */
-    onclose?(): void;
+    onclose?: () => void;
     closed: boolean;
   };
 
@@ -666,10 +666,10 @@ type Window = {
    * }
    */
   onurlchange: null;
-  addEventListener(
+  addEventListener: (
     type: 'urlchange',
     listener: (urlObject: { url: string }) => void,
-  ): void;
+  ) => void;
 };
 
 /**
@@ -1048,10 +1048,10 @@ declare let GM_cookie: {
    * @param details Object containing properties of the cookies to retrieve.
    * @param callback Function to be called when the cookies have been retrieved.
    */
-  list(
+  list: (
     details?: Tampermonkey.ListCookiesDetails,
     callback?: Tampermonkey.ListCookiesCallback,
-  ): void;
+  ) => void;
 
   /**
    * Sets a cookie with the given details. Supported properties
@@ -1063,7 +1063,7 @@ declare let GM_cookie: {
    * @param details An object containing the details of the cookie to be set.
    * @param callback A function to be called when the operation is complete.
    */
-  set(
+  set: (
     details: Tampermonkey.SetCookiesDetails,
     callback?: (
       /**
@@ -1072,7 +1072,7 @@ declare let GM_cookie: {
        */
       error?: string,
     ) => void,
-  ): void;
+  ) => void;
 
   /**
    * Deletes a cookie whose properties match those given.
@@ -1083,13 +1083,13 @@ declare let GM_cookie: {
    * @param details An object containing the details of the cookie to be deleted.
    * @param callback Function called when the cookie has been deleted or when an error has occurred.
    */
-  delete(
+  delete: (
     details: AtLeastOneOf<Tampermonkey.DeleteCookiesDetails>,
     callback?: (
       /** An error message, or `undefined` if the cookie was deleted successfully. */
       error?: string,
     ) => void,
-  ): void;
+  ) => void;
 };
 
 // GM.*
@@ -1103,22 +1103,24 @@ declare let GM: Readonly<{
   /**
    * Adds the given style to the document and returns the injected style element.
    */
-  addStyle(css: string): Promise<HTMLStyleElement>;
+  addStyle: (css: string) => Promise<HTMLStyleElement>;
 
   // Storage
 
   /** Sets the value of `name` to the storage */
-  setValue(name: string, value: any): Promise<void> | void;
+  setValue: (name: string, value: any) => Promise<void> | void;
 
   /** Gets the value of 'name' from storage */
-  getValue<TValue>(name: string): Promise<TValue | undefined>;
-  getValue<TValue>(name: string, defaultValue: TValue): Promise<TValue>;
+  getValue: {
+    <TValue>(name: string): Promise<TValue | undefined>;
+    <TValue>(name: string, defaultValue: TValue): Promise<TValue>;
+  };
 
   /** Deletes 'name' from storage */
-  deleteValue(name: string): Promise<void>;
+  deleteValue: (name: string) => Promise<void>;
 
   /** Lists all names of the storage */
-  listValues(): Promise<string[]>;
+  listValues: () => Promise<string[]>;
 
   /**
    * Adds a change listener to the storage and returns the listener ID.
@@ -1128,24 +1130,24 @@ declare let GM: Readonly<{
    * different browser tabs to communicate with each other.
    * @param name Name of the observed variable
    */
-  addValueChangeListener(
+  addValueChangeListener: (
     name: string,
     listener: Tampermonkey.ValueChangeListener,
-  ): Promise<number>;
+  ) => Promise<number>;
 
   /** Removes a change listener by its ID */
-  removeValueChangeListener(listenerId: number): Promise<void>;
+  removeValueChangeListener: (listenerId: number) => Promise<void>;
 
   // Resources
 
   /** Get the content of a predefined `@resource` tag at the script header */
-  getResourceText(name: string): Promise<string>;
+  getResourceText: (name: string) => Promise<string>;
 
   /**
    * Get the base64 encoded URI of a predefined `@resource` tag at the script
    * header
    */
-  getResourceUrl(name: string): Promise<string>;
+  getResourceUrl: (name: string) => Promise<string>;
 
   // Menu commands
 
@@ -1154,16 +1156,16 @@ declare let GM: Readonly<{
    * script runs and returns a menu command ID.
    * @param accessKey The key to use for keyboard shortcuts
    */
-  registerMenuCommand(
+  registerMenuCommand: (
     name: string,
     onClick: () => void,
     accessKey?: string,
-  ): Promise<number>;
+  ) => Promise<number>;
   /**
    *  Unregister a menu command that was previously registered by
    * `GM_registerMenuCommand` or `GM.registerMenuCommand` with the given menu command ID.
    */
-  unregisterMenuCommand(menuCommandId: number): Promise<void>;
+  unregisterMenuCommand: (menuCommandId: number) => Promise<void>;
 
   // Requests
 
@@ -1171,34 +1173,34 @@ declare let GM: Readonly<{
    * Makes an xmlHttpRequest
    * @throws {Tampermonkey.ErrorResponse}
    */
-  xmlHttpRequest<TContext = any>(
+  xmlHttpRequest: <TContext = any>(
     // onload and the like still work
     details: Tampermonkey.Request<TContext>,
-  ): Promise<Tampermonkey.Response<TContext>>;
+  ) => Promise<Tampermonkey.Response<TContext>>;
 
   // GM_download has two signatures, GM.download has one
   /**
    * Downloads a given URL to the local disk
    * @throws {Tampermonkey.DownloadErrorResponse}
    */
-  download(details: Tampermonkey.DownloadRequest): Promise<void>;
+  download: (details: Tampermonkey.DownloadRequest) => Promise<void>;
 
   // Tabs
 
   /** Saves the tab object to reopen it after a page unload */
-  saveTab(obj: any): Promise<void>;
+  saveTab: (obj: any) => Promise<void>;
 
   /** Gets a object that is persistent as long as this tab is open */
-  getTab(): Promise<any>;
+  getTab: () => Promise<any>;
 
   /** Gets all tab objects as a hash to communicate with other script instances */
-  getTabs(): Promise<Record<number, any>>;
+  getTabs: () => Promise<Record<number, any>>;
 
   // Utils
   info: Tampermonkey.ScriptInfo;
 
   /** Log a message to the console */
-  log(...message: any[]): Promise<void>;
+  log: (...message: any[]) => Promise<void>;
 
   /**
    * Opens a new tab with this url.
@@ -1216,34 +1218,35 @@ declare let GM: Readonly<{
    * @returns Object with the function `close`, the listener `onclose` and a flag
    * called `closed`.
    */
-  openInTab(
+  openInTab: (
     url: string,
     options?: Tampermonkey.OpenTabOptions | boolean,
-  ): Promise<Tampermonkey.OpenTabObject>;
+  ) => Promise<Tampermonkey.OpenTabObject>;
 
-  /**
-   * Shows a HTML5 Desktop notification and/or highlight the current tab.
-   * @param ondone If specified used instead of `details.ondone`
-   * @returns True if the notification was clicked
-   */
-  notification(
-    details: Tampermonkey.NotificationDetails,
-    ondone?: Tampermonkey.NotificationOnDone,
-  ): Promise<boolean>;
-
-  /**
-   * Shows a HTML5 Desktop notification and/or highlight the current tab.
-   * @param text Text of the notification
-   * @param title Notification title. If not specified the script name is used
-   * @param onclick Called in case the user clicks the notification
-   * @returns True if the notification was clicked
-   */
-  notification(
-    text: string,
-    title?: string,
-    image?: string,
-    onclick?: Tampermonkey.NotificationOnClick,
-  ): Promise<boolean>;
+  notification: {
+    /**
+     * Shows a HTML5 Desktop notification and/or highlight the current tab.
+     * @param ondone If specified used instead of `details.ondone`
+     * @returns True if the notification was clicked
+     */
+    (
+      details: Tampermonkey.NotificationDetails,
+      ondone?: Tampermonkey.NotificationOnDone,
+    ): Promise<boolean>;
+    /**
+     * Shows a HTML5 Desktop notification and/or highlight the current tab.
+     * @param text Text of the notification
+     * @param title Notification title. If not specified the script name is used
+     * @param onclick Called in case the user clicks the notification
+     * @returns True if the notification was clicked
+     */
+    (
+      text: string,
+      title?: string,
+      image?: string,
+      onclick?: Tampermonkey.NotificationOnClick,
+    ): Promise<boolean>;
+  };
 
   /**
    * Copies data into the clipboard.
@@ -1251,5 +1254,8 @@ declare let GM: Readonly<{
    * `{ type: 'text', mimetype: 'text/plain'}` or just a string expressing the
    * type ("text" or "html").
    */
-  setClipboard(data: string, info?: Tampermonkey.ContentType): Promise<void>;
+  setClipboard: (
+    data: string,
+    info?: Tampermonkey.ContentType,
+  ) => Promise<void>;
 }>;
