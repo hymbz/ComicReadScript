@@ -6,6 +6,7 @@ export default defineConfig({
   lang: 'zh-CN',
   title: 'ComicRead Script',
   description: 'ComicRead Script Docs',
+  srcExclude: ['skill/**/*.md'],
   head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
   markdown: {
     config: (md) => {
