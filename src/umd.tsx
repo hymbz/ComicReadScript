@@ -1,6 +1,7 @@
 // 需要 reference 让 dts-bundle-generator 加载全局类型声明
 // oxlint-disable typescript/triple-slash-reference
 /// <reference path="./types/index.d.ts" />
+/// <reference path="./types/module.d.ts" />
 /// <reference path="./types/tampermonkey.d.ts" />
 import {
   Manga,

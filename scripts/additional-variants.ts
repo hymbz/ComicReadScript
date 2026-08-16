@@ -55,6 +55,8 @@ export const buildUMD = async () => {
       path: 'umd',
       file: 'dist/umd.js',
       transforms: [transforms.umdMain],
+      // 显式指定 named 避免 MIXED_EXPORTS 警告
+      output: { exports: 'named' },
     },
   ]);
   const [umdImport, umdMain] = stage;

@@ -15,6 +15,7 @@ type BundleItemOpts = {
   transforms?: TransformFn[];
   file?: string;
   plugins?: RolldownPluginOption[];
+  output?: RolldownOptions['output'];
 };
 
 export const createBundleConfigs = (
@@ -68,6 +69,7 @@ export const createBundleConfigs = (
     file,
     transforms,
     plugins: itemPlugins,
+    output,
   }: BundleItemOpts): RolldownOptions =>
     ({
       ...base,
@@ -91,6 +93,7 @@ export const createBundleConfigs = (
       ],
       output: {
         ...(base.output as Record<string, unknown>),
+        ...(output as Record<string, unknown> | undefined),
         file: pathResolve(
           file ?? `dist/${path.replace(/(?<_>\/index)?\.tsx?/u, '')}.js`,
         ),
