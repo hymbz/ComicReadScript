@@ -1,12 +1,12 @@
-## [12.5.2](https://github.com/hymbz/ComicReadScript/compare/v12.5.1...v12.5.2) (2026-04-21)
+## [12.6.0](https://github.com/hymbz/ComicReadScript/compare/v12.5.2...v12.6.0) (2026-08-16)
 
 ### Features
 
-- :sparkles: 添加 kisslove (klz9.com) 站点支持 ([9b4bd54](https://github.com/hymbz/ComicReadScript/commit/9b4bd543a88055d9b92d51f8356c8e615e942355))
+- :sparkles: 双页卷轴模式可以在一行里显示多页 ([b4fab42](https://github.com/hymbz/ComicReadScript/commit/b4fab42436b57f5ab3241edeecb270dd1188dbf8))
+- :sparkles: ehentai 画廊支持多选加载指定页 ([94a4290](https://github.com/hymbz/ComicReadScript/commit/94a4290841b2e972213b0007f4c5227fef3a6cd7))
+- :sparkles: pixiv 支持多选加载 ([2f613e5](https://github.com/hymbz/ComicReadScript/commit/2f613e5bb63172e9e459237058a50a88d5e76086))
+- :sparkles: kemono 支持在列表页多选加载 ([0c38ee2](https://github.com/hymbz/ComicReadScript/commit/0c38ee2952c31f30f0047596fa61957a86cfab3a))
 
 ### Bug Fixes
 
-- :bug: 修复 nhentai 改版后导致的失效 ([2a07c40](https://github.com/hymbz/ComicReadScript/commit/2a07c40e38f1c3e71c5433fb34ce2d88cabbd4d7))
-- :bug: 修复 PWA 在打开嵌套文件夹时没有按照文件路径排序的 bug ([04ed881](https://github.com/hymbz/ComicReadScript/commit/04ed88137d0e806910c55dcd617c7744b14b9acd)), closes [#309](https://github.com/hymbz/ComicReadScript/issues/309)
-- :bug: 修复简易模式下的顺序问题 ([82af9dc](https://github.com/hymbz/ComicReadScript/commit/82af9dcef9282d96451cf69a85d87cad75bb9e8f))
-- :bug: 在进行图片翻译前缩小尺寸过大的图片 ([334d800](https://github.com/hymbz/ComicReadScript/commit/334d800bca380390dd70d267d38335b962af76b9)), closes [#313](https://github.com/hymbz/ComicReadScript/issues/313)
+- :bug: 修复拷贝漫画的接口错误 ([bf1bb74](https://github.com/hymbz/ComicReadScript/commit/bf1bb74c014170d808fcdf464304eb52d7634dc7))
