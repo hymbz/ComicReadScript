@@ -161,6 +161,7 @@
       "img_recognition_pageFill": "Ajustar automáticamente el relleno de página",
       "img_recognition_warn": "❗ El navegador actual no es compatible con Web Workers. Habilitar esta función puede provocar retrasos en la carga de la página. Se recomienda actualizar o cambiar de navegador.",
       "img_recognition_warn_2": "❗ Este sitio web no es compatible con Web Workers. Habilitar esta función puede provocar retrasos en la carga de la página.",
+      "page_columns": "每行并排页数",
       "paragraph_appearance": "Apariencia",
       "paragraph_dir": "Dirección de lectura",
       "paragraph_display": "Pantalla",
