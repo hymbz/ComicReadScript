@@ -1,14 +1,27 @@
 import { setState, store } from '../../store';
-import { handleEndTurnPage } from '../endPage';
+import { type Dir, handleEndTurnPage } from '../endPage';
 import { openScrollLock } from '../helper';
 import { isAbreastMode, isScrollMode } from '../memo';
 import { scrollBy } from '../scroll';
 import { handleScrollModeZoom } from '../scrollMode';
+import { resetPage } from '../show';
+import { turnPage } from '../turnPage';
 import { zoom } from '../zoom';
 import { detectScrollDevice } from './scrollDevice';
 import { wheelRatchet } from './wheelRatchet';
 
 let firstWheelTimer = 0;
+
+/** A 类设备直接翻页，不经过虚拟棘轮 */
+const turnPageByWheel = (dir: Dir) => {
+  // 清空虚拟棘轮可能残留的累积滚动量
+  wheelRatchet.wheelDy = 0;
+  openScrollLock();
+  setState((state) => {
+    turnPage(dir, state);
+    resetPage(state);
+  });
+};
 
 export const handleWheel = (e: WheelEvent) => {
   if (store.gridMode) return;
@@ -49,7 +62,7 @@ export const handleWheel = (e: WheelEvent) => {
     firstWheelTimer = window.setTimeout(() => {
       // 延迟后依然没有后续事件，就是 A 类设备，补上响应
       setState('scrollDeviceType', 'a');
-      setState(wheelRatchet.processWheel);
+      turnPageByWheel(dir);
     }, 100);
   } else if (firstWheelTimer) {
     clearTimeout(firstWheelTimer);
@@ -67,6 +80,11 @@ export const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
     scrollBy(e.deltaY, true);
   }
+
+  if (store.option.scrollMode.enabled) return;
+
+  // A 类设备直接按方向翻页
+  if (store.scrollDeviceType === 'a') return turnPageByWheel(dir);
 
   return wheelRatchet.handleContinuousWheel(e);
 };
