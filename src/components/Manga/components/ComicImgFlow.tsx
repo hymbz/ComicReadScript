@@ -22,9 +22,11 @@ import {
   handleScrollModeDrag,
   handleZoomDrag,
   imgAreaStyle,
+  imgIndexMap,
   isEnableBg,
   isOnePageMode,
   isScrollMode,
+  loadState,
   pageHeightList,
   pageTopList,
   renderImgList,
@@ -205,11 +207,18 @@ export const ComicImgFlow: Component = () => {
 
   const renderList = createMemo(() => {
     if (store.gridMode) return range(store.imgList.length);
-    return range(store.imgList.length).filter(
-      (i) =>
-        renderImgList().has(i) ||
-        store.imgMap[store.imgList[i]]?.loadType === 'loading',
-    );
+
+    const list = new Set(renderImgList());
+    for (const url of loadState.loadingUrlSet) {
+      const indexList = imgIndexMap().get(url);
+      if (!indexList) continue;
+      // 渲染范围内已经有该 url 的图片，加载已在进行中，无需额外挂载
+      if (indexList.some((index) => list.has(index))) continue;
+      // 否则随便取一个索引，让渲染范围外的图片也能开始加载
+      list.add(indexList[0]);
+    }
+
+    return [...list].toSorted((a, b) => a - b);
   });
 
   return (

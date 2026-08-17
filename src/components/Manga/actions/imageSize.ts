@@ -47,7 +47,7 @@ export const updateImgSize = withOptionalState(
     if (img.width === width && img.height === height) return;
     img.width = width;
     img.height = height;
-    img.size = getImgDisplaySize(state, img);
+    Object.assign(img.size, getImgDisplaySize(state, img));
     updateImgType(state, img);
   },
 );
@@ -65,8 +65,12 @@ createEffectOn(
   ([{ length }]) => {
     if (length === 0) return;
     setState((state) => {
-      for (const url of state.imgList)
-        state.imgMap[url].size = getImgDisplaySize(state, state.imgMap[url]);
+      for (const url of state.imgList) {
+        Object.assign(
+          state.imgMap[url].size,
+          getImgDisplaySize(state, state.imgMap[url]),
+        );
+      }
     });
   },
 );

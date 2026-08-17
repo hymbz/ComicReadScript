@@ -173,26 +173,24 @@ export const useInit = (props: MangaProps) => {
         break;
       }
 
-      const oldImgList = new Set(state.imgList);
-      if (oldImgList.size === 0 && newImgList.length > 0) {
+      const oldImgSet = new Set(state.imgList);
+      const newImgSet = new Set(newImgList);
+      if (oldImgSet.size === 0 && newImgList.length > 0) {
         void resumeReadProgress(state);
         void updateMitTranslators(true);
       }
 
       /** 被删除的图片 */
-      // TODO: 使用 oldImgList.difference(new Set(newImgList)); 替代
-      const deleteList = [...oldImgList].filter(
-        (url) => !newImgList.includes(url),
-      );
+      const deleteList = oldImgSet.difference(newImgSet);
       for (const url of deleteList)
         if (state.imgMap[url].blobUrl && state.imgMap[url].blobUrl !== url)
           URL.revokeObjectURL(state.imgMap[url].blobUrl);
 
       /** 删除图片数 */
-      const deleteNum = deleteList.length;
+      const deleteNum = deleteList.size;
 
       /** 传入的是否是新漫画 */
-      const isNew = deleteNum >= oldImgList.size * 0.8; // 删掉8成图就算是新漫画
+      const isNew = deleteNum >= oldImgSet.size * 0.8; // 删掉8成图就算是新漫画
 
       /** 是否需要更新页面 */
       const needUpdatePageData =
@@ -229,7 +227,7 @@ export const useInit = (props: MangaProps) => {
       // 尽量使当前显示的图片在修改后依然不变
       oldActiveImg.some((url) => {
         // 跳过填充页和已被删除的图片
-        if (!url || newImgList.includes(url)) return false;
+        if (!url || newImgSet.has(url)) return false;
 
         const newPageIndex = state.pageList.findIndex((page) =>
           page.some((index) => state.imgList?.[index] === url),

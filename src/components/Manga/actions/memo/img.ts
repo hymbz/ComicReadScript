@@ -1,13 +1,23 @@
 import { createRootMemo, createThrottleMemo } from 'helper';
 
 import { store } from '../../store';
-import { type ComicImg } from '../../store/image';
-import { findFillIndex } from '../helper';
+import { type ComicImg, type FillEffect } from '../../store/image';
 import { isUseAutoScale } from './options';
 
 export const imgList = createRootMemo(() =>
   store.imgList.map((url) => store.imgMap[url]),
 );
+
+/** 图片 url 对应的索引 */
+export const imgIndexMap = createRootMemo(() => {
+  const map = new Map<string, number[]>();
+  for (const [index, url] of store.imgList.entries()) {
+    const indexList = map.get(url);
+    if (indexList) indexList.push(index);
+    else map.set(url, [index]);
+  }
+  return map;
+});
 
 /** 当前显示页面 */
 export const activePage = createRootMemo(
@@ -18,6 +28,13 @@ export const activePage = createRootMemo(
 export const activeImgIndex = createRootMemo(
   () => activePage().find((i) => i !== -1) ?? 0,
 );
+
+/** 找到指定页面所处的图片流 */
+const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
+  let nowFillIndex = pageIndex;
+  while (!Reflect.has(fillEffect, nowFillIndex)) nowFillIndex -= 1;
+  return nowFillIndex;
+};
 
 /** 当前所处的图片流 */
 export const nowFillIndex = createRootMemo(() =>
@@ -32,13 +49,13 @@ export const preloadNum = createRootMemo(() => ({
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
-  const list = imgList()
+  // 因为涉及到图片默认类型的计算，所以至少等到加载完三张图片再计算，避免被首页大图干扰
+  if (store.imgList.length < 3) return null;
+
+  return imgList()
     .filter((img) => img.loadType === 'loaded' && img.width)
     .map(sizeFn)
-    .toSorted((a, b) => a - b);
-  // 因为涉及到图片默认类型的计算，所以至少等到加载完三张图片再计算，避免被首页大图干扰
-  if (list.length < 3) return null;
-  return list[Math.floor(list.length / 2)];
+    .toSorted((a, b) => a - b)[Math.floor(store.imgList.length / 2)];
 };
 
 /** 图片占位尺寸 */

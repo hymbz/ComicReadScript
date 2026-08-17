@@ -116,7 +116,12 @@ export const Scrollbar: Component = () => {
     <>
       <ScrollbarBase ref={bindRef('scrollbar')}>
         <div class={classes.scrollbarPoper} children={tipText()} />
-        <Show when={store.option.scrollbar.showImgStatus}>
+        <Show
+          when={
+            store.option.scrollbar.showImgStatus &&
+            scrollPosition() !== 'hidden'
+          }
+        >
           <ScrollbarPageStatus />
         </Show>
       </ScrollbarBase>

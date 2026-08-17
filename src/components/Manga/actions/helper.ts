@@ -2,31 +2,19 @@ import { byPath, debounce, difference, throttle } from 'helper';
 import { onCleanup } from 'solid-js';
 
 import { type State, refs, setState, store } from '../store';
-import { type FillEffect } from '../store/image';
 import { type Option } from '../store/option';
+import { imgIndexMap } from './memo/img';
 
 export const getImg = (i: number, state = store) =>
   state.imgMap[state.imgList[i]];
 
 /** 找到指定 url 图片在 imgList 里的 index */
-export const getImgIndexs = (url: string) => {
-  const indexList: number[] = [];
-  for (const [i, imgUrl] of store.imgList.entries())
-    if (imgUrl === url) indexList.push(i);
-  return indexList;
-};
+export const getImgIndexs = (url: string) => imgIndexMap().get(url) ?? [];
 
 /** 找到指定 url 图片的 dom */
 export const getImgEle = (target: string | number) => {
   const url = typeof target === 'number' ? store.imgList[target] : target;
   return refs.imgEleMap[url]?.values().next().value;
-};
-
-/** 找到指定页面所处的图片流 */
-export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
-  let nowFillIndex = pageIndex;
-  while (!Reflect.has(fillEffect, nowFillIndex)) nowFillIndex -= 1;
-  return nowFillIndex;
 };
 
 /** 触发 onOptionChange */
