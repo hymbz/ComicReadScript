@@ -75,10 +75,6 @@ flowchart LR
 - [src/components/](src/components/) 通用 UI 组件中展示的所有文字都必须通过 `t('key')` 获取（[src/helper/i18n.ts](src/helper/i18n.ts)），文案 key 与内容维护在 [locales/](locales/) 下的 json 文件（zh.json 为默认，en/ru 等为翻译），支持 `{{变量}}` 占位符。该约定由 oxlint 的 `i18next/no-literal-string` 规则辅助检查（仅检查 JSX 中的文案，`t()` 调用豁免）
 - [src/site/](src/site/) 站点专属功能的文案**不需要** i18n，直接硬编码，但应与站点本身语言保持一致（如 ehentai 用英文、copymanga 用繁中），避免与站点观感割裂
 
-## 新增站点适配
-
-大部分网站都可以用「简易阅读模式」（在油猴扩展菜单里触发）支持，通常**不需要**新增适配。仅当简易阅读模式无法支持、或需要阅读模式以外的增强功能时，才需要新增站点适配，完整流程见 [docs/skill/新增站点适配.md](docs/skill/新增站点适配.md)。
-
 ## 常用命令
 
 - `pnpm check`：**每次修改代码后必须运行**（`tsc -noEmit && oxlint -f stylish --fix . && oxfmt . && stylelint`），确保没有 ts、lint 错误
