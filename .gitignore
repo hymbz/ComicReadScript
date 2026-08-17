@@ -12,3 +12,4 @@ test/xpi
 test/cookie.ts
 .excalidraw
 .kilocode
+.pnpm-store

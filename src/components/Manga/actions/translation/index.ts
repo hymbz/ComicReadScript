@@ -61,6 +61,7 @@ export const translationImage = async (url: string) => {
 
 /** 逐个翻译状态为等待翻译的图片 */
 export const translationAll = singleThreaded(async (state): Promise<void> => {
+  if (!store.option.translation.enabled) return;
   const targetImg = imgList().find(
     (img) => img.translationType === 'wait' && img.loadType === 'loaded',
   );

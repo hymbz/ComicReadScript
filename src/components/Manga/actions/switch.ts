@@ -1,7 +1,7 @@
 import { type State, refs, setState, store } from '../store';
 import { setOption } from './helper';
 import { updatePageData } from './image';
-import { updateImgLoadType } from './imageLoad';
+import { syncImgLoadState, updateImgLoadType } from './imageLoad';
 import { handleImgRecognition } from './imageRecognition';
 import { activeImgIndex, autoPageNum, nowFillIndex, pageNum } from './memo';
 import { jumpToImg } from './scroll';
@@ -91,7 +91,7 @@ export const switchAutoScroll = () =>
 /** 切换图片识别相关功能 */
 export const switchImgRecognition = (
   ...path: (keyof State['option']['imgRecognition'])[]
-) =>
+) => {
   setOption((draftOption, state) => {
     const option = draftOption.imgRecognition;
     if (path.length === 0) path.push('enabled');
@@ -106,3 +106,5 @@ export const switchImgRecognition = (
     }
     if (path.includes('enabled')) void updateImgLoadType();
   });
+  syncImgLoadState();
+};
