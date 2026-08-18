@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/stories/**'
       - 'src/components/**'
+  workflow_dispatch:
 
 jobs:
   deploy:
