@@ -1016,6 +1016,23 @@ try {
       break;
     }
 
+    // #其他[Postimages](https://postimages.org/)
+    // test: https://postimg.cc/gallery/SKn3sFG
+    case 'postimg.cc': {
+      const domList = querySelectorAll('#thumb-list [data-hotlink]');
+      if (domList.length <= 1) break;
+
+      setup({
+        name: 'postimg',
+        getImgList: () =>
+          domList.map(
+            (e) =>
+              `https://i.postimg.cc/${e.dataset.hotlink}/${e.dataset.name}.${e.dataset.ext}`,
+          ),
+      });
+      break;
+    }
+
     // #其他[最前線](https://sai-zen-sen.jp)
     // test: https://sai-zen-sen.jp/works/comics/karanokyoukai/01/01.html
     case 'sai-zen-sen.jp': {
