@@ -35,7 +35,10 @@ export type SetupOptions<T extends Record<string, any> = Record<string, any>> =
     onExit?: MangaProps['onExit'];
 
     // 给小众特殊需求留的接口
-    handler?: (coreCtx: CoreContext) => Promisable<void>;
+    handler?: (
+      coreCtx: CoreContext,
+      pageCtx: T & { type: 'manga' },
+    ) => Promisable<void>;
   };
 
 /** 快速适配简单网站 */
@@ -75,7 +78,7 @@ export const setup = async <
           };
         });
 
-        await userHandler?.(coreCtx);
+        await userHandler?.(coreCtx, pageCtx);
 
         (async () => {
           if (onPrev) setState('manga', { onPrev: await wait(onPrev, 5000) });

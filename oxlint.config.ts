@@ -383,6 +383,17 @@ export default defineConfig({
           ]),
       ),
     ],
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['userscript/core'],
+            message: `只能使用 'core' 导入 'userscript/core'`,
+          },
+        ],
+      },
+    ],
   },
   overrides: [
     {
@@ -402,15 +413,17 @@ export default defineConfig({
         // 站点专属文案不需要 i18n
         'i18next/no-literal-string': 'off',
         'no-restricted-imports': [
-          'warn',
+          'error',
           {
             patterns: [
               {
                 group: [
                   '*/**/*',
+                  '!userscript/detectAd',
+                  '!userscript/copyApi',
+                  '!userscript/ehTagRules',
                   '!solid-js/**/*',
                   '!components/**/*',
-                  '!userscript/**/*',
                   '!@material*/**/*',
                   '../**/*',
                   '!.*/**/*',
