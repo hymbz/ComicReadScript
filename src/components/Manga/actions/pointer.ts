@@ -2,13 +2,11 @@ import { AnimationFrame, type UseDrag, debounce, inRange } from 'helper';
 
 import { type Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
-import classes from '../index.module.css';
 import { refs, setState, store } from '../store';
 import { getImg, getImgEle, resetUI } from './helper';
 import { handleHotkey } from './hotkeyAction';
 import { reloadImg } from './imageLoad';
 import { showImgList } from './renderPage';
-import { jumpToImg } from './scroll';
 import { resetPage } from './show';
 import { getTurnPageDir, turnPageAnimation } from './turnPage';
 import { zoom } from './zoom';
@@ -46,6 +44,7 @@ const handlePageClick = (e: MouseEvent) => {
     return setState((state) => {
       state.show.scrollbar = !state.show.scrollbar;
       state.show.toolbar = !state.show.toolbar;
+      state.show.pageTip = !state.show.pageTip;
     });
 
   setState((state) => {
@@ -63,20 +62,11 @@ const handlePageClick = (e: MouseEvent) => {
   });
 };
 
-/** 网格模式下点击图片跳到对应页 */
-const handleGridClick = (e: MouseEvent) => {
-  const target = findClickEle(refs.root.getElementsByClassName(classes.img), e);
-  if (target) jumpToImg(Number(/_(?<id>\d+)_/u.exec(target.id)?.groups?.id));
-};
-
 /** 双击放大 */
 export const doubleClickZoom = (e?: MouseEvent) =>
-  !store.gridMode && zoom(store.option.zoom.ratio === 100 ? 350 : 100, e, true);
+  zoom(store.option.zoom.ratio === 100 ? 350 : 100, e, true);
 
-export const handleClick = useDoubleClick(
-  (e) => (store.gridMode ? handleGridClick(e) : handlePageClick(e)),
-  doubleClickZoom,
-);
+export const handleClick = useDoubleClick(handlePageClick, doubleClickZoom);
 
 /** 拖动页面的动画控制器 */
 const dragAnim = new (class extends AnimationFrame {

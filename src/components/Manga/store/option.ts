@@ -31,6 +31,8 @@ export type Option = {
   preloadPageNum: number;
   /** 显示页数。0 表示 auto */
   pageNum: 1 | 2 | 0;
+  /** 页数提示显示方式 */
+  pageTip: 'hide' | 'auto' | 'always';
   /** 自动切换单双页模式 */
   autoSwitchPageMode: boolean;
   /** 自动隐藏鼠标 */
@@ -164,6 +166,7 @@ const _defaultOption: Readonly<Option> = {
   showComment: true,
   preloadPageNum: 20,
   pageNum: 0,
+  pageTip: 'auto',
   autoSwitchPageMode: true,
   autoHiddenMouse: true,
   autoFullscreen: false,

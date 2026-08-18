@@ -1,7 +1,7 @@
 import { createEffectOn, inRange, t, throttle } from 'helper';
 
 import { type State, setState, store } from '../store';
-import { getImg, resetUI } from './helper';
+import { getImg } from './helper';
 import { activePage, isUpscale } from './memo';
 import { updateShowRange } from './renderPage';
 
@@ -53,9 +53,9 @@ export const getImgTip = (i: number) => {
 export const getPageTip = (pageIndex: number): string => {
   const page = store.pageList[pageIndex];
   if (!page) return 'null';
-  const pageIndexText = page.map((index) => getImgTip(index)) as
-    | [string]
-    | [string, string];
+  const pageIndexText = page.map((index) =>
+    index === -1 ? t('other.fill_page') : `${index + 1}`,
+  ) as [string] | [string, string];
   if (pageIndexText.length === 1) return pageIndexText[0];
   if (store.option.dir === 'rtl') pageIndexText.reverse();
   return pageIndexText.join(' | ');
@@ -79,12 +79,5 @@ createEffectOn(
     store.show.scrollbar &&
     !store.show.toolbar &&
     setState('show', 'scrollbar', false),
-  { defer: true },
-);
-
-// 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-createEffectOn(
-  () => store.gridMode,
-  () => setState(resetUI),
   { defer: true },
 );

@@ -24,7 +24,6 @@ const turnPageByWheel = (dir: Dir) => {
 };
 
 export const handleWheel = (e: WheelEvent) => {
-  if (store.gridMode) return;
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
 

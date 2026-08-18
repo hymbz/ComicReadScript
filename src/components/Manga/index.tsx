@@ -87,7 +87,11 @@ export const Manga: Component<MangaProps> = (props) => {
         oncapture:keyup={handleKeyUp}
         data-mobile={boolDataVal(store.isMobile)}
         data-scroll-mode={boolDataVal(store.option.scrollMode.enabled)}
-        data-grid-mode={boolDataVal(store.gridMode)}
+        data-page-tip={boolDataVal(
+          store.option.pageTip === 'always' ||
+            (store.option.pageTip === 'auto' &&
+              (store.show.pageTip || store.isScrollbarHover)),
+        )}
       >
         <ComicImgFlow />
         <TouchArea />

@@ -18,8 +18,6 @@ export const Toolbar: Component = () => {
       role="toolbar"
       class={classes.toolbar}
       data-show={boolDataVal(store.show.toolbar)}
-      // 移动端开启网格模式后关闭工具栏
-      data-close={boolDataVal(store.isMobile && store.gridMode)}
       // 避免在页面拖拽时触发
       style={{ 'pointer-events': store.isDragMode ? 'none' : undefined }}
     >

@@ -28,10 +28,14 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
   // esc 在触发配置操作前，先用于退出一些界面
   if (e.key === 'Escape') {
-    if (store.gridMode) {
+    if (store.show.pageTip || store.show.scrollbar || store.show.toolbar) {
       e.stopPropagation();
       e.preventDefault();
-      return setState('gridMode', false);
+      return setState((state) => {
+        state.show.pageTip = false;
+        state.show.scrollbar = false;
+        state.show.toolbar = false;
+      });
     }
 
     if (store.show.endPage) {
@@ -51,8 +55,8 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     return;
   }
 
-  // 卷轴、网格模式下跳过用于移动的原生按键
-  if ((isScrollMode() || store.gridMode) && !store.show.endPage) {
+  // 卷轴模式下跳过用于移动的原生按键
+  if (isScrollMode() && !store.show.endPage) {
     switch (e.key) {
       case 'Home':
       case 'End':
@@ -63,15 +67,13 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       case 'ArrowUp':
       case 'PageUp':
         e.stopPropagation();
-        if (isScrollMode()) return handleEndTurnPage('prev');
-        return;
+        return handleEndTurnPage('prev');
 
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
         e.stopPropagation();
-        if (isScrollMode()) return handleEndTurnPage('next');
-        return;
+        return handleEndTurnPage('next');
     }
   }
 

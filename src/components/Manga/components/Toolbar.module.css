@@ -34,11 +34,6 @@
   transform: none;
 }
 
-.toolbar[data-close] .toolbarPanel {
-  transform: translateX(-100%);
-  visibility: hidden;
-}
-
 .toolbarBg {
   position: absolute;
   top: 0;

@@ -151,7 +151,7 @@ export const useInit = (props: MangaProps) => {
             imgItem as SetRequired<ComicImg, 'width' | 'height'>,
           );
         }
-        imgItem.size ??= placeholderSize();
+        imgItem.size ??= { ...placeholderSize() };
         if (!imgItem.blobUrl && url.startsWith('blob:'))
           imgItem.blobUrl = imgItem.src;
 

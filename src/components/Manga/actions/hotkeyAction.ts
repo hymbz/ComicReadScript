@@ -22,7 +22,6 @@ import {
   switchDir,
   switchFillEffect,
   switchFullscreen,
-  switchGridMode,
   switchOnePageMode,
   switchScrollMode,
 } from './switch';
@@ -188,8 +187,6 @@ export const handleHotkey = (hotkey: string, e?: KeyboardEvent) => {
       return switchOnePageMode();
     case 'switch_dir':
       return switchDir();
-    case 'switch_grid_mode':
-      return switchGridMode();
 
     case 'translate_current_page':
       return translateCurrent();

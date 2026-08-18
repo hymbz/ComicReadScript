@@ -1,10 +1,11 @@
-import { boolDataVal, createThrottleMemo, debounce, useDrag } from 'helper';
+import { boolDataVal, createThrottleMemo, useDrag } from 'helper';
 import {
   type Component,
   type JSX,
   Show,
-  createMemo,
+  createEffect,
   createSignal,
+  onCleanup,
   onMount,
 } from 'solid-js';
 
@@ -20,15 +21,17 @@ import {
   isOnePageMode,
   isScrollMode,
   scrollDomLength,
+  scrollPageList,
   scrollPosition,
   sliderHeight,
   sliderMidpoint,
   sliderTop,
   watchDomSize,
 } from '../actions';
+import { useHover } from '../hooks/useHover';
 import { css } from '../hooks/useStyle';
 import classes from '../index.module.css';
-import { refs, store } from '../store';
+import { refs, setState, store } from '../store';
 import { ScrollbarPageStatus } from './ScrollbarPageStatus';
 
 /** 滚动条 */
@@ -43,21 +46,40 @@ export const Scrollbar: Component = () => {
     watchDomSize('scrollbarSize', refs.scrollbar);
   });
 
-  // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
+  // 在被滚动时，使自身变得可穿透，保持一帧的时间
   const [penetrate, setPenetrate] = createSignal(false);
-  const resetPenetrate = debounce(() => setPenetrate(false));
+  let penetrateFrame = 0;
   const handleWheel = () => {
     setPenetrate(true);
-    resetPenetrate();
+    cancelAnimationFrame(penetrateFrame);
+    penetrateFrame = requestAnimationFrame(() => setPenetrate(false));
   };
+  onCleanup(() => cancelAnimationFrame(penetrateFrame));
 
-  /** 是否强制显示滚动条 */
-  const showScrollbar = createMemo(() => store.show.scrollbar || penetrate());
+  const isScrollbarHover = useHover(() => refs.scrollbar);
+  createEffect(() => setState('isScrollbarHover', isScrollbarHover()));
 
   /** 滚动条提示文本 */
   const tipText = createThrottleMemo(() => {
     if (store.showRange[0] === store.showRange[1])
       return getPageTip(store.showRange[0]);
+
+    if (isDoubleMode()) {
+      const rows: string[] = [];
+      let pageIndex = 0;
+      for (const row of scrollPageList()) {
+        const start = pageIndex;
+        const end = pageIndex + row.length - 1;
+        pageIndex += row.length;
+
+        if (store.showRange[1] < start || store.showRange[0] > end) continue;
+
+        const rowTipList = row.map((_, i) => getPageTip(start + i));
+        if (store.option.dir === 'rtl') rowTipList.reverse();
+        rows.push(rowTipList.join('   '));
+      }
+      return rows.join('\n') || getPageTip(store.showRange[0]);
+    }
 
     /** 并排卷轴模式下的滚动条提示文本 */
     if (isAbreastMode()) {
@@ -73,15 +95,14 @@ export const Scrollbar: Component = () => {
     for (let [i] = store.showRange; i <= store.showRange[1]; i++)
       tipList.push(getPageTip(i));
 
-    if (isOnePageMode() || isDoubleMode()) return tipList.join('\n');
+    if (isOnePageMode()) return tipList.join('\n');
     if (tipList.length === 1) return tipList[0];
     if (store.option.dir === 'rtl') tipList.reverse();
     return tipList.join('   ');
   });
 
   css(`.${classes.scrollbar}`, {
-    'pointer-events': () =>
-      penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
+    'pointer-events': () => (penetrate() || store.isDragMode ? 'none' : 'auto'),
     '--scroll-length': () => `${scrollDomLength()}px`,
     '--slider-midpoint': () => `${sliderMidpoint()}px`,
     '--slider-height': () => `${sliderHeight() * scrollDomLength()}px`,
@@ -101,7 +122,9 @@ export const Scrollbar: Component = () => {
       aria-controls={classes.mangaFlow}
       aria-valuenow={store.activePageIndex || -1}
       data-auto-hidden={boolDataVal(store.option.scrollbar.autoHidden)}
-      data-force-show={boolDataVal(showScrollbar())}
+      data-force-show={boolDataVal(
+        store.show.scrollbar || penetrate() || store.isScrollbarHover,
+      )}
       data-dir={store.option.dir}
       data-position={scrollPosition()}
       data-is-abreast-mode={boolDataVal(isAbreastMode())}
@@ -130,10 +153,7 @@ export const Scrollbar: Component = () => {
       <ScrollbarBase
         style={{ 'mix-blend-mode': 'difference', 'pointer-events': 'none' }}
       >
-        <div
-          class={classes.scrollbarSlider}
-          classList={{ [classes.hidden]: store.gridMode }}
-        />
+        <div class={classes.scrollbarSlider} />
       </ScrollbarBase>
     </>
   );

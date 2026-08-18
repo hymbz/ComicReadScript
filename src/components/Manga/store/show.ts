@@ -3,18 +3,19 @@ type ShowState = {
   isMobile: boolean;
   /** 是否处于拖拽模式 */
   isDragMode: boolean;
+  /** 鼠标是否悬停在滚动条上 */
+  isScrollbarHover: boolean;
 
   /** 当前页数 */
   activePageIndex: number;
-
-  /** 网格模式 */
-  gridMode: boolean;
 
   show: {
     /** 是否强制显示工具栏 */
     toolbar: boolean;
     /** 是否强制显示滚动条 */
     scrollbar: boolean;
+    /** 是否强制显示页数提示 */
+    pageTip: boolean;
     /** 是否显示点击区域 */
     touchArea: boolean;
     /** 结束页状态 */
@@ -50,14 +51,14 @@ type ShowState = {
 export const showState: ShowState = {
   isMobile: false,
   isDragMode: false,
+  isScrollbarHover: false,
 
   activePageIndex: 0,
-
-  gridMode: false,
 
   show: {
     toolbar: false,
     scrollbar: false,
+    pageTip: false,
     touchArea: false,
     endPage: undefined,
   },

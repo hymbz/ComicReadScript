@@ -6,7 +6,7 @@ import { resetPage } from './show';
 
 /** 翻页。返回是否成功改变了当前页数 */
 export const turnPage = withOptionalState((dir: Dir, state: State) => {
-  if (state.gridMode || state.option.scrollMode.enabled) return false;
+  if (state.option.scrollMode.enabled) return false;
 
   if (handleEndTurnPage(dir, state)) return false;
 

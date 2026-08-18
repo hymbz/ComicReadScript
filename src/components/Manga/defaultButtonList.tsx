@@ -1,7 +1,6 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdFullscreen from '@material-design-icons/svg/round/fullscreen.svg';
 import MdFullscreenExit from '@material-design-icons/svg/round/fullscreen_exit.svg';
-import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
 import MdLooksOne from '@material-design-icons/svg/round/looks_one.svg';
 import MdLooksTwo from '@material-design-icons/svg/round/looks_two.svg';
 import MdLowPriority from '@material-design-icons/svg/round/low_priority.svg';
@@ -26,7 +25,6 @@ import {
   nowFillIndex,
   switchFillEffect,
   switchFullscreen,
-  switchGridMode,
   switchOnePageMode,
   switchScrollMode,
   translateCurrent,
@@ -91,15 +89,6 @@ export const defaultButtonList: ToolbarButtonList = [
       hidden={isOnePageMode()}
       onClick={switchFillEffect}
       children={<MdQueue />}
-    />
-  ),
-  // 网格模式
-  () => (
-    <IconButton
-      tip={t('button.grid_mode')}
-      enabled={store.gridMode}
-      onClick={switchGridMode}
-      children={<MdGrid />}
     />
   ),
   // 翻译

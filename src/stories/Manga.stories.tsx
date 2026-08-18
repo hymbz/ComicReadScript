@@ -101,16 +101,6 @@ export const 双页卷轴模式: Story = {
   play: waitImgLoaded,
 };
 
-export const 网格模式: Story = {
-  args: {
-    图源: '饮茶之时、女仆之梦（彩图）',
-  } satisfies PartialProps,
-  async play() {
-    setState('gridMode', true);
-    await waitImgLoaded();
-  },
-};
-
 // export const 翻译 = {
 //   args: {
 //     option: { translation: { enabled: true, provider: 'manga-image-translator' } },

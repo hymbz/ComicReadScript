@@ -24,7 +24,6 @@ import {
   imgAreaStyle,
   imgIndexMap,
   isEnableBg,
-  isOnePageMode,
   isScrollMode,
   loadState,
   pageHeightList,
@@ -44,10 +43,9 @@ import { ComicImg } from './ComicImg';
 import { EmptyTip } from './EmptyTip';
 
 export const ComicImgFlow: Component = () => {
-  const { hiddenMouse, onMouseMove } = useHiddenMouse();
+  const hiddenMouse = useHiddenMouse(() => refs.mangaFlow);
 
   const handleDrag: UseDrag = (state, e) => {
-    if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state, e);
     if (store.option.zoom.ratio !== 100) return handleZoomDrag(state, e);
     if (store.option.scrollMode.enabled) return handleScrollModeDrag(state, e);
@@ -102,25 +100,6 @@ export const ComicImgFlow: Component = () => {
   const gridAreas = createMemo(() => {
     if (store.pageList.length === 0) return;
 
-    if (store.gridMode) {
-      let columnNum: number;
-      if (store.isMobile) columnNum = 2;
-      else if (store.defaultImgType === 'vertical') columnNum = 6;
-      else if (isOnePageMode()) columnNum = 4;
-      else columnNum = 2;
-
-      const areaList: string[][] = [[]];
-      for (const page of store.pageList) {
-        if (areaList.at(-1)!.length === columnNum) areaList.push([]);
-        areaList.at(-1)!.push(pageToText(page));
-      }
-      while (areaList.at(-1)!.length !== columnNum)
-        areaList.at(-1)!.push('. .');
-      return (
-        areaList.map((line) => `"${line.join(' ')}"`).join('\n') || undefined
-      );
-    }
-
     if (store.option.scrollMode.enabled) {
       if (store.option.scrollMode.abreastMode)
         return `"${range(abreastArea().columns.length, (i) => `_${i}`).join(
@@ -157,7 +136,7 @@ export const ComicImgFlow: Component = () => {
   });
 
   const pageX = createMemo(() => {
-    if (store.gridMode || isScrollMode()) return 0;
+    if (isScrollMode()) return 0;
     let x =
       store.page.offset.x.pct * store.rootSize.width + store.page.offset.x.px;
     if (store.option.dir !== 'rtl') x = -x;
@@ -172,16 +151,14 @@ export const ComicImgFlow: Component = () => {
       `${store.page.offset.y.pct * store.rootSize.height + store.page.offset.y.px}px`,
 
     'touch-action'() {
-      if (store.gridMode) return 'auto';
-      if (store.option.zoom.ratio !== 100) {
-        if (!store.option.scrollMode.enabled) return 'none';
-        if (store.option.zoom.offset.y === 0) return 'pan-up';
-        if (store.option.zoom.offset.y === bound().y) return 'pan-down';
-      }
+      if (store.option.zoom.ratio === 100) return;
+      if (!store.option.scrollMode.enabled) return 'none';
+      if (store.option.zoom.offset.y === 0) return 'pan-up';
+      if (store.option.zoom.offset.y === bound().y) return 'pan-down';
     },
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
-      if (store.imgList.length === 0 || store.gridMode) return;
+      if (store.imgList.length === 0) return;
       if (store.option.scrollMode.enabled) {
         if (store.option.scrollMode.abreastMode)
           return `repeat(${abreastArea().columns.length}, ${abreastColumnWidth()}px)`;
@@ -193,7 +170,6 @@ export const ComicImgFlow: Component = () => {
       return `repeat(${gridAreas()?.split(' ').length ?? 0}, 50%)`;
     },
     'grid-template-rows'() {
-      if (store.gridMode) return;
       if (isScrollMode())
         return pageHeightList()
           .map((num) => `${num}px`)
@@ -206,8 +182,6 @@ export const ComicImgFlow: Component = () => {
   css(imgAreaStyle);
 
   const renderList = createMemo(() => {
-    if (store.gridMode) return range(store.imgList.length);
-
     const list = new Set(renderImgList());
     for (const url of loadState.loadingUrlSet) {
       const indexList = imgIndexMap().get(url);
@@ -241,10 +215,7 @@ export const ComicImgFlow: Component = () => {
         )}
         data-scale-mode={boolDataVal(store.option.zoom.ratio !== 100)}
         data-vertical={boolDataVal(store.page.vertical)}
-        data-hidden-mouse={
-          !store.gridMode && store.option.autoHiddenMouse && hiddenMouse()
-        }
-        on:mousemove={onMouseMove}
+        data-hidden-mouse={store.option.autoHiddenMouse && hiddenMouse()}
         onTransitionEnd={handleTransitionEnd}
         tabIndex={-1}
       >

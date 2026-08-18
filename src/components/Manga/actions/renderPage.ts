@@ -62,7 +62,6 @@ export const updateShowRange = (state: State) => {
 createEffectOn(
   [
     scrollLength,
-    () => store.gridMode,
     () => store.option.scrollMode.enabled,
     () => store.activePageIndex,
     () => store.option.scrollMode.abreastMode,
@@ -102,34 +101,31 @@ export const showImgList = createRootMemo(() =>
 );
 
 /** 更新每张图片在 store 中的显示状态 */
-createEffectOn([() => store.gridMode, () => store.renderRange], () => {
-  const showRange = store.gridMode
-    ? [0, store.pageList.length - 1]
-    : store.renderRange;
+createEffectOn(
+  () => store.renderRange,
+  () => {
+    const newState: Record<number, 0 | 1 | ''> = {};
+    for (let [i] = store.renderRange; i <= store.renderRange[1]; i++) {
+      const page = store.pageList[i];
+      if (!page) continue;
+      const [a, b] = page;
 
-  const newState: Record<number, 0 | 1 | ''> = {};
-  for (let [i] = showRange; i <= showRange[1]; i++) {
-    const page = store.pageList[i];
-    if (!page) continue;
-    const [a, b] = page;
-
-    if (b === undefined) newState[a] = '';
-    else {
-      newState[a] = 0;
-      newState[b] = 1;
+      if (b === undefined) newState[a] = '';
+      else {
+        newState[a] = 0;
+        newState[b] = 1;
+      }
     }
-  }
 
-  setState('imgShowState', reconcile(newState));
-});
+    setState('imgShowState', reconcile(newState));
+  },
+);
 
 // 卷轴模式下，将当前显示的第一页作为当前页
 createEffectOn(
-  () => store.showRange,
-  ([firstPage]) => {
-    if (!store.gridMode && store.option.scrollMode.enabled)
-      setState('activePageIndex', firstPage ?? 0);
-  },
+  [() => store.showRange, () => store.option.scrollMode.enabled],
+  ([[firstPage], isScrollMode]) =>
+    isScrollMode && setState('activePageIndex', firstPage ?? 0),
 );
 
 // 图片发生变化时触发回调

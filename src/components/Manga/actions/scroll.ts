@@ -146,13 +146,9 @@ export const scrollViewImg = (i: number) => {
 /** 跳转到指定图片的显示位置 */
 export const jumpToImg = (index: number) => {
   zoom(100);
-  setState('gridMode', false);
   if (store.option.scrollMode.enabled) return scrollViewImg(index);
 
   const pageNum = imgPageMap()[index];
   if (pageNum === undefined) return;
-  setState((state) => {
-    state.activePageIndex = pageNum;
-    state.gridMode = false;
-  });
+  setState('activePageIndex', pageNum);
 };

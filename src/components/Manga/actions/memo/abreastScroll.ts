@@ -144,7 +144,7 @@ export const abreastScrollWidth = createRootMemo(
 
 /** 并排卷轴模式下每个图片所在位置的样式 */
 export const imgAreaStyle = createRootMemo(() => {
-  if (!isAbreastMode() || store.gridMode) return '';
+  if (!isAbreastMode()) return '';
 
   let styleText = '';
 

@@ -49,13 +49,13 @@ export const preloadNum = createRootMemo(() => ({
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
-  // 因为涉及到图片默认类型的计算，所以至少等到加载完三张图片再计算，避免被首页大图干扰
-  if (store.imgList.length < 3) return null;
-
-  return imgList()
+  const list = imgList()
     .filter((img) => img.loadType === 'loaded' && img.width)
     .map(sizeFn)
-    .toSorted((a, b) => a - b)[Math.floor(store.imgList.length / 2)];
+    .toSorted((a, b) => a - b);
+  // 因为涉及到图片默认类型的计算，所以至少等到加载完三张图片再计算，避免被首页大图干扰
+  if (list.length < 3) return null;
+  return list[Math.floor(list.length / 2)];
 };
 
 /** 图片占位尺寸 */

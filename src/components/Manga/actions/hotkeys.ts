@@ -17,7 +17,6 @@ export const [defaultHotkeys, setDefaultHotkeys] = createSignal<
   exit: ['Escape'],
   switch_page_fill: ['/', 'm', 'z'],
   switch_scroll_mode: [],
-  switch_grid_mode: [],
   switch_single_double_page_mode: [],
   switch_dir: [],
   switch_auto_enlarge: [],

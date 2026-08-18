@@ -140,7 +140,7 @@
   }
 }
 
-.root:not([data-grid-mode]) .mangaBox {
+.root .mangaBox {
   /* 隐藏滚动条但不影响滚动 */
   scrollbar-width: none;
 
@@ -150,54 +150,7 @@
   }
 }
 
-.root[data-grid-mode] .mangaFlow {
-  overflow: auto;
-  grid-auto-columns: 1fr;
-  grid-auto-flow: row;
-  grid-auto-rows: max-content;
-  grid-template-rows: unset;
-  row-gap: 1.5em;
-  align-items: end;
-
-  box-sizing: border-box;
-
-  & .img {
-    cursor: pointer;
-    margin-right: auto;
-    margin-left: auto;
-
-    & > picture {
-      position: relative;
-    }
-
-    & > .gridModeTip {
-      cursor: auto;
-
-      position: absolute;
-      bottom: -1.5em;
-
-      direction: ltr;
-      overflow: hidden;
-
-      width: 100%;
-
-      line-height: 1.5em;
-      text-align: center;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-
-      opacity: 0.5;
-    }
-
-    &[data-load-type='error'],
-    &[data-load-type='wait'],
-    &[src=''] {
-      height: 100%;
-    }
-  }
-}
-
-.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox {
+.root[data-scroll-mode] .mangaBox {
   overflow: auto;
 
   & .mangaFlow {
@@ -229,6 +182,31 @@
       }
     }
   }
+}
+
+.pageTip {
+  pointer-events: none;
+
+  position: absolute;
+  z-index: 1;
+  right: 0.4em;
+  bottom: 0.4em;
+
+  padding: 0.1em 0.4em;
+  border-radius: 0.25em;
+
+  font-size: 1.5em;
+  line-height: 1.5;
+  color: var(--text);
+
+  opacity: 0;
+  background-color: color-mix(in srgb, var(--text-bg) 80%, transparent);
+
+  transition: opacity 150ms;
+}
+
+.root[data-page-tip] .pageTip {
+  opacity: 1;
 }
 
 @keyframes show {

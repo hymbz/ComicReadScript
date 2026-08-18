@@ -46,13 +46,9 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
     return imgPosition ? imgPosition.length - 1 : 0;
   });
 
-  /** 是否要渲染复制图片 */
-  const renderClone = () => !store.gridMode && cloneNum() > 0;
-
   const styles = createMemo(() => ({
     img: {
-      'grid-area':
-        isAbreastMode() && !store.gridMode ? 'none' : `_${img.index}`,
+      'grid-area': isAbreastMode() ? 'none' : `_${img.index}`,
       'background-color': isEnableBg() ? img.background : undefined,
     },
     picture: {
@@ -97,20 +93,15 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
             decoding="async"
           />
         </Show>
+        <div class={classes.pageTip}>{getImgTip(img.index)}</div>
       </picture>
-      <Show when={store.gridMode}>
-        <div
-          class={classes.gridModeTip}
-          children={store.gridMode ? getImgTip(img.index) : ''}
-        />
-      </Show>
     </div>
   );
 
   return (
     <>
       <ComicImgBase />
-      <Show when={renderClone()}>
+      <Show when={cloneNum() > 0}>
         <For each={Array.from({ length: cloneNum() })}>
           {(_, i) => <ComicImgBase cloneIndex={i() + 1} />}
         </For>

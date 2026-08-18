@@ -174,6 +174,21 @@ export const defaultSettingList: () => SettingList = () => [
           />
         </Show>
 
+        <SettingsItemSelect
+          name={t('setting.option.page_tip')}
+          options={[
+            ['hide', t('setting.option.page_tip_hide')],
+            ['always', t('setting.option.page_tip_always')],
+            ['auto', t('setting.option.page_tip_auto')],
+          ]}
+          value={store.option.pageTip}
+          onChange={(val) =>
+            setOption((draftOption) => {
+              draftOption.pageTip = val;
+            })
+          }
+        />
+
         <Show when={isDoubleMode()}>
           <SettingsItemNumber
             name={t('setting.option.page_columns')}
