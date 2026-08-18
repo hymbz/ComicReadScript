@@ -177,7 +177,7 @@ export const useInit = (props: MangaProps) => {
       const newImgSet = new Set(newImgList);
       if (oldImgSet.size === 0 && newImgList.length > 0) {
         void resumeReadProgress(state);
-        void updateMitTranslators(true);
+        if (state.option.translation.enabled) void updateMitTranslators(true);
       }
 
       /** 被删除的图片 */

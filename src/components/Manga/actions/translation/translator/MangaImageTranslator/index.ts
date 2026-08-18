@@ -220,6 +220,7 @@ export const [mitTranslators, setMitTranslators] = createEqualsSignal<
 
 /** 从服务器获取可用翻译器列表 */
 export const updateMitTranslators = async (noTip = false) => {
+  if (!store.option.translation.enabled) return;
   if (store.option.translation.provider !== 'manga-image-translator') return;
 
   try {
@@ -261,13 +262,15 @@ export const updateMitTranslators = async (noTip = false) => {
 // 在切换翻译器或地址时更新可用翻译器列表
 createEffectOn(
   [
+    () => store.option.translation.enabled,
     () => store.option.translation.provider,
     () => store.option.translation.mit.localUrl,
     lang,
   ],
-  ([server]) => {
-    if (server === 'manga-image-translator' && store.imgList.length > 0)
-      return updateMitTranslators(true);
-  },
+  ([enabled, server]) =>
+    enabled &&
+    server === 'manga-image-translator' &&
+    store.imgList.length > 0 &&
+    updateMitTranslators(true),
   { defer: true },
 );
