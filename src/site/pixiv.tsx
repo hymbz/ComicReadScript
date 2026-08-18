@@ -35,7 +35,7 @@ setupSiteAdapter({
       `/ajax/illust/${id}/pages`,
       { responseType: 'json' },
     );
-    if (res.response.body.length <= 1) return;
+    if (res.response.body.length === 0) return;
     imgs = res.response.body;
 
     return { type: 'manga', id } as const;
