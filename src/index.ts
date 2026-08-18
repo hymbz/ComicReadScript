@@ -112,9 +112,19 @@ try {
           await wait(() => Boolean(querySelector('.scrollbar-demo-item')));
           return true;
         },
-        getImgList: () =>
-          unsafeWindow.__NUXT__.data.getChapters?.data?.chapterInfo
-            ?.page_url as string[],
+        getImgList: async () => {
+          // 切换到上下滚动
+          await wait(() => {
+            const dom = querySelector('#qiehuan_txt');
+            if (!dom) return;
+            if (dom.textContent !== '切换到上下滚动阅读') return true;
+            dom.click();
+            return sleep(1000);
+          });
+          return querySelectorAll<HTMLImageElement>(
+            '.scrollbar-demo-item img',
+          ).map((img) => img.src);
+        },
         onNext: () => querySelectorClick('#next_chapter'),
         onPrev: () => querySelectorClick('#prev_chapter'),
       });
