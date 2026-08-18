@@ -141,6 +141,8 @@ type Option$1 = {
 	preloadPageNum: number;
 	/** 显示页数。0 表示 auto */
 	pageNum: 1 | 2 | 0;
+	/** 页数提示显示方式 */
+	pageTip: "hide" | "auto" | "always";
 	/** 自动切换单双页模式 */
 	autoSwitchPageMode: boolean;
 	/** 自动隐藏鼠标 */
@@ -321,15 +323,17 @@ export type ShowState = {
 	isMobile: boolean;
 	/** 是否处于拖拽模式 */
 	isDragMode: boolean;
+	/** 鼠标是否悬停在滚动条上 */
+	isScrollbarHover: boolean;
 	/** 当前页数 */
 	activePageIndex: number;
-	/** 网格模式 */
-	gridMode: boolean;
 	show: {
 		/** 是否强制显示工具栏 */
 		toolbar: boolean;
 		/** 是否强制显示滚动条 */
 		scrollbar: boolean;
+		/** 是否强制显示页数提示 */
+		pageTip: boolean;
 		/** 是否显示点击区域 */
 		touchArea: boolean;
 		/** 结束页状态 */
@@ -656,11 +660,12 @@ export declare const initComicReader: {
 			};
 			isMobile: boolean;
 			isDragMode: boolean;
+			isScrollbarHover: boolean;
 			activePageIndex: number;
-			gridMode: boolean;
 			show: {
 				toolbar: boolean;
 				scrollbar: boolean;
+				pageTip: boolean;
 				touchArea: boolean;
 				endPage: undefined | "start" | "end";
 			};
@@ -737,11 +742,12 @@ export declare const initComicReader: {
 			};
 			isMobile: boolean;
 			isDragMode: boolean;
+			isScrollbarHover: boolean;
 			activePageIndex: number;
-			gridMode: boolean;
 			show: {
 				toolbar: boolean;
 				scrollbar: boolean;
+				pageTip: boolean;
 				touchArea: boolean;
 				endPage: undefined | "start" | "end";
 			};

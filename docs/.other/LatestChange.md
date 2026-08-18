@@ -1,12 +1,11 @@
-## [12.6.0](https://github.com/hymbz/ComicReadScript/compare/v12.5.2...v12.6.0) (2026-08-16)
+## [12.7.0](https://github.com/hymbz/ComicReadScript/compare/v12.6.0...v12.7.0) (2026-08-19)
 
 ### Features
 
-- :sparkles: 双页卷轴模式可以在一行里显示多页 ([b4fab42](https://github.com/hymbz/ComicReadScript/commit/b4fab42436b57f5ab3241edeecb270dd1188dbf8))
-- :sparkles: ehentai 画廊支持多选加载指定页 ([94a4290](https://github.com/hymbz/ComicReadScript/commit/94a4290841b2e972213b0007f4c5227fef3a6cd7))
-- :sparkles: pixiv 支持多选加载 ([2f613e5](https://github.com/hymbz/ComicReadScript/commit/2f613e5bb63172e9e459237058a50a88d5e76086))
-- :sparkles: kemono 支持在列表页多选加载 ([0c38ee2](https://github.com/hymbz/ComicReadScript/commit/0c38ee2952c31f30f0047596fa61957a86cfab3a))
+- :sparkles: 支持 komiic 的新域名 ([566154c](https://github.com/hymbz/ComicReadScript/commit/566154cb6892a0b5c70a8a7905c1fc0f7036e3bb)), closes [#351](https://github.com/hymbz/ComicReadScript/issues/351)
+- :sparkles: 增加支持 Postimages ([4368041](https://github.com/hymbz/ComicReadScript/commit/4368041b2b98bbc033d67554f46b33ae02335aaa))
 
 ### Bug Fixes
 
-- :bug: 修复拷贝漫画的接口错误 ([bf1bb74](https://github.com/hymbz/ComicReadScript/commit/bf1bb74c014170d808fcdf464304eb52d7634dc7))
+- :bug: 修复在新版 LANraragi 上失效的 bug ([48ef970](https://github.com/hymbz/ComicReadScript/commit/48ef970e4d44b7355a8b2ca1f20768bbb1ea0986)), closes [#347](https://github.com/hymbz/ComicReadScript/issues/347)
+- :bug: 修复在再漫画上无法正常运行的 bug ([1f6f453](https://github.com/hymbz/ComicReadScript/commit/1f6f453ebab2940faf8976e4f1d484a2ff7e671f)), closes [#350](https://github.com/hymbz/ComicReadScript/issues/350)
