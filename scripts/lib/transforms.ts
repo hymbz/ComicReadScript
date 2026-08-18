@@ -1,11 +1,12 @@
 import { type TransformFn } from '../plugin/codeEdit';
+import { getCopyMangaHosts } from '../plugin/copyMangaApi';
 import { siteUrl } from '../plugin/siteUrl';
 import { createMetaHeader, isDevMode, meta } from './ctx';
 import { minifyCode, pathResolve, readFile } from './utils';
 
 export const transforms = {
   /** 拼接 import.js + meta 头到产物顶部 */
-  importEmbed: (code, _chunk, addWatchFile) => {
+  importEmbed: async (code, _chunk, addWatchFile) => {
     if (isDevMode)
       code = `\nconsole.time('脚本启动消耗时间');\n${code}\nconsole.timeEnd('脚本启动消耗时间');\n`;
 
@@ -15,7 +16,16 @@ export const transforms = {
       .replaceAll('require$1', 'require')
       .replaceAll(/^exports\.(?<_>require|selfImport)+\s*=\s*.+;\n?/gmu, '');
 
-    return `${createMetaHeader(meta)}\n${importCode}\n${code}`;
+    // 加入拷贝漫画的 api 主机
+    const hosts = await getCopyMangaHosts();
+    const metaData = {
+      ...meta,
+      connect: [
+        ...new Set([...meta.connect, ...hosts.content, ...hosts.mobile]),
+      ],
+    };
+
+    return `${createMetaHeader(metaData)}\n${importCode}\n${code}`;
   },
 
   dev: (code) =>
