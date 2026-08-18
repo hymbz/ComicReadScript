@@ -416,7 +416,8 @@ try {
 
     // #漫画站（中文）[komiic](https://komiic.com)
     // test: https://komiic.com/comic/2299/chapter/66668/images/all
-    case 'komiic.com': {
+    case 'komiic.com':
+    case 'komiic.cc': {
       const query = `
         query imagesByChapterId($chapterId: ID!) {
           imagesByChapterId(chapterId: $chapterId) {
@@ -438,8 +439,8 @@ try {
         name: 'komiic',
         isMangaPage: () => {
           const match =
-            /comic\/(?<comicId>\d+)\/chapter\/(?<chapterId>\d+)\/images\//u.exec(
-              location.href,
+            /^\/comic\/(?<comicId>\d+)\/chapter\/(?<chapterId>\d+)\//u.exec(
+              location.pathname,
             )?.groups as { comicId: string; chapterId: string } | null;
           return match ?? false;
         },
@@ -455,7 +456,7 @@ try {
             }),
           });
           return (res.response.data.imagesByChapterId as { kid: string }[]).map(
-            ({ kid }) => `https://komiic.com/api/image/${kid}`,
+            ({ kid }) => `/api/image/${kid}`,
           );
         },
         onPrev: () => getChapterNav('上一'),
