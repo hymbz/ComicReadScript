@@ -74,6 +74,7 @@
   },
   "other": {
     "auto": "Automatikus",
+    "clear": "Törlés",
     "custom": "Egyedi",
     "disable": "Letiltás",
     "distance": "távolság",
@@ -95,8 +96,7 @@
     "page_range": "Kérlek add meg az oldaltartományt:\n(például: 1, 3-5, 9-)",
     "read_mode": "Olvasó mód",
     "selected": "Kiválasztva",
-    "setting": "Beállítások",
-    "clear": "Törlés"
+    "setting": "Beállítások"
   },
   "pwa": {
     "alert": {
@@ -135,7 +135,6 @@
     "option": {
       "abreast_duplicate": "Ismétlődő arány oszloponként",
       "abreast_mode": "Párhuzamos görgetési mód",
-      "page_columns": "Oldalak száma soronként",
       "adjust_to_width": "Adaptív Szélesség",
       "align_edge": "Élhez igazítás lapozáskor",
       "always_load_all_img": "Mindig töltse be az összes képet",
@@ -165,6 +164,11 @@
       "img_recognition_pageFill": "Oldal kitöltés automatikus beállítása",
       "img_recognition_warn": "❗ A jelenlegi böngésző nem támogatja a Web Workert, e funkció engedélyezése a oldal lelassulását okozhatja, javasolt a böngésző frissítése vagy cseréje.",
       "img_recognition_warn_2": "❗ A jelenlegi webhely nem támogatja a Web Workert, e funkció engedélyezése a oldal lelassulását okozhatja.",
+      "page_columns": "Oldalak száma soronként",
+      "page_tip": "Oldalszám tipp",
+      "page_tip_always": "Mindig",
+      "page_tip_auto": "Automatikus",
+      "page_tip_hide": "Rejtett",
       "paragraph_appearance": "Megjelenés",
       "paragraph_dir": "Olvasási irány",
       "paragraph_display": "Megjelenítés",
@@ -175,10 +179,6 @@
       "scroll_end_auto": "Először a következő/előző fejezetre ugrik, különben kilép",
       "scroll_mode_img_scale": "Görgetési mód képméretezése",
       "scroll_mode_img_spacing": "Görgetési mód képtávolság",
-      "page_tip": "Oldalszám tipp",
-      "page_tip_hide": "Rejtett",
-      "page_tip_auto": "Automatikus",
-      "page_tip_always": "Mindig",
       "scrollbar_auto_hidden": "Automatikus elrejtés",
       "scrollbar_easy_scroll": "Gyors görgetés",
       "scrollbar_position": "Pozíció",
@@ -216,8 +216,8 @@
         "translator": "Fordítási szolgáltatás",
         "unclip_ratio": "Levágatlan arány"
       },
-      "range": "Fordítási tartomány",
       "provider": "Fordító",
+      "range": "Fordítási tartomány",
       "translate_all": "Összes kép fordítása",
       "translate_to_end": "Jelenlegi oldaltól a végéig fordítás"
     }
@@ -289,12 +289,12 @@
       "downloading": "Letöltés",
       "downscaling": "Kép kicsinyítése",
       "error": "Fordítási hiba",
+      "error-disconnect": "Kapcsolat megszakadt a szerverrel",
       "error-download": "Letöltési hiba",
       "error-lang": "A kiválasztott fordítási szolgáltatás nem támogatja a kiválasztott nyelvet",
-      "error-translating": "A fordítási szolgáltatás nem adott vissza szöveget",
       "error-too-large": "A kép mérete túl nagy (több mint 8000x8000 pixel)",
+      "error-translating": "A fordítási szolgáltatás nem adott vissza szöveget",
       "error-upload": "Feltöltési hiba",
-      "error-disconnect": "Kapcsolat megszakadt a szerverrel",
       "error-with-id": "Fordítási hiba",
       "finished": "Eredmények rendezése",
       "inpainting": "Kép javítása",
@@ -312,8 +312,8 @@
       "textline_merge": "Szöveg egyesítése",
       "translating": "Szöveg fordítása",
       "upload": "Feltöltés",
-      "upscaling": "Kép nagyítása",
-      "uploading": "Feltöltés"
+      "uploading": "Feltöltés",
+      "upscaling": "Kép nagyítása"
     },
     "tip": {
       "check_img_status_failed": "Kép állapotának ellenőrzése sikertelen",
