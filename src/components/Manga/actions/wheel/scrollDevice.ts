@@ -32,7 +32,7 @@ export const detectScrollDevice = (e: WheelEvent) => {
     else {
       consecutiveMultiple = 0;
       // 根据滚动量大小区分 A/B 类
-      type = Math.max(lastDeltaY, absDeltaY) >= 80 ? 'a' : 'b';
+      type = Math.max(lastDeltaY, absDeltaY) >= 40 ? 'a' : 'b';
     }
   }
   // 不成倍则是 C 类
