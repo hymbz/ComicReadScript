@@ -164,10 +164,11 @@ export const otherSite = async () => {
     }, time);
 
   /** 按照元素的显示高度来排序元素 */
-  const sortElementsByTop = <T extends HTMLElement>(elements: T[]): T[] => {
+  const sortElementsByTop = <T extends HTMLElement>(elements: Iterable<T>,): T[] => {
+    const list = [...elements];
     const topMap = new WeakMap<T, number>();
-    for (const e of elements) topMap.set(e, e.getBoundingClientRect().top);
-    return elements.toSorted((a, b) => topMap.get(a)! - topMap.get(b)!);
+    for (const e of list) topMap.set(e, e.getBoundingClientRect().top);
+    return list.toSorted((a, b) => topMap.get(a)! - topMap.get(b)!);
   };
 
   const imageWatcher = new ImageWatcher({
