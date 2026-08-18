@@ -27,7 +27,7 @@ export const featureOptions = {
 
   autoShow: false,
   // 默认开启图像识别，避免图片 url 过期后还要刷新
-  imgRecognition: { enabled: true },
+  defaultOption: { imgRecognition: { enabled: true } },
 };
 
 export type EhOptions = typeof featureOptions;
