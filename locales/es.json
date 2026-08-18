@@ -17,7 +17,6 @@
     "downloading": "Descargando",
     "fullscreen": "Pantalla completa",
     "fullscreen_exit": "Salir de pantalla completa",
-    "grid_mode": "Modo cuadrícula",
     "packaging": "Empaquetado",
     "page_fill": "Relleno de página",
     "page_mode_double": "Modo de página doble",
@@ -64,7 +63,6 @@
     "scroll_up": "Desplázate hacia arriba",
     "switch_auto_enlarge": "Activar la opción de ampliación automática de imagen",
     "switch_dir": "Cambiar la dirección de lectura",
-    "switch_grid_mode": "Cambiar al modo de cuadrícula",
     "switch_page_fill": "Conmutar completado de página",
     "switch_scroll_mode": "Conmutar modo de arrastre",
     "switch_single_double_page_mode": "Intercambiar modo simple/doble"
