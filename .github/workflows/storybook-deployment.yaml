@@ -1,9 +1,10 @@
-name: updateDocsPage
+name: updateStorybookPage
 
 on:
   push:
     paths:
-      - '**.md'
+      - 'src/stories/**'
+      - 'src/components/**'
 
 jobs:
   deploy:
@@ -32,14 +33,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build
-        run: pnpm run docs:build
+      - name: Build Storybook
+        run: pnpm run build-storybook
 
       - name: Publish
         uses: cloudflare/pages-action@1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'comic-read-docs'
-          directory: 'docs/.vitepress/dist'
+          projectName: 'comic-read-demo'
+          directory: 'storybook-static'
           branch: main
