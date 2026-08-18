@@ -164,7 +164,9 @@ export const otherSite = async () => {
     }, time);
 
   /** 按照元素的显示高度来排序元素 */
-  const sortElementsByTop = <T extends HTMLElement>(elements: Iterable<T>,): T[] => {
+  const sortElementsByTop = <T extends HTMLElement>(
+    elements: Iterable<T>,
+  ): T[] => {
     const list = [...elements];
     const topMap = new WeakMap<T, number>();
     for (const e of list) topMap.set(e, e.getBoundingClientRect().top);

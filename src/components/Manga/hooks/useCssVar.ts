@@ -5,48 +5,22 @@ import classes from '../index.module.css';
 import { store } from '../store';
 import { css } from './useStyle';
 
-// TODO: 使用 light-dark()
-// https://developer.mozilla.org/docs/Web/CSS/color_value/light-dark
-// https://caniuse.com/css-relative-colors
+/** 主题颜色，通过 light-dark() 配合 color-scheme 自动选择深浅色 */
+const themeStyle: JSX.CSSProperties = {
+  '--hover-bg-color': 'light-dark(#0001, #FFF3)',
+  '--hover-bg-color-enable': 'light-dark(#0009, #FFFa)',
 
-/** 深色模式 */
-const darkStyle: JSX.CSSProperties = {
-  '--hover-bg-color': '#FFF3',
-  '--hover-bg-color-enable': '#FFFa',
+  '--switch': 'light-dark(#FAFAFA, #BDBDBD)',
+  '--switch-bg': 'light-dark(#9C9C9C, #6E6E6E)',
 
-  '--switch': '#BDBDBD',
-  '--switch-bg': '#6E6E6E',
-
-  '--page-bg': '#303030',
+  '--page-bg': 'light-dark(white, #303030)',
 
   '--secondary': '#7A909A',
-  '--secondary-bg': '#556065',
+  '--secondary-bg': 'light-dark(#BAC5CA, #556065)',
 
-  '--text': 'white',
-  '--text-secondary': '#FFFC',
-  '--text-bg': '#121212',
-
-  'color-scheme': 'dark',
-};
-
-/** 浅色模式 */
-const lightStyle: JSX.CSSProperties = {
-  '--hover-bg-color': '#0001',
-  '--hover-bg-color-enable': '#0009',
-
-  '--switch': '#FAFAFA',
-  '--switch-bg': '#9C9C9C',
-
-  '--page-bg': 'white',
-
-  '--secondary': '#7A909A',
-  '--secondary-bg': '#BAC5CA',
-
-  '--text': 'black',
-  '--text-secondary': '#0008',
-  '--text-bg': '#FAFAFA',
-
-  'color-scheme': 'light',
+  '--text': 'light-dark(black, white)',
+  '--text-secondary': 'light-dark(#0008, #FFFC)',
+  '--text-bg': 'light-dark(#FAFAFA, #121212)',
 };
 
 const createSvgIcon = (fill: string, d: string) =>
@@ -80,8 +54,9 @@ export const useCssVar = () => {
         store.option.customBackground ??
         (store.option.darkMode ? '#000' : '#fff'),
       '--scroll-mode-spacing': () => store.option.scrollMode.spacing,
+      'color-scheme': () => (store.option.darkMode ? 'dark' : 'light'),
     },
-    () => (store.option.darkMode ? darkStyle : lightStyle),
+    () => themeStyle,
     svg,
     i18n,
   ]);
