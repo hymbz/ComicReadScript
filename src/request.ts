@@ -43,6 +43,40 @@ const xmlHttpRequest = <T = any>(
     details.signal?.addEventListener('abort', () => abort.abort());
   });
 
+/** 通过流读取 blob，并回报下载进度 */
+const readBlobWithProgress = async (
+  res: Awaited<ReturnType<typeof fetch>>,
+  onprogress: RequestDetails<any>['onprogress'],
+) => {
+  const total = Number(res.headers.get('Content-Length')) || 0;
+  const reader = res.body?.getReader();
+  if (!reader) return new Blob();
+
+  const chunks: BlobPart[] = [];
+  let loaded = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      loaded += value.byteLength;
+      (onprogress as any)({
+        loaded,
+        total,
+        done: loaded,
+        position: loaded,
+        lengthComputable: total > 0,
+        totalSize: total,
+      });
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return new Blob(chunks);
+};
+
 /** 发起请求 */
 // oxlint-disable-next-line max-params
 export const request = async <T = any>(
@@ -80,7 +114,11 @@ export const request = async <T = any>(
           response = (await res.arrayBuffer()) as T;
           break;
         case 'blob':
-          response = (await res.blob()) as T;
+          response = (
+            details.onprogress && res.body
+              ? await readBlobWithProgress(res, details.onprogress)
+              : await res.blob()
+          ) as T;
           break;
         case 'json':
           response = (await res.json()) as T;

@@ -11,13 +11,13 @@ export const featureOptions = {
   /** 快捷收藏 */
   quick_favorite: true,
   /** 标签染色 */
-  colorize_tag: false,
+  colorize_tag: true,
   /** 快捷评分 */
   quick_rating: true,
   /** 快捷查看标签定义 */
   quick_tag_define: true,
   /** 悬浮标签列表 */
-  float_tag_list: false,
+  float_tag_list: true,
   /** 自动调整配置 */
   auto_adjust_option: false,
   /** 标签检查 */

@@ -79,14 +79,14 @@ export const switchImgRecognition = (
     if (path.length === 0) path.push('enabled');
     for (const key of path) option[key] = !option[key];
 
-    if (!option.enabled) return;
+    if (!option.enabled) return syncImgLoadState(state);
 
     for (const img of Object.values(state.imgMap)) {
       if (!img.blobUrl) img.loadType = 'wait';
       if (img.loadType !== 'loaded') continue;
       void handleImgRecognition(img.src);
     }
+    syncImgLoadState(state);
     if (path.includes('enabled')) void updateImgLoadType();
   });
-  syncImgLoadState();
 };

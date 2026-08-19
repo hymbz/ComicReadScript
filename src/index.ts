@@ -1,5 +1,5 @@
 import { type MangaProps, listenHotkey } from 'components/Manga';
-import { type SetupOptions, request, setup, toast } from 'core';
+import { type SetupOptions, request, setup, setupSimple, toast } from 'core';
 import {
   css,
   fileType,
@@ -943,17 +943,14 @@ try {
         return btn && !btn.disabled ? () => btn.click() : undefined;
       };
 
-      setup({
+      void setupSimple({
         name: 'klz9',
+        selector: 'main img:not(a img)',
         isMangaPage: async () => {
           if (!location.pathname.includes('-chapter-')) return false;
           await wait(() => querySelector('main img:not(a img)'));
           return { id: location.pathname };
         },
-        getImgList: () =>
-          querySelectorAll<HTMLImageElement>('main img:not(a img)').map(
-            (img) => img.src,
-          ),
         onPrev: () => handlePrevNext(0),
         onNext: () => handlePrevNext(1),
       });

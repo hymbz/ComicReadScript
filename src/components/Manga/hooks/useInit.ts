@@ -217,6 +217,8 @@ export const useInit = (props: MangaProps) => {
         updateShowRange(state);
       }
 
+      syncImgLoadState(state);
+
       if (isNew || state.pageList.length === 0) {
         resetImgState(state);
         state.activePageIndex = 0;
@@ -242,7 +244,6 @@ export const useInit = (props: MangaProps) => {
       if (state.activePageIndex > state.pageList.length - 1)
         state.activePageIndex = state.pageList.length - 1;
     });
-    syncImgLoadState();
   };
 
   // 处理 imgList 参数的初始化和修改

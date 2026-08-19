@@ -1,8 +1,11 @@
 set -e
 pnpm check
 
-# 不存在已跟踪文件的未暂存修改时（忽略 untracked），
-# 自动暂存 check 产生的修复；用 git add -u 避免误加 untracked 文件
-if ! git status --porcelain | awk 'substr($0,2,1)!=" " && substr($0,2,1)!="?" {exit 1}'; then
+# 先检查是否有「暂存的变更」：
+# - 有：不执行 git add，提交内容就是当前 index 中已有的暂存内容，
+#       未暂存的修改（包括 pnpm check 产生的修复）保持不动。
+# - 没有：把已跟踪文件的未暂存修改全部暂存后提交（等价于“全部提交”）。
+#   使用 git add -u 只暂存已跟踪文件，不误加 untracked 文件。
+if git diff --cached --quiet; then
   git add -u
 fi
