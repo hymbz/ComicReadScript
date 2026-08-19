@@ -130,7 +130,7 @@ if (
   const updateProgress = async (id: string, pageNum: number) => {
     await checkServerTracksProgress();
     if (isServerTracksProgress)
-      await request(`/archives/${id}/progress/${pageNum + 1}`, {
+      await request(`/api/archives/${id}/progress/${pageNum + 1}`, {
         method: 'PUT',
         fetch: true,
         noTip: true,
