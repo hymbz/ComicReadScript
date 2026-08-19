@@ -10,6 +10,7 @@
     "userscript/copyApi",
     "userscript/detectAd",
     "userscript/core",
+    "userscript/autoImageScanner",
     "worker/detectAd",
     "worker/ImageRecognition",
     "worker/ImageUpscale",
