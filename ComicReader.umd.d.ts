@@ -143,6 +143,10 @@ type Option$1 = {
 	pageNum: 1 | 2 | 0;
 	/** 页数提示显示方式 */
 	pageTip: "hide" | "auto" | "always";
+	/** 翻页动画时长（毫秒） */
+	turnPageDuration: number;
+	/** 卷轴模式滚动动画时长（毫秒） */
+	scrollDuration: number;
 	/** 自动切换单双页模式 */
 	autoSwitchPageMode: boolean;
 	/** 自动隐藏鼠标 */
@@ -323,6 +327,8 @@ export type ShowState = {
 	isMobile: boolean;
 	/** 是否处于拖拽模式 */
 	isDragMode: boolean;
+	/** 是否正在播放翻页滑动动画 */
+	isTurnAnimating: boolean;
 	/** 鼠标是否悬停在滚动条上 */
 	isScrollbarHover: boolean;
 	/** 当前页数 */
@@ -660,6 +666,7 @@ export declare const initComicReader: {
 			};
 			isMobile: boolean;
 			isDragMode: boolean;
+			isTurnAnimating: boolean;
 			isScrollbarHover: boolean;
 			activePageIndex: number;
 			show: {
@@ -742,6 +749,7 @@ export declare const initComicReader: {
 			};
 			isMobile: boolean;
 			isDragMode: boolean;
+			isTurnAnimating: boolean;
 			isScrollbarHover: boolean;
 			activePageIndex: number;
 			show: {

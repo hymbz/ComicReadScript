@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.7.1
+// @version         12.8.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、再漫画、漫画柜(manhuagui)、动漫屋(dm5)、mangabz、komiic、無限動漫、绅士漫画(wnacg)、禁漫天堂、NoyAcg、熱辣漫畫、hanime1、hitomi、hdoujin、SchaleNetwork、nude-moon、HentaiZap、IMHentai、HentaiEra、HentaiEnvy、MangaDex、welovemanga、kisslove(klz9)、kemono、nekohouse、Pixiv、明日方舟泰拉记事社、Postimages、最前線、芸能ヌード、Tachidesk、LANraragi
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | hdoujin | SchaleNetwork | nude-moon | HentaiZap | IMHentai | HentaiEra | HentaiEnvy | kemono | nekohouse | MangaDex | welovemanga | kisslove(klz9)
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -88,21 +88,21 @@
 // @connect         self
 // @connect         127.0.0.1
 // @connect         *
-// @connect         mapi.hotmangasd.com
-// @connect         mapi.fgjfghkk.club
 // @connect         www.manga2026.xyz
+// @connect         mapi.hotmangasd.com
+// @connect         api.2024manga.com
+// @connect         api.manga2025.com
+// @connect         mapi.hotmangasf.com
+// @connect         mapi.hotmangasg.com
 // @connect         mapi.fgjfghkkcenter.club
 // @connect         mapi.elfgjfghkk.club
-// @connect         api.2024manga.com
-// @connect         mapi.hotmangasf.com
-// @connect         m.manga2025.com
-// @connect         mapi.hotmangasg.com
 // @connect         www.manga2025.com
-// @connect         api.manga2025.com
-// @connect         api.copy3000.com
+// @connect         m.manga2025.com
+// @connect         mapi.fgjfghkk.club
+// @connect         mapi.copy20.com
 // @connect         api.mangacopy.com
 // @connect         api.2026copy.com
-// @connect         mapi.copy20.com
+// @connect         api.copy3000.com
 // @grant           GM_getValue
 // @grant           GM_setValue
 // @grant           GM_addElement
@@ -426,6 +426,8 @@ var en_default = {
 			"show_comments": "Show comments on the end page",
 			"shrink_menu": "Enable menu area",
 			"swap_page_turn_key": "Swap LR page-turning keys",
+			"turn_page_animation_duration": "Page turn animation duration",
+			"scroll_animation_duration": "Scroll animation duration",
 			"zoom": "Image zoom ratio"
 		},
 		"sync_options_other_site": "Sync read options to other sites",
@@ -776,6 +778,8 @@ var ru_default = {
 			"show_comments": "Показывать комментарии на последней странице",
 			"shrink_menu": "Включить область меню",
 			"swap_page_turn_key": "Поменять местами клавиши переключения страниц",
+			"turn_page_animation_duration": "Длительность анимации перелистывания",
+			"scroll_animation_duration": "Длительность анимации прокрутки",
 			"zoom": "Коэффициент масштабирования изображения"
 		},
 		"sync_options_other_site": "Синхронизировать настройки чтения с другими сайтами",
@@ -1126,6 +1130,8 @@ var zh_default = {
 			"show_comments": "在结束页显示评论",
 			"shrink_menu": "缩小菜单区域",
 			"swap_page_turn_key": "左右翻页键交换",
+			"turn_page_animation_duration": "翻页动画时长",
+			"scroll_animation_duration": "滚动动画时长",
 			"zoom": "图片缩放"
 		},
 		"sync_options_other_site": "同步阅读配置至其他站点",
@@ -2913,6 +2919,8 @@ const _defaultOption = {
 	preloadPageNum: 20,
 	pageNum: 0,
 	pageTip: "auto",
+	turnPageDuration: 0,
+	scrollDuration: 100,
 	autoSwitchPageMode: true,
 	autoHiddenMouse: true,
 	autoFullscreen: false,
@@ -3015,6 +3023,7 @@ const propState = {
 const showState = {
 	isMobile: false,
 	isDragMode: false,
+	isTurnAnimating: false,
 	isScrollbarHover: false,
 	activePageIndex: 0,
 	show: {
@@ -3026,7 +3035,7 @@ const showState = {
 	},
 	page: {
 		anima: "",
-		vertical: false,
+		vertical: true,
 		offset: {
 			x: {
 				pct: 0,
@@ -5082,6 +5091,10 @@ const scrollTo = (x, smooth = false) => {
 		scrollStep.cancel();
 		return _scrollTo(x);
 	}
+	if (store.option.scrollDuration <= 0) {
+		scrollStep.cancel();
+		return _scrollTo(x);
+	}
 	if (scrollStep.animationId) {
 		scrollStep.cancel();
 		_scrollTo(x);
@@ -5097,7 +5110,7 @@ const scrollBy = (offset, smooth = false) => {
 /** 实现卷轴模式下的平滑滚动 */
 const scrollStep = new class extends helper.AnimationFrame {
 	/** 动画时长 */
-	duration = 100;
+	duration = 0;
 	/** 要滚动的距离 */
 	distance = 0;
 	/** 滚动开始时间 */
@@ -5118,6 +5131,7 @@ const scrollStep = new class extends helper.AnimationFrame {
 		this.call(true);
 	};
 	start = (x) => {
+		this.duration = store.option.scrollDuration;
 		this.startTime = 0;
 		this.startTop = scrollTop();
 		this.distance = x - this.startTop;
@@ -5237,6 +5251,44 @@ const switchImgRecognition = (...path) => {
 	});
 };
 //#endregion
+//#region src/components/Manga/actions/show.ts
+/** 将页面移回原位 */
+const resetPage = (state, animation = false) => {
+	updateShowRange(state);
+	state.page.offset.x.pct = 0;
+	state.page.offset.y.pct = 0;
+	if (state.option.scrollMode.enabled) {
+		state.page.anima = "";
+		return;
+	}
+	let i = -1;
+	if (helper.inRange(state.renderRange[0], state.activePageIndex, state.renderRange[1])) i = state.activePageIndex - state.renderRange[0];
+	if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i;
+	else state.page.offset.x.pct = i === -1 ? 0 : i;
+	state.page.anima = animation ? "page" : "";
+};
+/** 获取指定图片的提示文本 */
+const getImgTip = (i) => {
+	if (i === -1) return helper.t("other.fill_page");
+	const img = getImg(i);
+	if (img.loadType !== "loaded") return \`\${i + 1} (\${helper.t(\`img_status.\${img.loadType}\`)})\`;
+	if (img.translationType && img.translationType !== "hide" && img.translationMessage) return \`\${i + 1}：\${img.translationMessage}\`;
+	if (isUpscale() && img.upscaleUrl !== void 0) return \`\${i + 1} (\${img.upscaleUrl ? helper.t("upscale.upscaled") : helper.t("upscale.upscaling")})\`;
+	return \`\${i + 1}\`;
+};
+/** 获取指定页面的提示文本 */
+const getPageTip = (pageIndex) => {
+	const page = store.pageList[pageIndex];
+	if (!page) return "null";
+	const pageIndexText = page.map((index) => index === -1 ? helper.t("other.fill_page") : \`\${index + 1}\`);
+	if (pageIndexText.length === 1) return pageIndexText[0];
+	if (store.option.dir === "rtl") pageIndexText.reverse();
+	return pageIndexText.join(" | ");
+};
+helper.createEffectOn(() => store.activePageIndex, () => store.show.endPage && setState("show", "endPage", void 0), { defer: true });
+helper.createEffectOn(activePage, helper.throttle(() => store.isDragMode || store.isTurnAnimating || setState(resetPage)));
+helper.createEffectOn(() => store.show.toolbar, () => store.show.scrollbar && !store.show.toolbar && setState("show", "scrollbar", false), { defer: true });
+//#endregion
 //#region src/components/Manga/actions/readProgress.ts
 let cache = void 0;
 const initCache = async () => {
@@ -5281,44 +5333,6 @@ const resumeReadProgress = async (state) => {
 	});
 };
 //#endregion
-//#region src/components/Manga/actions/show.ts
-/** 将页面移回原位 */
-const resetPage = (state, animation = false) => {
-	updateShowRange(state);
-	state.page.offset.x.pct = 0;
-	state.page.offset.y.pct = 0;
-	if (state.option.scrollMode.enabled) {
-		state.page.anima = "";
-		return;
-	}
-	let i = -1;
-	if (helper.inRange(state.renderRange[0], state.activePageIndex, state.renderRange[1])) i = state.activePageIndex - state.renderRange[0];
-	if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i;
-	else state.page.offset.x.pct = i === -1 ? 0 : i;
-	state.page.anima = animation ? "page" : "";
-};
-/** 获取指定图片的提示文本 */
-const getImgTip = (i) => {
-	if (i === -1) return helper.t("other.fill_page");
-	const img = getImg(i);
-	if (img.loadType !== "loaded") return \`\${i + 1} (\${helper.t(\`img_status.\${img.loadType}\`)})\`;
-	if (img.translationType && img.translationType !== "hide" && img.translationMessage) return \`\${i + 1}：\${img.translationMessage}\`;
-	if (isUpscale() && img.upscaleUrl !== void 0) return \`\${i + 1} (\${img.upscaleUrl ? helper.t("upscale.upscaled") : helper.t("upscale.upscaling")})\`;
-	return \`\${i + 1}\`;
-};
-/** 获取指定页面的提示文本 */
-const getPageTip = (pageIndex) => {
-	const page = store.pageList[pageIndex];
-	if (!page) return "null";
-	const pageIndexText = page.map((index) => index === -1 ? helper.t("other.fill_page") : \`\${index + 1}\`);
-	if (pageIndexText.length === 1) return pageIndexText[0];
-	if (store.option.dir === "rtl") pageIndexText.reverse();
-	return pageIndexText.join(" | ");
-};
-helper.createEffectOn(() => store.activePageIndex, () => store.show.endPage && setState("show", "endPage", void 0), { defer: true });
-helper.createEffectOn(activePage, helper.throttle(() => store.isDragMode || setState(resetPage)));
-helper.createEffectOn(() => store.show.toolbar, () => store.show.scrollbar && !store.show.toolbar && setState("show", "scrollbar", false), { defer: true });
-//#endregion
 //#region src/components/Manga/actions/turnPage.ts
 /** 翻页。返回是否成功改变了当前页数 */
 const turnPage = withOptionalState((dir, state) => {
@@ -5328,29 +5342,6 @@ const turnPage = withOptionalState((dir, state) => {
 	state.activePageIndex += dir === "next" ? 1 : -1;
 	return true;
 });
-const turnPageAnimation = (dir) => {
-	setState((state) => {
-		if (!turnPage(dir, state)) {
-			state.page.offset.x.px = 0;
-			state.page.offset.y.px = 0;
-			resetPage(state, true);
-			state.isDragMode = false;
-			return;
-		}
-		state.isDragMode = true;
-		resetPage(state);
-		if (store.page.vertical) state.page.offset.y.pct += dir === "next" ? 1 : -1;
-		else state.page.offset.x.pct += dir === "next" ? -1 : 1;
-		setTimeout(() => {
-			setState((draftState) => {
-				resetPage(draftState, true);
-				draftState.page.offset.x.px = 0;
-				draftState.page.offset.y.px = 0;
-				draftState.isDragMode = false;
-			});
-		}, 16);
-	});
-};
 /** 判断翻页方向 */
 const getTurnPageDir = (move, total, startTime) => {
 	let dir;
@@ -5365,6 +5356,202 @@ const getTurnPageDir = (move, total, startTime) => {
 	if (velocity > .4) dir = "next";
 	return dir;
 };
+//#endregion
+//#region src/components/Manga/actions/turnPageAnimator.ts
+/** 拖动松手翻页动画时长（固定） */
+const DRAG_TURN_ANIMATION_DURATION = 100;
+/** 缓动函数：先慢后快再慢 */
+const easeInOutCubic = (t) => t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+/** 将 mangaFlow 偏移到指定页在 renderRange 中的位置 */
+const setOffsetToPage = (state, pageIndex) => {
+	const i = pageIndex - state.renderRange[0];
+	state.page.offset.x.pct = state.page.vertical ? 0 : i;
+	state.page.offset.y.pct = state.page.vertical ? -i : 0;
+	state.page.offset.x.px = 0;
+	state.page.offset.y.px = 0;
+};
+/** 计算翻页动画的起点偏移（像素） */
+const getTurnStartOffsets = ({ state, oldIndex, oldRenderRange, oldOffset }) => {
+	const [rangeStart, rangeEnd] = state.renderRange;
+	const startIndex = helper.clamp(oldIndex, rangeStart, rangeEnd);
+	if (oldIndex >= rangeStart && oldIndex <= rangeEnd) {
+		const size = state.page.vertical ? state.rootSize.height : state.rootSize.width;
+		const oldInternal = state.page.vertical ? oldOffset.y.pct * size + oldOffset.y.px : oldOffset.x.pct * size + oldOffset.x.px;
+		const oldAbs = oldRenderRange[0] + (state.page.vertical ? -oldInternal / size : oldInternal / size);
+		const startInternal = state.page.vertical ? helper.clamp(-(oldAbs - rangeStart) * size, -(rangeEnd - rangeStart) * size, 0) : helper.clamp((oldAbs - rangeStart) * size, 0, (rangeEnd - rangeStart) * size);
+		return {
+			x: state.page.vertical ? 0 : startInternal,
+			y: state.page.vertical ? startInternal : 0
+		};
+	}
+	setOffsetToPage(state, startIndex);
+	return {
+		x: state.page.offset.x.pct * state.rootSize.width + state.page.offset.x.px,
+		y: state.page.offset.y.pct * state.rootSize.height + state.page.offset.y.px
+	};
+};
+const turnPageAnimator = new class extends helper.AnimationFrame {
+	/** 动画令牌，用于丢弃失效的帧回调 */
+	token = 0;
+	/** 本次动画时长 */
+	duration = 0;
+	/** 本次动画开始时间 */
+	startTime = 0;
+	/** 起点偏移（像素） */
+	from = {
+		x: 0,
+		y: 0
+	};
+	/** 终点偏移（像素） */
+	to = {
+		x: 0,
+		y: 0
+	};
+	/** 终点页对应的 pct，动画期间保持该值不变 */
+	toPct = {
+		x: 0,
+		y: 0
+	};
+	frame = (timestamp) => {
+		const { token } = this;
+		if (this.startTime === 0) this.startTime = timestamp;
+		const elapsed = timestamp - this.startTime;
+		const progress = Math.min(1, elapsed / this.duration);
+		const t = easeInOutCubic(progress);
+		const x = this.from.x + (this.to.x - this.from.x) * t;
+		const y = this.from.y + (this.to.y - this.from.y) * t;
+		setState((state) => {
+			if (token !== this.token) return;
+			state.page.offset.x.pct = this.toPct.x;
+			state.page.offset.y.pct = this.toPct.y;
+			state.page.offset.x.px = x - this.toPct.x * state.rootSize.width;
+			state.page.offset.y.px = y - this.toPct.y * state.rootSize.height;
+		});
+		if (progress >= 1) {
+			this.finish();
+			return;
+		}
+		if (token === this.token) this.call(true);
+	};
+	start = (dir, duration = store.option.turnPageDuration) => {
+		if (store.option.scrollMode.enabled) {
+			turnPage(dir);
+			return;
+		}
+		if (duration <= 0) {
+			this.turnDirectly(dir);
+			return;
+		}
+		if (store.isTurnAnimating) this.finish();
+		this.cancel();
+		this.token += 1;
+		if (!this.prepareTurn(dir)) return;
+		this.duration = duration;
+		this.startTime = 0;
+		this.call();
+	};
+	/** 直接翻页 */
+	turnDirectly = (dir) => {
+		this.cancel();
+		this.token += 1;
+		setState((state) => {
+			if (state.option.scrollMode.enabled) return turnPage(dir, state);
+			if (!turnPage(dir, state)) {
+				state.isTurnAnimating = false;
+				state.isDragMode = false;
+				resetPage(state, true);
+				state.page.offset.x.px = 0;
+				state.page.offset.y.px = 0;
+				return;
+			}
+			state.isTurnAnimating = false;
+			state.isDragMode = false;
+			state.page.offset.x.px = 0;
+			state.page.offset.y.px = 0;
+			resetPage(state, false);
+		});
+	};
+	/** 准备一次动画：翻页并计算起点/终点偏移。返回是否成功 */
+	prepareTurn = (dir) => {
+		let success = false;
+		setState((state) => {
+			if (state.option.scrollMode.enabled) {
+				turnPage(dir, state);
+				return;
+			}
+			const oldIndex = state.activePageIndex;
+			if (!turnPage(dir, state)) {
+				state.isTurnAnimating = false;
+				state.isDragMode = false;
+				resetPage(state, true);
+				state.page.offset.x.px = 0;
+				state.page.offset.y.px = 0;
+				return;
+			}
+			success = true;
+			const oldRenderRange = state.renderRange;
+			const oldOffset = {
+				x: {
+					pct: state.page.offset.x.pct,
+					px: state.page.offset.x.px
+				},
+				y: {
+					pct: state.page.offset.y.pct,
+					px: state.page.offset.y.px
+				}
+			};
+			resetPage(state);
+			const toX = state.page.offset.x.pct;
+			const toY = state.page.offset.y.pct;
+			const { x: startX, y: startY } = getTurnStartOffsets({
+				state,
+				oldIndex,
+				oldRenderRange,
+				oldOffset
+			});
+			this.from.x = startX;
+			this.from.y = startY;
+			this.to.x = toX * state.rootSize.width;
+			this.to.y = toY * state.rootSize.height;
+			this.toPct.x = toX;
+			this.toPct.y = toY;
+			state.page.offset.x.pct = toX;
+			state.page.offset.y.pct = toY;
+			state.page.offset.x.px = startX - toX * state.rootSize.width;
+			state.page.offset.y.px = startY - toY * state.rootSize.height;
+			state.page.anima = "";
+			state.isDragMode = false;
+			state.isTurnAnimating = true;
+		});
+		return success;
+	};
+	finish = () => {
+		this.cancel();
+		this.token += 1;
+		setState((state) => {
+			state.isTurnAnimating = false;
+			state.isDragMode = false;
+			state.page.offset.x.px = 0;
+			state.page.offset.y.px = 0;
+			if (state.option.zoom.ratio === 100) resetPage(state, false);
+			else state.page.anima = "";
+		});
+	};
+	stop = () => {
+		this.cancel();
+		this.token += 1;
+		if (store.isTurnAnimating) setState((state) => {
+			state.isTurnAnimating = false;
+			state.page.anima = "";
+		});
+	};
+}();
+/** 带滑动动画的翻页。连续翻页会先直接走完上一次动画，再从当前目标页开始新动画 */
+const turnPageAnimation = (dir, duration) => turnPageAnimator.start(dir, duration);
+/** 取消当前正在播放的翻页滑动动画 */
+const cancelTurnAnimation = () => turnPageAnimator.stop();
+/** 直接走完当前正在播放的翻页滑动动画 */
+const finishTurnAnimation = () => store.isTurnAnimating && turnPageAnimator.finish();
 //#endregion
 //#region src/components/Manga/actions/hotkeyAction.ts
 /** 卷轴模式下滚动至指定页数 */
@@ -5412,6 +5599,7 @@ const handleSwapPageTurnKey = (nextPage) => {
 	return (store.option.swapPageTurnKey ? !nextPage : nextPage) ? "next" : "prev";
 };
 const handleHotkey = (hotkey, e) => {
+	finishTurnAnimation();
 	if (isAbreastMode()) switch (hotkey) {
 		case "scroll_up": return setAbreastScrollFill(abreastScrollFill() - 40);
 		case "scroll_down": return setAbreastScrollFill(abreastScrollFill() + 40);
@@ -5438,11 +5626,11 @@ const handleHotkey = (hotkey, e) => {
 	}
 	switch (hotkey) {
 		case "page_up":
-		case "scroll_up": return turnPage("prev");
+		case "scroll_up": return turnPageAnimation("prev");
 		case "page_down":
-		case "scroll_down": return turnPage("next");
-		case "scroll_left": return turnPage(handleSwapPageTurnKey(store.option.dir === "rtl"));
-		case "scroll_right": return turnPage(handleSwapPageTurnKey(store.option.dir !== "rtl"));
+		case "scroll_down": return turnPageAnimation("next");
+		case "scroll_left": return turnPageAnimation(handleSwapPageTurnKey(store.option.dir === "rtl"));
+		case "scroll_right": return turnPageAnimation(handleSwapPageTurnKey(store.option.dir !== "rtl"));
 		case "jump_to_home": return setState("activePageIndex", 0);
 		case "jump_to_end": return setState("activePageIndex", Math.max(0, store.pageList.length - 1));
 		case "switch_page_fill": return switchFillEffect();
@@ -5779,12 +5967,14 @@ const dragAnim = new class extends helper.AnimationFrame {
 		this.call(true);
 	};
 }();
+/** 是否从翻页动画的当前偏移直接进入拖拽 */
+let dragFromCurrentOffset = false;
 const handleDragEnd = (startTime) => {
 	dragAnim.dx = 0;
 	dragAnim.dy = 0;
 	dragAnim.cancel();
 	const dir = store.page.vertical ? getTurnPageDir(-store.page.offset.y.px, store.rootSize.height, startTime) : getTurnPageDir(store.page.offset.x.px, store.rootSize.width, startTime);
-	if (dir) return turnPageAnimation(dir);
+	if (dir) return turnPageAnimation(dir, 100);
 	setState((state) => {
 		state.page.offset.x.px = 0;
 		state.page.offset.y.px = 0;
@@ -5795,6 +5985,13 @@ const handleDragEnd = (startTime) => {
 handleDragEnd.debounce = helper.debounce(handleDragEnd, 200);
 const handleMangaFlowDrag = ({ type, xy: [x, y], initial: [ix, iy], startTime }) => {
 	switch (type) {
+		case "down":
+			dragFromCurrentOffset = false;
+			if (store.isTurnAnimating) {
+				cancelTurnAnimation();
+				dragFromCurrentOffset = true;
+			}
+			return;
 		case "move": {
 			dragAnim.dx = store.option.dir === "rtl" ? x - ix : ix - x;
 			dragAnim.dy = y - iy;
@@ -5805,14 +6002,23 @@ const handleMangaFlowDrag = ({ type, xy: [x, y], initial: [ix, iy], startTime })
 			if (dxAbs > 5 && dyAbs < 5) slideDir = "horizontal";
 			if (dyAbs > 5 && dxAbs < 5) slideDir = "vertical";
 			if (!slideDir) return;
-			setState((state) => {
-				state.page.vertical = slideDir === "vertical";
-				state.isDragMode = true;
-				resetPage(state);
-			});
+			if (dragFromCurrentOffset) {
+				dragFromCurrentOffset = false;
+				setState("isDragMode", true);
+			} else {
+				cancelTurnAnimation();
+				setState((state) => {
+					state.page.vertical = slideDir === "vertical";
+					state.isDragMode = true;
+					resetPage(state);
+				});
+			}
 			return;
 		}
-		case "up": return handleDragEnd(startTime);
+		case "up":
+		case "cancel":
+			dragFromCurrentOffset = false;
+			return handleDragEnd(startTime);
 	}
 };
 //#endregion
@@ -6055,12 +6261,10 @@ let firstWheelTimer = 0;
 const turnPageByWheel = (dir) => {
 	wheelRatchet.wheelDy = 0;
 	openScrollLock();
-	setState((state) => {
-		turnPage(dir, state);
-		resetPage(state);
-	});
+	turnPageAnimation(dir);
 };
 const handleWheel = (e) => {
+	finishTurnAnimation();
 	e.stopPropagation();
 	if (e.ctrlKey || e.altKey) e.preventDefault();
 	const isWheelDown = e.deltaY > 0;
@@ -6304,7 +6508,7 @@ const ComicImgFlow = () => {
 		bindScrollTop(refs.mangaBox);
 	});
 	const handleTransitionEnd = () => {
-		if (store.isDragMode) return;
+		if (store.isDragMode || store.isTurnAnimating) return;
 		setState((state) => {
 			if (store.option.zoom.ratio === 100) resetPage(state, false);
 			else state.page.anima = "";
@@ -7858,6 +8062,40 @@ const defaultSettingList = () => [
 		solid_js_web.createComponent(SettingsItemSwitch, solid_js_web.mergeProps({ get name() {
 			return helper.t("setting.option.dark_mode_auto");
 		} }, () => bindOption("autoDarkMode"))),
+		solid_js_web.createComponent(SettingsItemNumber, {
+			get name() {
+				return helper.t("setting.option.turn_page_animation_duration");
+			},
+			maxLength: 4,
+			suffix: "ms",
+			step: 50,
+			onChange: (val) => {
+				if (Number.isNaN(val)) return;
+				setOption((draftOption) => {
+					draftOption.turnPageDuration = helper.clamp(0, val, 2e3);
+				});
+			},
+			get value() {
+				return store.option.turnPageDuration;
+			}
+		}),
+		solid_js_web.createComponent(SettingsItemNumber, {
+			get name() {
+				return helper.t("setting.option.scroll_animation_duration");
+			},
+			maxLength: 4,
+			suffix: "ms",
+			step: 50,
+			onChange: (val) => {
+				if (Number.isNaN(val)) return;
+				setOption((draftOption) => {
+					draftOption.scrollDuration = helper.clamp(0, val, 2e3);
+				});
+			},
+			get value() {
+				return store.option.scrollDuration;
+			}
+		}),
 		solid_js_web.createComponent(SettingsItemSwitch, solid_js_web.mergeProps({ get name() {
 			return helper.t("setting.option.show_comments");
 		} }, () => bindOption("showComment"))),
@@ -8744,6 +8982,7 @@ const Manga = (props) => {
 	})();
 };
 //#endregion
+exports.DRAG_TURN_ANIMATION_DURATION = DRAG_TURN_ANIMATION_DURATION;
 exports.Manga = Manga;
 exports.SettingBlockSubtitle = SettingBlockSubtitle;
 exports.SettingHotkeys = SettingHotkeys;
@@ -8766,6 +9005,7 @@ exports.bindOption = bindOption;
 exports.bindRef = bindRef;
 exports.bindScrollTop = bindScrollTop;
 exports.bound = bound;
+exports.cancelTurnAnimation = cancelTurnAnimation;
 exports.checkImgSize = checkImgSize;
 exports.constantScroll = constantScroll;
 exports.contentHeight = contentHeight;
@@ -8775,6 +9015,7 @@ exports.defaultOption = defaultOption;
 exports.detectScrollDevice = detectScrollDevice;
 exports.doubleClickZoom = doubleClickZoom;
 exports.findTopPage = findTopPage;
+exports.finishTurnAnimation = finishTurnAnimation;
 exports.focus = focus;
 exports.getImg = getImg;
 exports.getImgDisplaySize = getImgDisplaySize;
@@ -10148,6 +10389,15 @@ const handleVersionUpdate = async () => {
 	if (helper.lang() === "zh") {
 		components_Toast.toast(() => {
 			const changes = Object.entries({
+				"12.8.0": {
+					"date": "2026-08-21",
+					"feat": [
+						"增加滚动动画时长的配置项",
+						"增加可配置的翻页滚动动画",
+						"优化简易阅读模式的图片选择机制，尽量排除干扰项"
+					],
+					"fix": ["修复在绅士漫画上的部分网页失效的 bug"]
+				},
 				"12.7.1": {
 					"date": "2026-08-20",
 					"fix": ["修复图片加载异常的 bug"]
@@ -10596,45 +10846,6 @@ const sortElementsByDomOrder = (elements) => [...elements].sort((a, b) => {
 	if (position & Node.DOCUMENT_POSITION_PRECEDING) return 1;
 	return 0;
 });
-/** 判断两个元素是否相似 */
-const isSimilarElement = (a, b) => helper.isEqual(a.dataset, b.dataset) || a.className && a.className === b.className;
-const SKIP_TAGS = /* @__PURE__ */ new Set([
-	"SCRIPT",
-	"STYLE",
-	"NOSCRIPT",
-	"IFRAME",
-	"HEAD",
-	"TEMPLATE"
-]);
-/** 判断元素是否为明显不可能是图片容器 */
-const isImageHostIneligible = (element) => {
-	if (element.children.length === 0) return true;
-	if (element.offsetParent === null) return true;
-	if (SKIP_TAGS.has(element.tagName)) return true;
-	return false;
-};
-/** 判断元素是否具有足够的尺寸 */
-const hasValidSize = (element) => {
-	const rect = element.getBoundingClientRect();
-	return rect.width >= 100 && rect.height >= 100;
-};
-/** 从指定元素开始向上冒泡，找到第一个「拥有足够多相似的可能作为图片容器的元素」的集合 */
-const findSimilarSiblingElements = (element, threshold) => {
-	let current = element;
-	while (current?.parentElement) {
-		const siblingList = current.parentElement.children;
-		if (siblingList.length >= threshold) {
-			const similarElements = [];
-			for (const sibling of siblingList) {
-				if (sibling === current || !(sibling instanceof HTMLElement) || isImageHostIneligible(sibling) || !isSimilarElement(sibling, current) || !hasValidSize(sibling)) continue;
-				similarElements.push(sibling);
-			}
-			if (similarElements.length >= threshold) return similarElements;
-		}
-		current = current.parentElement;
-	}
-	return [];
-};
 /** 处理 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片 */
 var BlobUrlResolver = class {
 	blobUrlMap = /* @__PURE__ */ new Map();
@@ -10676,6 +10887,258 @@ var PlaceholderImgList = class {
 	clear() {
 		this.set.clear();
 	}
+};
+//#endregion
+//#region src/userscript/autoImageScanner/triggerLazyLoad.ts
+const createImgData = (oldSrc = "") => ({
+	triggedNum: 0,
+	observerTimeout: 0,
+	oldSrc
+});
+/** 用于判断是否是图片 url 的正则 */
+const isImgUrlRe = /^(?:(?:(?:https?|ftp|file):)?\\/)?\\/[-\\w+&@#/%?=~|!:,.;]+[-\\w+&@#%=~|]$/u;
+/** 找出格式为图片 url 的元素属性 */
+const getDatasetUrl = (e) => {
+	for (const key of e.getAttributeNames()) {
+		switch (key) {
+			case "src":
+			case "alt":
+			case "class":
+			case "style":
+			case "id":
+			case "title":
+			case "onload":
+			case "onerror": continue;
+		}
+		const val = e.getAttribute(key).trim();
+		if (!isImgUrlRe.test(val)) continue;
+		return val;
+	}
+};
+/**
+*
+* 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
+*
+* 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
+*/
+const triggerEleLazyLoad = async ({ e, waitTime, isLazyLoaded, runCondition }) => {
+	const nowScroll = window.scrollY;
+	e.scrollIntoView({ behavior: "instant" });
+	e.dispatchEvent(new Event("scroll", { bubbles: true }));
+	try {
+		if (isLazyLoaded && waitTime) return await helper.wait(isLazyLoaded, waitTime);
+	} finally {
+		if (runCondition()) window.scroll({
+			top: nowScroll,
+			behavior: "instant"
+		});
+	}
+};
+/** 判断一个元素是否已经成功触发完懒加载 */
+const isLazyLoaded = (e, oldSrc) => {
+	if (helper.isImageElement(e)) {
+		if (!e.src) return false;
+		if (!e.offsetParent) return false;
+		if (e.src.startsWith("data:image/svg")) return false;
+		if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
+		if (oldSrc !== void 0 && e.src !== oldSrc) return true;
+	} else {
+		const imgDomList = e.querySelectorAll("img");
+		for (const imgDom of imgDomList) if (isLazyLoaded(imgDom, oldSrc)) return true;
+	}
+	return false;
+};
+const lazyLoadStateMap = /* @__PURE__ */ new WeakMap();
+const getImg = (e) => lazyLoadStateMap.get(e) ?? createImgData();
+const MAX_TRIGGED_NUM = 5;
+/** 判断元素的触发次数是否还未达到上限 */
+const isUnderTriggerLimit = (e) => (lazyLoadStateMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
+/** 判断元素是否经过多次触发仍未成功加载出图片 */
+const isLazyLoadFailed = (e) => !isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc) && !isUnderTriggerLimit(e);
+/** 判断图片元素是否需要触发懒加载 */
+const needTrigged = (e) => !isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc) && isUnderTriggerLimit(e);
+/** 图片懒加载触发完后调用 */
+const handleTrigged = (e) => {
+	const img = getImg(e);
+	img.observerTimeout = 0;
+	img.triggedNum += 1;
+	if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM) img.triggedNum = MAX_TRIGGED_NUM;
+	lazyLoadStateMap.set(e, img);
+	if (!needTrigged(e)) imgShowObserver.unobserve(e);
+};
+/** 监视图片是否被显示的 Observer */
+const imgShowObserver = new IntersectionObserver((entries) => {
+	for (const img of entries) {
+		const e = img.target;
+		if (img.isIntersecting) lazyLoadStateMap.set(e, {
+			...getImg(e),
+			observerTimeout: window.setTimeout(handleTrigged, 290, e)
+		});
+		else window.clearTimeout(lazyLoadStateMap.get(e)?.observerTimeout);
+	}
+});
+const turnPageScheduled = helper.createScheduled((fn) => helper.throttle(fn, 1e3));
+/** 触发翻页 */
+const triggerTurnPage = async (waitTime, runCondition) => {
+	if (!turnPageScheduled()) return;
+	const nowScroll = window.scrollY;
+	window.scroll({
+		top: document.body.scrollHeight,
+		behavior: "instant"
+	});
+	document.body.dispatchEvent(new Event("scroll", { bubbles: true }));
+	if (waitTime) await helper.sleep(waitTime);
+	if (runCondition()) window.scroll({
+		top: nowScroll,
+		behavior: "instant"
+	});
+};
+const waitTime = 300;
+/** 触发页面上图片元素的懒加载 */
+const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondition) => {
+	for (const e of targetImgList) {
+		imgShowObserver.observe(e);
+		if (!lazyLoadStateMap.has(e)) lazyLoadStateMap.set(e, createImgData(helper.isImageElement(e) ? e.src : ""));
+	}
+	for (const e of targetImgList) {
+		await helper.wait(runCondition);
+		await triggerTurnPage(0, runCondition);
+		if (!needTrigged(e)) continue;
+		const datasetUrl = getDatasetUrl(e);
+		if (datasetUrl) e.setAttribute("src", datasetUrl);
+		if (await triggerEleLazyLoad({
+			e,
+			waitTime,
+			isLazyLoaded: () => isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc),
+			runCondition
+		})) handleTrigged(e);
+	}
+	await triggerTurnPage(waitTime, runCondition);
+});
+//#endregion
+//#region src/userscript/autoImageScanner/imageSlot.ts
+/** 判断两个元素的 dataset 是否具有相同的键结构 */
+const hasSameDatasetStructure = (a, b) => {
+	const keysA = Object.keys(a.dataset);
+	const keysB = Object.keys(b.dataset);
+	if (keysA.length !== keysB.length) return false;
+	return keysA.every((key) => keysB.includes(key));
+};
+/** 判断两个元素是否相似 */
+const isSimilarElement = (a, b) => a === b || a.className && a.className === b.className || hasSameDatasetStructure(a, b);
+const SKIP_TAGS = /* @__PURE__ */ new Set([
+	"SCRIPT",
+	"STYLE",
+	"NOSCRIPT",
+	"IFRAME",
+	"HEAD",
+	"TEMPLATE"
+]);
+/** 判断元素是否为明显不可能是图片槽位 */
+const isImageHostIneligible = (element) => {
+	if (!element.checkVisibility()) return true;
+	if (helper.isImageElement(element)) return false;
+	if (SKIP_TAGS.has(element.tagName)) return true;
+	if (element.children.length === 0) return true;
+	if (isLazyLoadFailed(element)) return true;
+	return false;
+};
+/** 判断元素是否具有足够的尺寸 */
+const hasValidSize = (element) => {
+	const rect = element.getBoundingClientRect();
+	return rect.width >= 100 && rect.height >= 100;
+};
+/** 查找最近一层的「与当前元素相似」且数量足够的兄弟图片槽位 */
+const findSimilarImageSlots = (element, threshold) => {
+	let current = element;
+	while (current?.parentElement) {
+		const siblingList = current.parentElement.children;
+		if (siblingList.length >= threshold) {
+			const similarElements = [];
+			for (const sibling of siblingList) {
+				if (!(sibling instanceof HTMLElement) || !isSimilarElement(sibling, current) || isImageHostIneligible(sibling) || !hasValidSize(sibling)) continue;
+				similarElements.push(sibling);
+			}
+			if (similarElements.length >= threshold) return similarElements;
+		}
+		current = current.parentElement;
+	}
+	return [];
+};
+/** 收集一个槽位内所有已通过 filterImg 的图片 */
+const addSlotImgs = (slot, rawImgSet, coveredImgs) => {
+	for (const innerImg of slot.querySelectorAll("img")) if (rawImgSet.has(innerImg)) coveredImgs.add(innerImg);
+};
+/** 从所有合格图片中找出所有图片槽位组 */
+const findImageSlotGroups = (map) => {
+	const rawImgs = [...map.keys()];
+	const rawImgSet = new Set(rawImgs);
+	const coveredImgSet = /* @__PURE__ */ new Set();
+	const groups = [];
+	for (const img of rawImgs) {
+		if (coveredImgSet.has(img)) continue;
+		const slots = findSimilarImageSlots(img, 5);
+		if (slots.length === 0) continue;
+		const parent = slots[0].parentElement;
+		if (!parent) continue;
+		let medianAreaCache;
+		const group = {
+			parent,
+			slots: new Set(slots),
+			coveredImgs: /* @__PURE__ */ new Set(),
+			get imgNum() {
+				return this.coveredImgs.size;
+			},
+			get medianArea() {
+				medianAreaCache ??= getGroupMedianArea(group, map);
+				return medianAreaCache;
+			}
+		};
+		for (const slot of slots) if (helper.isImageElement(slot)) {
+			if (rawImgSet.has(slot)) group.coveredImgs.add(slot);
+		} else addSlotImgs(slot, rawImgSet, group.coveredImgs);
+		for (const coveredImg of group.coveredImgs) coveredImgSet.add(coveredImg);
+		groups.push(group);
+	}
+	return groups;
+};
+/** 从多个图片槽位组中选择最可能属于正文的一组 */
+const pickBestGroup = (groups) => groups.reduce((best, current) => {
+	if (current.imgNum !== best.imgNum) return current.imgNum > best.imgNum ? current : best;
+	return current.medianArea > best.medianArea ? current : best;
+});
+/** 计算组内图片显示面积的中位数 */
+const getGroupMedianArea = (group, map) => {
+	const areas = [...group.coveredImgs].map((img) => {
+		const info = map.get(img);
+		return info ? info.display.width * info.display.height : 0;
+	}).sort((a, b) => a - b);
+	if (areas.length === 0) return 0;
+	const mid = Math.floor(areas.length / 2);
+	return areas.length % 2 === 1 ? areas[mid] : (areas[mid - 1] + areas[mid]) / 2;
+};
+/** 将图片槽位组展开为展示用槽位列表 */
+const buildSlotElementsFromGroup = (group) => {
+	const slotElements = [];
+	const slotImgsMap = /* @__PURE__ */ new Map();
+	for (const img of group.coveredImgs) {
+		let node = img.parentElement;
+		while (node && node !== group.parent && node.parentElement !== group.parent) node = node.parentElement;
+		if (!node || node === group.parent) continue;
+		const imgs = slotImgsMap.get(node) ?? [];
+		imgs.push(img);
+		slotImgsMap.set(node, imgs);
+	}
+	for (const slot of group.slots) {
+		if (helper.isImageElement(slot)) {
+			if (group.coveredImgs.has(slot)) slotElements.push(slot);
+			continue;
+		}
+		const imgs = slotImgsMap.get(slot);
+		if (imgs && imgs.length > 0) slotElements.push(...imgs);
+		else slotElements.push(slot);
+	}
+	return slotElements;
 };
 //#endregion
 //#region src/userscript/autoImageScanner/ImageWatcher.ts
@@ -10808,129 +11271,6 @@ var ImageWatcher = class {
 	};
 };
 //#endregion
-//#region src/userscript/autoImageScanner/triggerLazyLoad.ts
-const createImgData = (oldSrc = "") => ({
-	triggedNum: 0,
-	observerTimeout: 0,
-	oldSrc
-});
-/** 用于判断是否是图片 url 的正则 */
-const isImgUrlRe = /^(?:(?:(?:https?|ftp|file):)?\\/)?\\/[-\\w+&@#/%?=~|!:,.;]+[-\\w+&@#%=~|]$/u;
-/** 找出格式为图片 url 的元素属性 */
-const getDatasetUrl = (e) => {
-	for (const key of e.getAttributeNames()) {
-		switch (key) {
-			case "src":
-			case "alt":
-			case "class":
-			case "style":
-			case "id":
-			case "title":
-			case "onload":
-			case "onerror": continue;
-		}
-		const val = e.getAttribute(key).trim();
-		if (!isImgUrlRe.test(val)) continue;
-		return val;
-	}
-};
-/**
-*
-* 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
-*
-* 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
-*/
-const triggerEleLazyLoad = async ({ e, waitTime, isLazyLoaded, runCondition }) => {
-	const nowScroll = window.scrollY;
-	e.scrollIntoView({ behavior: "instant" });
-	e.dispatchEvent(new Event("scroll", { bubbles: true }));
-	try {
-		if (isLazyLoaded && waitTime) return await helper.wait(isLazyLoaded, waitTime);
-	} finally {
-		if (runCondition()) window.scroll({
-			top: nowScroll,
-			behavior: "instant"
-		});
-	}
-};
-/** 判断一个元素是否已经成功触发完懒加载 */
-const isLazyLoaded = (e, oldSrc) => {
-	if (helper.isImageElement(e)) {
-		if (!e.src) return false;
-		if (!e.offsetParent) return false;
-		if (e.src.startsWith("data:image/svg")) return false;
-		if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
-		if (oldSrc !== void 0 && e.src !== oldSrc) return true;
-	} else {
-		const imgDomList = e.querySelectorAll("img");
-		for (const imgDom of imgDomList) if (isLazyLoaded(imgDom, oldSrc)) return true;
-	}
-	return false;
-};
-const imgMap = /* @__PURE__ */ new WeakMap();
-const getImg = (e) => imgMap.get(e) ?? createImgData();
-const MAX_TRIGGED_NUM = 5;
-/** 判断图片元素是否需要触发懒加载 */
-const needTrigged = (e) => !isLazyLoaded(e, imgMap.get(e)?.oldSrc) && (imgMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
-/** 图片懒加载触发完后调用 */
-const handleTrigged = (e) => {
-	const img = getImg(e);
-	img.observerTimeout = 0;
-	img.triggedNum += 1;
-	if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM) img.triggedNum = MAX_TRIGGED_NUM;
-	imgMap.set(e, img);
-	if (!needTrigged(e)) imgShowObserver.unobserve(e);
-};
-/** 监视图片是否被显示的 Observer */
-const imgShowObserver = new IntersectionObserver((entries) => {
-	for (const img of entries) {
-		const e = img.target;
-		if (img.isIntersecting) imgMap.set(e, {
-			...getImg(e),
-			observerTimeout: window.setTimeout(handleTrigged, 290, e)
-		});
-		else window.clearTimeout(imgMap.get(e)?.observerTimeout);
-	}
-});
-const turnPageScheduled = helper.createScheduled((fn) => helper.throttle(fn, 1e3));
-/** 触发翻页 */
-const triggerTurnPage = async (waitTime, runCondition) => {
-	if (!turnPageScheduled()) return;
-	const nowScroll = window.scrollY;
-	window.scroll({
-		top: document.body.scrollHeight,
-		behavior: "instant"
-	});
-	document.body.dispatchEvent(new Event("scroll", { bubbles: true }));
-	if (waitTime) await helper.sleep(waitTime);
-	if (runCondition()) window.scroll({
-		top: nowScroll,
-		behavior: "instant"
-	});
-};
-const waitTime = 300;
-/** 触发页面上图片元素的懒加载 */
-const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondition) => {
-	for (const e of targetImgList) {
-		imgShowObserver.observe(e);
-		if (!imgMap.has(e)) imgMap.set(e, createImgData(helper.isImageElement(e) ? e.src : ""));
-	}
-	for (const e of targetImgList) {
-		await helper.wait(runCondition);
-		await triggerTurnPage(0, runCondition);
-		if (!needTrigged(e)) continue;
-		const datasetUrl = getDatasetUrl(e);
-		if (datasetUrl) e.setAttribute("src", datasetUrl);
-		if (await triggerEleLazyLoad({
-			e,
-			waitTime,
-			isLazyLoaded: () => isLazyLoaded(e, imgMap.get(e)?.oldSrc),
-			runCondition
-		})) handleTrigged(e);
-	}
-	await triggerTurnPage(waitTime, runCondition);
-});
-//#endregion
 //#region src/userscript/autoImageScanner/index.ts
 const SELECTOR_FALLBACK_TIMEOUT = 3e3;
 const IMG_BLACK_LIST_SELECTOR = ["#pagetual-preload", "noscript"].join(",");
@@ -10940,6 +11280,8 @@ var AutoImageScanner = class {
 	initSelector;
 	/** 是否要按图片在页面中的垂直位置排序，否则将按文档顺序排序 */
 	enableSortImageByTop;
+	/** 是否只保留图片槽位组内的图片 */
+	filterByContainer;
 	/** 自定义图片过滤规则 */
 	filterImg;
 	/** 是否触发懒加载的条件 */
@@ -10973,8 +11315,10 @@ var AutoImageScanner = class {
 	imageWatcher;
 	/** 找到的所有符合条件的图片元素 */
 	imgEleList = [];
-	/** 找到的占位兄弟元素，用于提前占位 */
-	similarElements = [];
+	/** 过滤后真正用于展示的图片槽位列表 */
+	slotElements = [];
+	/** 最近一次计算出的图片槽位组 */
+	imageSlotGroups = [];
 	/** 找到的所有符合条件的图片 url */
 	imgList = [];
 	/** 当前识别到的章节切换按钮 */
@@ -10992,6 +11336,7 @@ var AutoImageScanner = class {
 		this.shouldTriggerLazyLoad = options.shouldTriggerLazyLoad;
 		this.imgSelector = options.selector ?? "";
 		this.enableSortImageByTop = options.sortImageByTop ?? false;
+		this.filterByContainer = options.filterByContainer ?? true;
 		this.imageWatcher = new ImageWatcher({
 			filterImg: (info, img) => this.filterImage(info, img),
 			onChanged: (map) => this.handleChanged(map, this.generation)
@@ -11020,7 +11365,8 @@ var AutoImageScanner = class {
 		this.blobUrlResolver.clear();
 		this.placeholderImgList.clear();
 		this.imgEleList = [];
-		this.similarElements = [];
+		this.slotElements = [];
+		this.imageSlotGroups = [];
 		this.imgList = [];
 		this.chapterSwitch = {};
 	}
@@ -11037,13 +11383,11 @@ var AutoImageScanner = class {
 	}
 	/** 获取页面上所有不在黑名单中的图片元素 */
 	getAllImg = () => helper.querySelectorAll(\`:not(\${IMG_BLACK_LIST_SELECTOR}) > img\`);
-	/** 获取大概率是漫画图片的图片元素 */
-	getExpectImgList = () => this.imgSelector ? helper.querySelectorAll(this.imgSelector).filter((e) => isLazyLoaded(e, imgMap.get(e)?.oldSrc) || !imgMap.has(e) || imgMap.get(e).triggedNum <= 5) : [];
 	/** 判断当前是否应该触发懒加载 */
 	runCondition = () => this.shouldTriggerLazyLoad?.() ?? true;
-	/** 触发大概率是漫画图片的懒加载 */
+	/** 触发大概率是漫画图片且还未成功触发懒加载的元素的懒加载 */
 	triggerExpectImg = (num, time) => helper.wait(async () => {
-		let expectImgList = this.getExpectImgList().filter(needTrigged);
+		let expectImgList = helper.querySelectorAll(this.imgSelector).filter(needTrigged);
 		if (num) expectImgList = expectImgList.slice(0, num);
 		await triggerLazyLoad(expectImgList, this.runCondition);
 		return expectImgList.every((e) => !needTrigged(e));
@@ -11058,12 +11402,9 @@ var AutoImageScanner = class {
 					await this.triggerExpectImg();
 				}
 				await triggerLazyLoad(this.getAllImg().filter(needTrigged), this.runCondition);
-				if (this.imgEleList.length > 3) {
-					const similarElements = findSimilarSiblingElements(this.imgEleList[0], 5).filter(needTrigged);
-					if (similarElements.length > 0) {
-						this.similarElements = similarElements;
-						await triggerLazyLoad(similarElements, this.runCondition);
-					}
+				if (this.imageSlotGroups.length > 0) {
+					const targets = this.imageSlotGroups.flatMap((group) => [...group.slots]).filter((slot) => !helper.isImageElement(slot) && needTrigged(slot));
+					if (targets.length > 0) await triggerLazyLoad(targets, this.runCondition);
 				}
 			} finally {
 				this.triggerPromise = void 0;
@@ -11091,17 +11432,21 @@ var AutoImageScanner = class {
 	/** 图片集合变化时更新图片列表、章节按钮并触发懒加载 */
 	handleChanged = helper.throttle(async (map, generation) => {
 		if (generation !== this.generation) return;
-		if (map.size === 0) return this.onEmpty?.();
-		this.similarElements = this.similarElements.filter((e) => e.isConnected && needTrigged(e));
-		const slotElements = this.enableSortImageByTop ? sortElementsByTop([...map.keys(), ...this.similarElements]) : sortElementsByDomOrder([...map.keys(), ...this.similarElements]);
-		this.imgEleList = slotElements.filter(helper.isImageElement);
-		if (slotElements.length === 0) return this.onEmpty?.();
-		if (this.imgList.length < slotElements.length) this.imgList = [...this.imgList, ...Array.from({ length: slotElements.length - this.imgList.length }, () => "")];
-		else if (this.imgList.length > slotElements.length) this.imgList = this.imgList.sliceslotElements.length;
+		if (map.size === 0) {
+			this.imageSlotGroups = [];
+			return this.onEmpty?.();
+		}
+		this.imageSlotGroups = findImageSlotGroups(map);
+		const selectedSlots = this.filterByContainer && this.imageSlotGroups.length > 0 ? buildSlotElementsFromGroup(pickBestGroup(this.imageSlotGroups)) : [...map.keys()];
+		this.slotElements = this.enableSortImageByTop ? sortElementsByTop(selectedSlots) : sortElementsByDomOrder(selectedSlots);
+		this.imgEleList = [...map.keys()];
+		if (this.slotElements.length === 0) return this.onEmpty?.();
+		if (this.imgList.length < this.slotElements.length) this.imgList = [...this.imgList, ...Array.from({ length: this.slotElements.length - this.imgList.length }, () => "")];
+		else if (this.imgList.length > this.slotElements.length) this.imgList = this.imgList.slicethis.slotElements.length;
 		this.onImgListChange?.([...this.imgList]);
 		this.updatePlaceholderImgList(this.imgList);
 		let isEdited = false;
-		await helper.plimit(slotElements.map((e, i) => async () => {
+		await helper.plimit(this.slotElements.map((e, i) => async () => {
 			if (!helper.isImageElement(e)) {
 				if (this.imgList[i] === "") return;
 				isEdited ||= true;
@@ -11838,7 +12183,7 @@ const otherSite = async () => {
 	} });
 	setState("manga", "onShowImgsChange", helper.throttle((showImgs) => {
 		if (!store.manga.show) return;
-		scanner.imgEleList[[...showImgs].at(-1)]?.scrollIntoView({
+		scanner.slotElements[[...showImgs].at(-1)]?.scrollIntoView({
 			behavior: "instant",
 			block: "end"
 		});
@@ -12228,10 +12573,10 @@ const mobileApi = new class {
 		...details
 	}, ...args);
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://api.copy3000.com",
+		"https://mapi.copy20.com",
 		"https://api.mangacopy.com",
 		"https://api.2026copy.com",
-		"https://mapi.copy20.com"
+		"https://api.copy3000.com"
 	], {
 		responseType: "json",
 		headers: {
@@ -12254,17 +12599,17 @@ const pcApi = new class {
 		Authorization: token ? \`Token \${token}\` : ""
 	};
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://mapi.hotmangasd.com",
-		"https://mapi.fgjfghkk.club",
 		"https://www.manga2026.xyz",
+		"https://mapi.hotmangasd.com",
+		"https://api.2024manga.com",
+		"https://api.manga2025.com",
+		"https://mapi.hotmangasf.com",
+		"https://mapi.hotmangasg.com",
 		"https://mapi.fgjfghkkcenter.club",
 		"https://mapi.elfgjfghkk.club",
-		"https://api.2024manga.com",
-		"https://mapi.hotmangasf.com",
-		"https://m.manga2025.com",
-		"https://mapi.hotmangasg.com",
 		"https://www.manga2025.com",
-		"https://api.manga2025.com"
+		"https://m.manga2025.com",
+		"https://mapi.fgjfghkk.club"
 	], {
 		responseType: "json",
 		headers: this.headers,
@@ -17448,15 +17793,15 @@ try {
 				buttonDom.style.setProperty("background-image", "none");
 			}
 			let getImgList;
-			if (location.pathname.startsWith("/photos-slide-aid-")) getImgList = async () => {
-				const id = /-(?<id>\d+).html/u.exec(location.pathname)?.groups?.id;
+			if (unsafeWindow.imglist) getImgList = () => unsafeWindow.imglist.filter(({ caption }) => caption !== "喜歡紳士漫畫的同學請加入收藏哦！").map(({ url }) => url);
+			else if (location.pathname.includes("-aid-")) getImgList = async () => {
+				const id = /aid-(?<id>\d+).html/u.exec(location.pathname)?.groups?.id;
 				if (!id) throw new Error(helper.t("site.changed_load_failed"));
 				const res = await core.request(`/photos-item-aid-${id}.html`);
 				const pageUrl = /"page_url":(?<pageUrl>\[.+\]),/u.exec(res.responseText)?.groups.pageUrl;
 				if (!pageUrl) throw new Error(helper.t("site.changed_load_failed"));
 				return eval(pageUrl);
 			};
-			else if (location.pathname.startsWith("/photos-slist-aid-")) getImgList = () => unsafeWindow.imglist.filter(({ caption }) => caption !== "喜歡紳士漫畫的同學請加入收藏哦！").map(({ url }) => url);
 			else break;
 			core.setup({
 				name: "wnacg",
