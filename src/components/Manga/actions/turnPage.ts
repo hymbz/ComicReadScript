@@ -1,8 +1,7 @@
-import { type State, setState, store } from '../store';
+import { type State } from '../store';
 import { type Dir, handleEndTurnPage } from './endPage';
 import { withOptionalState } from './helper';
 import { saveReadProgress } from './readProgress';
-import { resetPage } from './show';
 
 /** 翻页。返回是否成功改变了当前页数 */
 export const turnPage = withOptionalState((dir: Dir, state: State) => {
@@ -14,33 +13,6 @@ export const turnPage = withOptionalState((dir: Dir, state: State) => {
   state.activePageIndex += dir === 'next' ? 1 : -1;
   return true;
 });
-
-export const turnPageAnimation = (dir: Dir) => {
-  setState((state) => {
-    // 无法翻页就恢复原位
-    if (!turnPage(dir, state)) {
-      state.page.offset.x.px = 0;
-      state.page.offset.y.px = 0;
-      resetPage(state, true);
-      state.isDragMode = false;
-      return;
-    }
-
-    state.isDragMode = true;
-    resetPage(state);
-    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 1 : -1;
-    else state.page.offset.x.pct += dir === 'next' ? -1 : 1;
-
-    setTimeout(() => {
-      setState((draftState) => {
-        resetPage(draftState, true);
-        draftState.page.offset.x.px = 0;
-        draftState.page.offset.y.px = 0;
-        draftState.isDragMode = false;
-      });
-    }, 16);
-  });
-};
 
 /** 判断翻页方向 */
 export const getTurnPageDir = (

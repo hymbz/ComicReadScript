@@ -3,6 +3,8 @@ type ShowState = {
   isMobile: boolean;
   /** 是否处于拖拽模式 */
   isDragMode: boolean;
+  /** 是否正在播放翻页滑动动画 */
+  isTurnAnimating: boolean;
   /** 鼠标是否悬停在滚动条上 */
   isScrollbarHover: boolean;
 
@@ -51,6 +53,7 @@ type ShowState = {
 export const showState: ShowState = {
   isMobile: false,
   isDragMode: false,
+  isTurnAnimating: false,
   isScrollbarHover: false,
 
   activePageIndex: 0,
@@ -65,7 +68,7 @@ export const showState: ShowState = {
 
   page: {
     anima: '',
-    vertical: false,
+    vertical: true,
 
     offset: {
       x: { pct: 0, px: 0 },

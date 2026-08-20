@@ -186,6 +186,7 @@
       "show_comments": "Show comments on the end page",
       "shrink_menu": "Enable menu area",
       "swap_page_turn_key": "Swap LR page-turning keys",
+      "turn_page_animation_duration": "Page turn animation duration",
       "zoom": "Image zoom ratio"
     },
     "sync_options_other_site": "Sync read options to other sites",

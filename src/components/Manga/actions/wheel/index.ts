@@ -4,8 +4,7 @@ import { openScrollLock } from '../helper';
 import { isAbreastMode, isScrollMode } from '../memo';
 import { scrollBy } from '../scroll';
 import { handleScrollModeZoom } from '../scrollMode';
-import { resetPage } from '../show';
-import { turnPage } from '../turnPage';
+import { finishTurnAnimation, turnPageAnimation } from '../turnPageAnimator';
 import { zoom } from '../zoom';
 import { detectScrollDevice } from './scrollDevice';
 import { wheelRatchet } from './wheelRatchet';
@@ -17,13 +16,12 @@ const turnPageByWheel = (dir: Dir) => {
   // 清空虚拟棘轮可能残留的累积滚动量
   wheelRatchet.wheelDy = 0;
   openScrollLock();
-  setState((state) => {
-    turnPage(dir, state);
-    resetPage(state);
-  });
+  turnPageAnimation(dir);
 };
 
 export const handleWheel = (e: WheelEvent) => {
+  // 任何滚轮操作都先直接走完当前翻页动画，避免出现 bug
+  finishTurnAnimation();
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
 

@@ -186,6 +186,7 @@
       "show_comments": "Mostrar comentarios en la página final",
       "shrink_menu": "Habilitar área de menú",
       "swap_page_turn_key": "Intercambiar teclas de página izquierda y derecha",
+      "turn_page_animation_duration": "Duración de la animación de paso de página",
       "zoom": "Relación de zoom de la imagen"
     },
     "sync_options_other_site": "Sincronizar las opciones de lectura con otros sitios",

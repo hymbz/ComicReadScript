@@ -21,5 +21,6 @@ export * from './show';
 export * from './switch';
 export * from './translation';
 export * from './turnPage';
+export * from './turnPageAnimator';
 export * from './wheel';
 export * from './zoom';

@@ -240,6 +240,19 @@ export const defaultSettingList: () => SettingList = () => [
           name={t('setting.option.dark_mode_auto')}
           {...bindOption('autoDarkMode')}
         />
+        <SettingsItemNumber
+          name={t('setting.option.turn_page_animation_duration')}
+          maxLength={4}
+          suffix="ms"
+          step={50}
+          onChange={(val) => {
+            if (Number.isNaN(val)) return;
+            setOption((draftOption) => {
+              draftOption.turnPageAnimationDuration = clamp(0, val, 2000);
+            });
+          }}
+          value={store.option.turnPageAnimationDuration}
+        />
         <SettingsItemSwitch
           name={t('setting.option.show_comments')}
           {...bindOption('showComment')}

@@ -186,6 +186,7 @@
       "show_comments": "在结束页显示评论",
       "shrink_menu": "缩小菜单区域",
       "swap_page_turn_key": "左右翻页键交换",
+      "turn_page_animation_duration": "翻页动画时长",
       "zoom": "图片缩放"
     },
     "sync_options_other_site": "同步阅读配置至其他站点",

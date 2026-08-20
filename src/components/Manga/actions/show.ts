@@ -69,7 +69,9 @@ createEffectOn(
 
 createEffectOn(
   activePage,
-  throttle(() => store.isDragMode || setState(resetPage)),
+  throttle(
+    () => store.isDragMode || store.isTurnAnimating || setState(resetPage),
+  ),
 );
 
 // 在关闭工具栏的同时关掉滚动条的强制显示

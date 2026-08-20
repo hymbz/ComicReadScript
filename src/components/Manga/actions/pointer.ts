@@ -8,7 +8,12 @@ import { handleHotkey } from './hotkeyAction';
 import { reloadImg } from './imageLoad';
 import { showImgList } from './renderPage';
 import { resetPage } from './show';
-import { getTurnPageDir, turnPageAnimation } from './turnPage';
+import { getTurnPageDir } from './turnPage';
+import {
+  DRAG_TURN_ANIMATION_DURATION,
+  cancelTurnAnimation,
+  turnPageAnimation,
+} from './turnPageAnimator';
 import { zoom } from './zoom';
 
 /** 根据坐标找出被点击到的元素 */
@@ -90,6 +95,9 @@ const dragAnim = new (class extends AnimationFrame {
   };
 })();
 
+/** 是否从翻页动画的当前偏移直接进入拖拽 */
+let dragFromCurrentOffset = false;
+
 const handleDragEnd = (startTime?: number) => {
   dragAnim.dx = 0;
   dragAnim.dy = 0;
@@ -100,7 +108,7 @@ const handleDragEnd = (startTime?: number) => {
   const dir = store.page.vertical
     ? getTurnPageDir(-store.page.offset.y.px, store.rootSize.height, startTime)
     : getTurnPageDir(store.page.offset.x.px, store.rootSize.width, startTime);
-  if (dir) return turnPageAnimation(dir);
+  if (dir) return turnPageAnimation(dir, DRAG_TURN_ANIMATION_DURATION);
   setState((state) => {
     state.page.offset.x.px = 0;
     state.page.offset.y.px = 0;
@@ -118,6 +126,16 @@ export const handleMangaFlowDrag: UseDrag = ({
   startTime,
 }) => {
   switch (type) {
+    case 'down': {
+      dragFromCurrentOffset = false;
+      // 翻页动画播放期间按下指针时，立即停止动画并保持当前偏移
+      if (store.isTurnAnimating) {
+        cancelTurnAnimation();
+        dragFromCurrentOffset = true;
+      }
+      return;
+    }
+
     case 'move': {
       dragAnim.dx = store.option.dir === 'rtl' ? x - ix : ix - x;
       dragAnim.dy = y - iy;
@@ -132,16 +150,26 @@ export const handleMangaFlowDrag: UseDrag = ({
       if (dyAbs > 5 && dxAbs < 5) slideDir = 'vertical';
       if (!slideDir) return;
 
-      setState((state) => {
-        // 根据滑动方向自动切换排列模式
-        state.page.vertical = slideDir === 'vertical';
-        state.isDragMode = true;
-        resetPage(state);
-      });
+      if (dragFromCurrentOffset) {
+        // 从动画中断位置直接进入拖拽，不重置到目标页
+        dragFromCurrentOffset = false;
+        setState('isDragMode', true);
+      } else {
+        cancelTurnAnimation();
+        setState((state) => {
+          // 根据滑动方向自动切换排列模式
+          state.page.vertical = slideDir === 'vertical';
+          state.isDragMode = true;
+          resetPage(state);
+        });
+      }
       return;
     }
 
     case 'up':
+    case 'cancel': {
+      dragFromCurrentOffset = false;
       return handleDragEnd(startTime);
+    }
   }
 };

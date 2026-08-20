@@ -26,7 +26,7 @@ import {
   switchScrollMode,
 } from './switch';
 import { translateAll, translateCurrent, translateToEnd } from './translation';
-import { turnPage } from './turnPage';
+import { finishTurnAnimation, turnPageAnimation } from './turnPageAnimator';
 
 /** 卷轴模式下滚动至指定页数 */
 const scrollIntoView = (index: number, position: 'start' | 'end' = 'start') =>
@@ -111,6 +111,9 @@ const handleSwapPageTurnKey = (nextPage: boolean) => {
 };
 
 export const handleHotkey = (hotkey: string, e?: KeyboardEvent) => {
+  // 任何快捷键都先直接走完当前翻页动画，避免出现 bug
+  finishTurnAnimation();
+
   // 并排卷轴模式下的快捷键
   if (isAbreastMode()) {
     switch (hotkey) {
@@ -160,16 +163,20 @@ export const handleHotkey = (hotkey: string, e?: KeyboardEvent) => {
   switch (hotkey) {
     case 'page_up':
     case 'scroll_up':
-      return turnPage('prev');
+      return turnPageAnimation('prev');
 
     case 'page_down':
     case 'scroll_down':
-      return turnPage('next');
+      return turnPageAnimation('next');
 
     case 'scroll_left':
-      return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
+      return turnPageAnimation(
+        handleSwapPageTurnKey(store.option.dir === 'rtl'),
+      );
     case 'scroll_right':
-      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
+      return turnPageAnimation(
+        handleSwapPageTurnKey(store.option.dir !== 'rtl'),
+      );
 
     case 'jump_to_home':
       return setState('activePageIndex', 0);
