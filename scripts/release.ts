@@ -40,6 +40,7 @@ await confirm('已生成 LatestChange.md，回车继续…');
 
 // 根据编辑后的 LatestChange.md 生成 CHANGELOG.md、CHANGELOG.json，并更新 package.json
 finalizeChangelog(version, date);
+exec('pnpm check');
 await confirm(
   '已更新 CHANGELOG.md、CHANGELOG.json 与 package.json，确认无误后回车开始发布…',
 );
