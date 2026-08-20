@@ -1,4 +1,4 @@
-import { canvasToBlob, isEqual, testImgUrl } from 'helper';
+import { canvasToBlob, testImgUrl } from 'helper';
 
 /** 按照元素的显示高度来排序元素 */
 export const sortElementsByTop = <T extends HTMLElement>(
@@ -22,65 +22,6 @@ export const sortElementsByDomOrder = <T extends HTMLElement>(
     if (position & Node.DOCUMENT_POSITION_PRECEDING) return 1;
     return 0;
   });
-
-/** 判断两个元素是否相似 */
-const isSimilarElement = (a: HTMLElement, b: HTMLElement) =>
-  isEqual(a.dataset, b.dataset) || (a.className && a.className === b.className);
-
-const SKIP_TAGS = new Set([
-  'SCRIPT',
-  'STYLE',
-  'NOSCRIPT',
-  'IFRAME',
-  'HEAD',
-  'TEMPLATE',
-]);
-/** 判断元素是否为明显不可能是图片容器 */
-const isImageHostIneligible = (element: HTMLElement) => {
-  // 没有任何子元素
-  if (element.children.length === 0) return true;
-  // 隐藏在屏幕外或尺寸为 0
-  if (element.offsetParent === null) return true;
-  // 被黑名单标记
-  if (SKIP_TAGS.has(element.tagName)) return true;
-  return false;
-};
-
-/** 判断元素是否具有足够的尺寸 */
-const hasValidSize = (element: HTMLElement) => {
-  const rect = element.getBoundingClientRect();
-  return rect.width >= 100 && rect.height >= 100;
-};
-
-/** 从指定元素开始向上冒泡，找到第一个「拥有足够多相似的可能作为图片容器的元素」的集合 */
-export const findSimilarSiblingElements = (
-  element: HTMLElement,
-  threshold: number,
-): HTMLElement[] => {
-  let current: HTMLElement | undefined = element;
-
-  while (current?.parentElement) {
-    const siblingList = current.parentElement.children;
-    if (siblingList.length >= threshold) {
-      const similarElements: HTMLElement[] = [];
-      for (const sibling of siblingList) {
-        if (
-          sibling === current ||
-          !(sibling instanceof HTMLElement) ||
-          isImageHostIneligible(sibling) ||
-          !isSimilarElement(sibling, current) ||
-          !hasValidSize(sibling)
-        )
-          continue;
-        similarElements.push(sibling);
-      }
-      if (similarElements.length >= threshold) return similarElements;
-    }
-    current = current.parentElement;
-  }
-
-  return [];
-};
 
 /** 处理 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片 */
 export class BlobUrlResolver {

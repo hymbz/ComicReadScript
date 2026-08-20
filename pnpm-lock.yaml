@@ -7,7 +7,7 @@ settings:
 overrides:
   dts-bundle-generator>typescript: 5.9.3
 
-pnpmfileChecksum: sha256-B3UDXE7MRmvtxDW7qLq1TyOCaK31826n9ytd2fat1Hw=
+pnpmfileChecksum: sha256-QJp6yCENUL3V5Nty/xjHvMkND0vvHeoxD7H/HImSuSo=
 
 importers:
 

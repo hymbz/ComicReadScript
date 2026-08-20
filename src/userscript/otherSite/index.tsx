@@ -99,7 +99,7 @@ export const otherSite = async () => {
     'onShowImgsChange',
     throttle((showImgs) => {
       if (!store.manga.show) return;
-      scanner.imgEleList[[...showImgs].at(-1)!]?.scrollIntoView({
+      scanner.slotElements[[...showImgs].at(-1)!]?.scrollIntoView({
         behavior: 'instant',
         block: 'end',
       });

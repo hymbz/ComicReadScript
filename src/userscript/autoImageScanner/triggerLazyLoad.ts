@@ -94,16 +94,23 @@ export const isLazyLoaded = (e: HTMLElement, oldSrc?: string) => {
   return false;
 };
 
-export const imgMap = new WeakMap<HTMLElement, ImgData>();
+export const lazyLoadStateMap = new WeakMap<HTMLElement, ImgData>();
 
-const getImg = (e: HTMLElement) => imgMap.get(e) ?? createImgData();
+const getImg = (e: HTMLElement) => lazyLoadStateMap.get(e) ?? createImgData();
 
 const MAX_TRIGGED_NUM = 5;
 
+/** 判断元素的触发次数是否还未达到上限 */
+const isUnderTriggerLimit = (e: HTMLElement) =>
+  (lazyLoadStateMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
+
+/** 判断元素是否经过多次触发仍未成功加载出图片 */
+export const isLazyLoadFailed = (e: HTMLElement) =>
+  !isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc) && !isUnderTriggerLimit(e);
+
 /** 判断图片元素是否需要触发懒加载 */
 export const needTrigged = (e: HTMLElement) =>
-  !isLazyLoaded(e, imgMap.get(e)?.oldSrc) &&
-  (imgMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
+  !isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc) && isUnderTriggerLimit(e);
 
 /** 图片懒加载触发完后调用 */
 const handleTrigged = (e: HTMLElement) => {
@@ -112,7 +119,7 @@ const handleTrigged = (e: HTMLElement) => {
   img.triggedNum += 1;
   if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM)
     img.triggedNum = MAX_TRIGGED_NUM;
-  imgMap.set(e, img);
+  lazyLoadStateMap.set(e, img);
 
   if (!needTrigged(e)) imgShowObserver.unobserve(e);
 };
@@ -122,11 +129,11 @@ const imgShowObserver = new IntersectionObserver((entries) => {
   for (const img of entries) {
     const e = img.target as HTMLElement;
     if (img.isIntersecting) {
-      imgMap.set(e, {
+      lazyLoadStateMap.set(e, {
         ...getImg(e),
         observerTimeout: window.setTimeout(handleTrigged, 290, e),
       });
-    } else window.clearTimeout(imgMap.get(e)?.observerTimeout);
+    } else window.clearTimeout(lazyLoadStateMap.get(e)?.observerTimeout);
   }
 });
 
@@ -152,8 +159,8 @@ export const triggerLazyLoad = singleThreaded(
   async (_, targetImgList: HTMLElement[], runCondition: () => boolean) => {
     for (const e of targetImgList) {
       imgShowObserver.observe(e);
-      if (!imgMap.has(e))
-        imgMap.set(e, createImgData(isImageElement(e) ? e.src : ''));
+      if (!lazyLoadStateMap.has(e))
+        lazyLoadStateMap.set(e, createImgData(isImageElement(e) ? e.src : ''));
     }
     for (const e of targetImgList) {
       await wait(runCondition);
@@ -169,7 +176,7 @@ export const triggerLazyLoad = singleThreaded(
         await triggerEleLazyLoad({
           e,
           waitTime,
-          isLazyLoaded: () => isLazyLoaded(e, imgMap.get(e)?.oldSrc),
+          isLazyLoaded: () => isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc),
           runCondition,
         })
       )

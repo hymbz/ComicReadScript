@@ -14,18 +14,17 @@ import { getEleSelector, isEleSelector } from './eleSelector';
 import {
   BlobUrlResolver,
   PlaceholderImgList,
-  findSimilarSiblingElements,
   sortElementsByDomOrder,
   sortElementsByTop,
 } from './helper';
-import { type ImageInfo, ImageWatcher } from './ImageWatcher';
 import {
-  getDatasetUrl,
-  imgMap,
-  isLazyLoaded,
-  needTrigged,
-  triggerLazyLoad,
-} from './triggerLazyLoad';
+  type ImageSlotGroup,
+  buildSlotElementsFromGroup,
+  findImageSlotGroups,
+  pickBestGroup,
+} from './imageSlot';
+import { type ImageInfo, ImageWatcher } from './ImageWatcher';
+import { getDatasetUrl, needTrigged, triggerLazyLoad } from './triggerLazyLoad';
 
 const SELECTOR_FALLBACK_TIMEOUT = 3000;
 
@@ -43,6 +42,8 @@ export class AutoImageScanner {
   private readonly initSelector?: string;
   /** 是否要按图片在页面中的垂直位置排序，否则将按文档顺序排序 */
   private readonly enableSortImageByTop: boolean;
+  /** 是否只保留图片槽位组内的图片 */
+  private readonly filterByContainer: boolean;
 
   /** 自定义图片过滤规则 */
   private readonly filterImg?: (
@@ -88,8 +89,10 @@ export class AutoImageScanner {
 
   /** 找到的所有符合条件的图片元素 */
   imgEleList: HTMLImageElement[] = [];
-  /** 找到的占位兄弟元素，用于提前占位 */
-  private similarElements: HTMLElement[] = [];
+  /** 过滤后真正用于展示的图片槽位列表 */
+  slotElements: HTMLElement[] = [];
+  /** 最近一次计算出的图片槽位组 */
+  private imageSlotGroups: ImageSlotGroup[] = [];
   /** 找到的所有符合条件的图片 url */
   imgList: string[] = [];
   /** 当前识别到的章节切换按钮 */
@@ -107,6 +110,7 @@ export class AutoImageScanner {
     onSelectorSuggest?: AutoImageScanner['onSelectorSuggest'];
     shouldTriggerLazyLoad?: AutoImageScanner['shouldTriggerLazyLoad'];
     sortImageByTop?: AutoImageScanner['enableSortImageByTop'];
+    filterByContainer?: AutoImageScanner['filterByContainer'];
   }) {
     this.initSelector = options.selector;
     this.filterImg = options.filterImg;
@@ -117,6 +121,7 @@ export class AutoImageScanner {
     this.shouldTriggerLazyLoad = options.shouldTriggerLazyLoad;
     this.imgSelector = options.selector ?? '';
     this.enableSortImageByTop = options.sortImageByTop ?? false;
+    this.filterByContainer = options.filterByContainer ?? true;
 
     this.imageWatcher = new ImageWatcher({
       filterImg: (info, img) => this.filterImage(info, img),
@@ -154,7 +159,8 @@ export class AutoImageScanner {
     this.blobUrlResolver.clear();
     this.placeholderImgList.clear();
     this.imgEleList = [];
-    this.similarElements = [];
+    this.slotElements = [];
+    this.imageSlotGroups = [];
     this.imgList = [];
     this.chapterSwitch = {};
   }
@@ -181,24 +187,15 @@ export class AutoImageScanner {
       `:not(${IMG_BLACK_LIST_SELECTOR}) > img`,
     );
 
-  /** 获取大概率是漫画图片的图片元素 */
-  private readonly getExpectImgList = () =>
-    this.imgSelector
-      ? querySelectorAll<HTMLImageElement>(this.imgSelector).filter(
-          (e) =>
-            isLazyLoaded(e, imgMap.get(e)?.oldSrc) ||
-            !imgMap.has(e) ||
-            imgMap.get(e)!.triggedNum <= 5,
-        )
-      : [];
-
   /** 判断当前是否应该触发懒加载 */
   private readonly runCondition = () => this.shouldTriggerLazyLoad?.() ?? true;
 
-  /** 触发大概率是漫画图片的懒加载 */
+  /** 触发大概率是漫画图片且还未成功触发懒加载的元素的懒加载 */
   private readonly triggerExpectImg = (num?: number, time?: number) =>
     wait(async () => {
-      let expectImgList = this.getExpectImgList().filter(needTrigged);
+      let expectImgList = querySelectorAll<HTMLImageElement>(
+        this.imgSelector,
+      ).filter(needTrigged);
       if (num) expectImgList = expectImgList.slice(0, num);
       await triggerLazyLoad(expectImgList, this.runCondition);
       return expectImgList.every((e) => !needTrigged(e));
@@ -223,15 +220,12 @@ export class AutoImageScanner {
         // 针对不使用 img 来触发懒加载的网站，要找到图片容器元素再尝试触发懒加载
         // https://www.twmanga.com/comic/chapter/sanjiaoguanxirumen-founai/0_0.html
         // https://klz9.com/love-live-flowers-hasunosora-jogakuin-school-idol-club-chapter-1.html
-        if (this.imgEleList.length > 3) {
-          const similarElements = findSimilarSiblingElements(
-            this.imgEleList[0],
-            5,
-          ).filter(needTrigged);
-          if (similarElements.length > 0) {
-            this.similarElements = similarElements;
-            await triggerLazyLoad(similarElements, this.runCondition);
-          }
+        if (this.imageSlotGroups.length > 0) {
+          const targets = this.imageSlotGroups
+            .flatMap((group) => [...group.slots])
+            .filter((slot) => !isImageElement(slot) && needTrigged(slot));
+          if (targets.length > 0)
+            await triggerLazyLoad(targets, this.runCondition);
         }
       } finally {
         this.triggerPromise = undefined;
@@ -276,39 +270,43 @@ export class AutoImageScanner {
     async (map: Map<HTMLImageElement, ImageInfo>, generation: number) => {
       if (generation !== this.generation) return;
 
-      if (map.size === 0) return this.onEmpty?.();
+      if (map.size === 0) {
+        this.imageSlotGroups = [];
+        return this.onEmpty?.();
+      }
+      this.imageSlotGroups = findImageSlotGroups(map);
 
-      // 过滤掉已从 DOM 移除或触发次数过多的占位元素
-      this.similarElements = this.similarElements.filter(
-        (e) => e.isConnected && needTrigged(e),
-      );
+      // 开启了容器过滤时，只保留最优图片槽位组内的图片
+      const selectedSlots =
+        this.filterByContainer && this.imageSlotGroups.length > 0
+          ? buildSlotElementsFromGroup(pickBestGroup(this.imageSlotGroups))
+          : [...map.keys()];
+      this.slotElements = this.enableSortImageByTop
+        ? sortElementsByTop(selectedSlots)
+        : sortElementsByDomOrder(selectedSlots);
+      this.imgEleList = [...map.keys()];
 
-      const slotElements = this.enableSortImageByTop
-        ? sortElementsByTop([...map.keys(), ...this.similarElements])
-        : sortElementsByDomOrder([...map.keys(), ...this.similarElements]);
-      this.imgEleList = slotElements.filter(isImageElement);
-
-      if (slotElements.length === 0) return this.onEmpty?.();
+      if (this.slotElements.length === 0) return this.onEmpty?.();
 
       // 随着图片的增加，需要补上空缺位置，避免变成稀疏数组
-      if (this.imgList.length < slotElements.length)
+      if (this.imgList.length < this.slotElements.length)
         this.imgList = [
           ...this.imgList,
           ...Array.from(
-            { length: slotElements.length - this.imgList.length },
+            { length: this.slotElements.length - this.imgList.length },
             () => '',
           ),
         ];
       // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
-      else if (this.imgList.length > slotElements.length)
-        this.imgList = this.imgList.slice(0, slotElements.length);
+      else if (this.imgList.length > this.slotElements.length)
+        this.imgList = this.imgList.slice(0, this.slotElements.length);
 
       this.onImgListChange?.([...this.imgList]);
       this.updatePlaceholderImgList(this.imgList);
 
       let isEdited = false;
       await plimit(
-        slotElements.map((e, i) => async () => {
+        this.slotElements.map((e, i) => async () => {
           // 占位元素保持空字符串，等待懒加载成功后再替换
           if (!isImageElement(e)) {
             if (this.imgList[i] === '') return;
