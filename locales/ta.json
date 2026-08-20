@@ -187,6 +187,7 @@
       "shrink_menu": "மெனு பகுதியை இயக்கு",
       "swap_page_turn_key": "இடது மற்றும் வலது பக்கங்கள் மாறுதல்",
       "turn_page_animation_duration": "பக்க மாற்று அசைவூட்ட நேரம்",
+      "scroll_animation_duration": "உருட்டல் அசைவூட்ட நேரம்",
       "zoom": "படம் பெரிதாக்கு"
     },
     "sync_options_other_site": "வாசிப்பு விருப்பங்களை பிற தளங்களுடன் ஒத்திசைக்கவும்",

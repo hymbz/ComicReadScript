@@ -100,7 +100,7 @@ const turnPageAnimator = new (class extends AnimationFrame {
     if (token === this.token) this.call(true);
   };
 
-  start = (dir: Dir, duration = store.option.turnPageAnimationDuration) => {
+  start = (dir: Dir, duration = store.option.turnPageDuration) => {
     if (store.option.scrollMode.enabled) {
       turnPage(dir);
       return;

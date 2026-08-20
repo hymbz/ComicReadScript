@@ -42,6 +42,12 @@ export const scrollTo = (x: number, smooth = false) => {
     return _scrollTo(x);
   }
 
+  const duration = store.option.scrollDuration;
+  if (duration <= 0) {
+    scrollStep.cancel();
+    return _scrollTo(x);
+  }
+
   if (scrollStep.animationId) {
     scrollStep.cancel();
     _scrollTo(x);
@@ -60,7 +66,7 @@ export const scrollBy = (offset: number, smooth = false) => {
 /** 实现卷轴模式下的平滑滚动 */
 const scrollStep = new (class extends AnimationFrame {
   /** 动画时长 */
-  duration = 100;
+  duration = 0;
   /** 要滚动的距离 */
   distance = 0;
   /** 滚动开始时间 */
@@ -85,6 +91,7 @@ const scrollStep = new (class extends AnimationFrame {
   };
 
   start = (x: number) => {
+    this.duration = store.option.scrollDuration;
     this.startTime = 0;
     this.startTop = scrollTop();
     this.distance = x - this.startTop;

@@ -187,6 +187,7 @@
       "shrink_menu": "Menüterület engedélyezése",
       "swap_page_turn_key": "Bal és jobb lapozóbillentyű felcserélése",
       "turn_page_animation_duration": "Lapozási animáció időtartama",
+      "scroll_animation_duration": "Görgetési animáció időtartama",
       "zoom": "Képméretezés"
     },
     "sync_options_other_site": "Olvasási beállítások szinkronizálása más webhelyekkel",

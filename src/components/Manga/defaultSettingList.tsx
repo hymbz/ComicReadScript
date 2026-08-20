@@ -248,10 +248,23 @@ export const defaultSettingList: () => SettingList = () => [
           onChange={(val) => {
             if (Number.isNaN(val)) return;
             setOption((draftOption) => {
-              draftOption.turnPageAnimationDuration = clamp(0, val, 2000);
+              draftOption.turnPageDuration = clamp(0, val, 2000);
             });
           }}
-          value={store.option.turnPageAnimationDuration}
+          value={store.option.turnPageDuration}
+        />
+        <SettingsItemNumber
+          name={t('setting.option.scroll_animation_duration')}
+          maxLength={4}
+          suffix="ms"
+          step={50}
+          onChange={(val) => {
+            if (Number.isNaN(val)) return;
+            setOption((draftOption) => {
+              draftOption.scrollDuration = clamp(0, val, 2000);
+            });
+          }}
+          value={store.option.scrollDuration}
         />
         <SettingsItemSwitch
           name={t('setting.option.show_comments')}

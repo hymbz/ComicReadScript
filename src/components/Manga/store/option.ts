@@ -34,7 +34,9 @@ export type Option = {
   /** 页数提示显示方式 */
   pageTip: 'hide' | 'auto' | 'always';
   /** 翻页动画时长（毫秒） */
-  turnPageAnimationDuration: number;
+  turnPageDuration: number;
+  /** 卷轴模式滚动动画时长（毫秒） */
+  scrollDuration: number;
   /** 自动切换单双页模式 */
   autoSwitchPageMode: boolean;
   /** 自动隐藏鼠标 */
@@ -169,7 +171,8 @@ const _defaultOption: Readonly<Option> = {
   preloadPageNum: 20,
   pageNum: 0,
   pageTip: 'auto',
-  turnPageAnimationDuration: 0,
+  turnPageDuration: 0,
+  scrollDuration: 100,
   autoSwitchPageMode: true,
   autoHiddenMouse: true,
   autoFullscreen: false,
