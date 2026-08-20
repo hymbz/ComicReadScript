@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.7.0
+// @version         12.7.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、再漫画、漫画柜(manhuagui)、动漫屋(dm5)、mangabz、komiic、無限動漫、绅士漫画(wnacg)、禁漫天堂、NoyAcg、熱辣漫畫、hanime1、hitomi、hdoujin、SchaleNetwork、nude-moon、HentaiZap、IMHentai、HentaiEra、HentaiEnvy、MangaDex、welovemanga、kisslove(klz9)、kemono、nekohouse、Pixiv、明日方舟泰拉记事社、Postimages、最前線、芸能ヌード、Tachidesk、LANraragi
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | hdoujin | SchaleNetwork | nude-moon | HentaiZap | IMHentai | HentaiEra | HentaiEnvy | kemono | nekohouse | MangaDex | welovemanga | kisslove(klz9)
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -88,20 +88,20 @@
 // @connect         self
 // @connect         127.0.0.1
 // @connect         *
-// @connect         mapi.hotmangasg.com
-// @connect         mapi.hotmangasf.com
-// @connect         mapi.fgjfghkkcenter.club
-// @connect         api.2024manga.com
-// @connect         www.manga2026.xyz
-// @connect         m.manga2025.com
-// @connect         api.manga2025.com
-// @connect         mapi.elfgjfghkk.club
-// @connect         www.manga2025.com
 // @connect         mapi.hotmangasd.com
 // @connect         mapi.fgjfghkk.club
+// @connect         www.manga2026.xyz
+// @connect         mapi.fgjfghkkcenter.club
+// @connect         mapi.elfgjfghkk.club
+// @connect         api.2024manga.com
+// @connect         mapi.hotmangasf.com
+// @connect         m.manga2025.com
+// @connect         mapi.hotmangasg.com
+// @connect         www.manga2025.com
+// @connect         api.manga2025.com
 // @connect         api.copy3000.com
-// @connect         api.2026copy.com
 // @connect         api.mangacopy.com
+// @connect         api.2026copy.com
 // @connect         mapi.copy20.com
 // @grant           GM_getValue
 // @grant           GM_setValue
@@ -2606,6 +2606,33 @@ const xmlHttpRequest = (details) => new Promise((resolve, reject) => {
 	});
 	details.signal?.addEventListener("abort", () => abort.abort());
 });
+/** 通过流读取 blob，并回报下载进度 */
+const readBlobWithProgress = async (res, onprogress) => {
+	const total = Number(res.headers.get("Content-Length")) || 0;
+	const reader = res.body?.getReader();
+	if (!reader) return new Blob();
+	const chunks = [];
+	let loaded = 0;
+	try {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			chunks.push(value);
+			loaded += value.byteLength;
+			onprogress({
+				loaded,
+				total,
+				done: loaded,
+				position: loaded,
+				lengthComputable: total > 0,
+				totalSize: total
+			});
+		}
+	} finally {
+		reader.releaseLock();
+	}
+	return new Blob(chunks);
+};
 /** 发起请求 */
 const request = async (url, details = {}, retryNum = 0, errorNum = 0) => {
 	const headers = { Referer: location.href };
@@ -2630,7 +2657,7 @@ const request = async (url, details = {}, retryNum = 0, errorNum = 0) => {
 					response = await res.arrayBuffer();
 					break;
 				case "blob":
-					response = await res.blob();
+					response = details.onprogress && res.body ? await readBlobWithProgress(res, details.onprogress) : await res.blob();
 					break;
 				case "json": response = await res.json();
 			}
@@ -3567,20 +3594,22 @@ const loadState = {
 	waitUrlImgNum: 0,
 	/** 当前 loadType === 'loading' 的图片 url 集合 */
 	loadingUrlSet: new helper.ReactiveSet(),
-	/** 图片识别下载中的 AbortController */
+	/** 存放正在使用「图像识别」功能特殊下载的图片 url 所对应的 AbortController */
 	abortMap: /* @__PURE__ */ new Map()
 };
 const setLoadingUrlSet = (urls) => {
-	loadState.loadingUrlSet.clear();
-	for (const url of urls) loadState.loadingUrlSet.add(url);
+	solid_js.batch(() => {
+		loadState.loadingUrlSet.clear();
+		for (const url of urls) loadState.loadingUrlSet.add(url);
+	});
 };
 /** 在 \`store.imgList\` 或 \`store.imgMap\` 被修改后，进行完整的状态更新 */
-const syncImgLoadState = () => {
+const syncImgLoadState = (state) => {
 	loadState.unloadedUrlSet.clear();
 	let waitNum = 0;
 	const nextLoading = /* @__PURE__ */ new Set();
-	for (const url of store.imgList) {
-		const img = store.imgMap[url];
+	for (const url of state.imgList) {
+		const img = state.imgMap[url];
 		if (!img) continue;
 		if (img.src) {
 			if (img.loadType !== "loaded") loadState.unloadedUrlSet.add(url);
@@ -5197,15 +5226,15 @@ const switchImgRecognition = (...path) => {
 		const option = draftOption.imgRecognition;
 		if (path.length === 0) path.push("enabled");
 		for (const key of path) option[key] = !option[key];
-		if (!option.enabled) return;
+		if (!option.enabled) return syncImgLoadState(state);
 		for (const img of Object.values(state.imgMap)) {
 			if (!img.blobUrl) img.loadType = "wait";
 			if (img.loadType !== "loaded") continue;
 			handleImgRecognition(img.src);
 		}
+		syncImgLoadState(state);
 		if (path.includes("enabled")) updateImgLoadType();
 	});
-	syncImgLoadState();
 };
 //#endregion
 //#region src/components/Manga/actions/readProgress.ts
@@ -8628,6 +8657,7 @@ const useInit = (props) => {
 				if (state.activePageIndex >= state.pageList.length) state.activePageIndex = state.pageList.length - 1;
 				updateShowRange(state);
 			}
+			syncImgLoadState(state);
 			if (isNew || state.pageList.length === 0) {
 				resetImgState(state);
 				state.activePageIndex = 0;
@@ -8643,7 +8673,6 @@ const useInit = (props) => {
 			});
 			if (state.activePageIndex > state.pageList.length - 1) state.activePageIndex = state.pageList.length - 1;
 		});
-		syncImgLoadState();
 	};
 	helper.createEffectOn(helper.createRootMemo(() => props.imgList), helper.throttle(handleImgList, 500));
 	setTimeout(() => {
@@ -9492,6 +9521,7 @@ exports.getAdPageByFileName = getAdPageByFileName;
 exports.isAdImg = isAdImg;
 `,
 	"core": `\nlet helper = require("helper");
+let userscript_autoImageScanner = require("userscript/autoImageScanner");
 let solid_js_web = require("solid-js/web");
 let components_Manga = require("components/Manga");
 let components_Toast = require("components/Toast");
@@ -10118,6 +10148,10 @@ const handleVersionUpdate = async () => {
 	if (helper.lang() === "zh") {
 		components_Toast.toast(() => {
 			const changes = Object.entries({
+				"12.7.1": {
+					"date": "2026-08-20",
+					"fix": ["修复图片加载异常的 bug"]
+				},
 				"12.7.0": {
 					"date": "2026-08-19",
 					"feat": ["支持 komiic 的新域名", "增加支持 Postimages"],
@@ -10422,6 +10456,54 @@ const setupSiteAdapter = async ({ name, options: initOptions, getPageContext, ha
 		await processPageContext(await getPageContext(pageCtx));
 	});
 };
+/** 适配「将所有图片显示在一个页面上」的网站 */
+const setupSimple = async ({ name, initOptions, isMangaPage, onPrev, onNext, onExit, selector, sortImageByTop }) => {
+	let scanner;
+	await setupSiteAdapter({
+		name,
+		options: initOptions,
+		getPageContext: async () => {
+			if (isMangaPage) {
+				const data = await isMangaPage();
+				if (!data) return;
+				return {
+					type: "manga",
+					...data === true ? {} : data
+				};
+			}
+			if (selector && !await helper.waitDom(selector, 2, 1e3)) return;
+			return { type: "manga" };
+		},
+		handlers: { manga: ({ setState, store }) => {
+			scanner ??= new userscript_autoImageScanner.AutoImageScanner({
+				selector,
+				sortImageByTop,
+				onImgListChange: (imgList) => setState("comicMap", "", "imgList", imgList),
+				onChapterSwitchChange: async ({ prev, next }) => {
+					const customPrev = onPrev ? await onPrev() : void 0;
+					const customNext = onNext ? await onNext() : void 0;
+					setState("manga", {
+						onPrev: customPrev ?? prev,
+						onNext: customNext ?? next
+					});
+				},
+				shouldTriggerLazyLoad: () => store.manga.show || store.manga.imgList.length === 0
+			});
+			setState((state) => {
+				state.comicMap[""] = { getImgList: () => {
+					scanner.start();
+					scanner.triggerLazyLoad();
+					return scanner.waitFirstImage(1e4);
+				} };
+				state.manga.onExit = (isEnd) => {
+					onExit?.(isEnd);
+					setState("manga", "show", false);
+				};
+			});
+			return () => scanner.stop();
+		} }
+	});
+};
 //#endregion
 exports.handleEsc = handleEsc;
 exports.handleVersionUpdate = handleVersionUpdate;
@@ -10430,10 +10512,622 @@ exports.registerEsc = registerEsc;
 exports.request = request.request;
 exports.setEscPriority = setEscPriority;
 exports.setup = setup;
+exports.setupSimple = setupSimple;
 exports.setupSiteAdapter = setupSiteAdapter;
 exports.toast = components_Toast.toast;
 exports.useInit = useInit;
 exports.useSpeedDial = useSpeedDial;
+`,
+	"userscript/autoImageScanner": `\nlet helper = require("helper");
+//#region src/userscript/autoImageScanner/chapterSwitch.ts
+const prevRe = /^上一?(?:[章話话]|章节)$|^(?:prev|previous)(?:\\s+chapter)?$|^前の章$/iu;
+const nextRe = /^下一?(?:[章話话]|章节)$|^next(?:\\s+chapter)?$|^次の章$/iu;
+const getChapterSwitch = () => {
+	let onPrev;
+	let onNext;
+	const checkElement = (e) => {
+		const texts = [e.textContent, e.ariaLabel].filter(Boolean).map((text) => text.replaceAll(/[<>()《》（）「」『』]/gu, "").trim());
+		if (texts.length === 0) return;
+		for (const text of texts) {
+			if (!onPrev && prevRe.test(text)) {
+				onPrev = () => e.click();
+				break;
+			}
+			if (!onNext && nextRe.test(text)) {
+				onNext = () => e.click();
+				break;
+			}
+		}
+	};
+	for (const e of helper.querySelectorAll("a, button")) {
+		checkElement(e);
+		if (onPrev && onNext) break;
+		for (const element of e.querySelectorAll("div, span, p")) {
+			checkElement(element);
+			if (onPrev && onNext) break;
+		}
+	}
+	return {
+		next: onNext,
+		prev: onPrev
+	};
+};
+//#endregion
+//#region src/userscript/autoImageScanner/eleSelector.ts
+const getTagText = (ele) => {
+	let text = ele.nodeName;
+	if (ele.id && !/\\d/u.test(ele.id)) text += \`#\${ele.id}\`;
+	return text;
+};
+/** 获取元素仅记录了层级结构关系的选择器 */
+const getEleSelector = (ele) => {
+	const parents = [ele.nodeName];
+	const root = ele.getRootNode();
+	let e = ele;
+	while (e.parentNode && e.parentNode !== root) {
+		e = e.parentNode;
+		parents.push(getTagText(e));
+	}
+	return parents.toReversed().join(">");
+};
+/** 判断指定元素是否符合选择器 */
+const isEleSelector = (ele, selector) => {
+	const parents = selector.split(">").toReversed();
+	let e = ele;
+	for (let i = 0; e && i < parents.length; i++) {
+		if (getTagText(e) !== parents[i]) return false;
+		e = e.parentNode;
+	}
+	return e === e.getRootNode();
+};
+//#endregion
+//#region src/userscript/autoImageScanner/helper.ts
+/** 按照元素的显示高度来排序元素 */
+const sortElementsByTop = (elements) => {
+	const list = [...elements];
+	const topMap = /* @__PURE__ */ new WeakMap();
+	for (const e of list) topMap.set(e, e.getBoundingClientRect().top);
+	return list.sort((a, b) => topMap.get(a) - topMap.get(b));
+};
+/** 按照文档顺序来排序元素 */
+const sortElementsByDomOrder = (elements) => [...elements].sort((a, b) => {
+	const position = a.compareDocumentPosition(b);
+	if (position & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+	if (position & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+	return 0;
+});
+/** 判断两个元素是否相似 */
+const isSimilarElement = (a, b) => helper.isEqual(a.dataset, b.dataset) || a.className && a.className === b.className;
+const SKIP_TAGS = /* @__PURE__ */ new Set([
+	"SCRIPT",
+	"STYLE",
+	"NOSCRIPT",
+	"IFRAME",
+	"HEAD",
+	"TEMPLATE"
+]);
+/** 判断元素是否为明显不可能是图片容器 */
+const isImageHostIneligible = (element) => {
+	if (element.children.length === 0) return true;
+	if (element.offsetParent === null) return true;
+	if (SKIP_TAGS.has(element.tagName)) return true;
+	return false;
+};
+/** 判断元素是否具有足够的尺寸 */
+const hasValidSize = (element) => {
+	const rect = element.getBoundingClientRect();
+	return rect.width >= 100 && rect.height >= 100;
+};
+/** 从指定元素开始向上冒泡，找到第一个「拥有足够多相似的可能作为图片容器的元素」的集合 */
+const findSimilarSiblingElements = (element, threshold) => {
+	let current = element;
+	while (current?.parentElement) {
+		const siblingList = current.parentElement.children;
+		if (siblingList.length >= threshold) {
+			const similarElements = [];
+			for (const sibling of siblingList) {
+				if (sibling === current || !(sibling instanceof HTMLElement) || isImageHostIneligible(sibling) || !isSimilarElement(sibling, current) || !hasValidSize(sibling)) continue;
+				similarElements.push(sibling);
+			}
+			if (similarElements.length >= threshold) return similarElements;
+		}
+		current = current.parentElement;
+	}
+	return [];
+};
+/** 处理 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片 */
+var BlobUrlResolver = class {
+	blobUrlMap = /* @__PURE__ */ new Map();
+	async resolve(e) {
+		if (this.blobUrlMap.has(e.src)) return this.blobUrlMap.get(e.src);
+		if (!e.src.startsWith("blob:")) return this.httpToHttps(e.src);
+		if (await helper.testImgUrl(e.src)) return e.src;
+		const canvas = new OffscreenCanvas(e.naturalWidth, e.naturalHeight);
+		canvas.getContext("2d").drawImage(e, 0, 0);
+		const url = URL.createObjectURL(await helper.canvasToBlob(canvas));
+		this.blobUrlMap.set(e.src, url);
+		return url;
+	}
+	clear() {
+		this.blobUrlMap.clear();
+	}
+	/** 在 https 页面下将 http 图片地址升级为 https */
+	httpToHttps(url) {
+		if (url.startsWith("http:") && location.protocol === "https:") return url.replace("http:", "https:");
+		return url;
+	}
+};
+/** 检测重复的加载占位图，用真实地址替换 */
+var PlaceholderImgList = class {
+	/** 已判定为重复占位图的 URL 集合 */
+	set = /* @__PURE__ */ new Set();
+	has(url) {
+		return this.set.has(url);
+	}
+	update(imgList) {
+		const countMap = /* @__PURE__ */ new Map();
+		for (const url of imgList) {
+			if (!url || this.set.has(url)) continue;
+			const count = (countMap.get(url) ?? 0) + 1;
+			countMap.set(url, count);
+			if (count > 5) this.set.add(url);
+		}
+	}
+	clear() {
+		this.set.clear();
+	}
+};
+//#endregion
+//#region src/userscript/autoImageScanner/ImageWatcher.ts
+/** 遍历节点及其子树中的所有图片元素 */
+const forEachImage = (nodes, callback) => {
+	for (const node of nodes) if (helper.isImageElement(node)) callback(node);
+	else if (helper.isHTMLElement(node)) for (const img of node.querySelectorAll("img")) callback(img);
+};
+/** 监听网页上的所有图片元素的变化，筛选出符合条件的图片 */
+var ImageWatcher = class {
+	options;
+	ro;
+	mo;
+	qualifiedMap = /* @__PURE__ */ new Map();
+	targetAttributes = [
+		"src",
+		"srcset",
+		"data-src",
+		"data-original",
+		"data-srcset"
+	];
+	constructor(options) {
+		this.options = options;
+		this.ro = new ResizeObserver(this.handleResize);
+		this.mo = new MutationObserver(this.handleMutation);
+	}
+	start() {
+		let changed = false;
+		for (const e of document.querySelectorAll("img")) {
+			this.observeImage(e);
+			if (this.tryQualify(e)) changed = true;
+		}
+		if (changed) this.options.onChanged(this.qualifiedMap);
+		this.mo.observe(document.body, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			attributeFilter: this.targetAttributes
+		});
+	}
+	/** 停止监听并清理资源 */
+	stop() {
+		this.mo.disconnect();
+		this.ro.disconnect();
+		this.qualifiedMap.clear();
+	}
+	/** 使用 ResizeObserver 监测图片尺寸变化，并在图片加载完成后重新检查 */
+	observeImage = (img) => {
+		this.ro.observe(img);
+		if (img.complete) return;
+		img.addEventListener("load", () => {
+			if (this.tryQualify(img)) this.options.onChanged(this.qualifiedMap);
+		}, { once: true });
+	};
+	/** 构造图片尺寸信息 */
+	createImageInfo(img, display) {
+		return {
+			display,
+			natural: {
+				width: img.naturalWidth,
+				height: img.naturalHeight
+			}
+		};
+	}
+	/** 尝试将图片加入 qualifiedMap，成功返回 true */
+	tryQualify(img, display) {
+		if (this.qualifiedMap.has(img)) return false;
+		const rect = display ?? img.getBoundingClientRect();
+		const imageInfo = this.createImageInfo(img, rect);
+		if (!this.options.filterImg(imageInfo, img)) return false;
+		this.qualifiedMap.set(img, imageInfo);
+		this.ro.unobserve(img);
+		return true;
+	}
+	/** 处理 ResizeObserver 的回调，只有在图片尺寸发生实际变化（或初始化）时才会触发 */
+	handleResize = (entries) => {
+		let changed = false;
+		for (const entry of entries) {
+			const img = entry.target;
+			if (this.tryQualify(img, {
+				width: entry.contentRect.width,
+				height: entry.contentRect.height
+			})) changed = true;
+		}
+		if (changed) this.options.onChanged(this.qualifiedMap);
+	};
+	/** 将图片从 qualifiedMap 移除，返回是否真的移除了 */
+	deleteImg = (img) => {
+		if (!this.qualifiedMap.has(img)) return false;
+		this.qualifiedMap.delete(img);
+		return true;
+	};
+	/** 处理新增节点中的图片 */
+	handleAddedNodes(nodes) {
+		let changed = false;
+		forEachImage(nodes, (img) => {
+			this.observeImage(img);
+			if (this.tryQualify(img)) changed = true;
+		});
+		return changed;
+	}
+	/** 处理移除节点中的图片 */
+	handleRemovedNodes(nodes) {
+		let changed = false;
+		forEachImage(nodes, (img) => {
+			if (this.deleteImg(img)) changed = true;
+		});
+		return changed;
+	}
+	/** 处理图片属性变化 */
+	handleAttributeMutation(node) {
+		if (!helper.isImageElement(node)) return false;
+		if (this.tryQualify(node)) return true;
+		let changed = false;
+		if (this.deleteImg(node)) changed = true;
+		this.observeImage(node);
+		return changed;
+	}
+	/** 处理监听节点的增删改 */
+	handleMutation = (mutations) => {
+		let changed = false;
+		for (const mutation of mutations) switch (mutation.type) {
+			case "childList":
+				changed ||= this.handleAddedNodes(mutation.addedNodes);
+				changed ||= this.handleRemovedNodes(mutation.removedNodes);
+				break;
+			case "attributes": changed ||= this.handleAttributeMutation(mutation.target);
+		}
+		if (changed) this.options.onChanged(this.qualifiedMap);
+	};
+};
+//#endregion
+//#region src/userscript/autoImageScanner/triggerLazyLoad.ts
+const createImgData = (oldSrc = "") => ({
+	triggedNum: 0,
+	observerTimeout: 0,
+	oldSrc
+});
+/** 用于判断是否是图片 url 的正则 */
+const isImgUrlRe = /^(?:(?:(?:https?|ftp|file):)?\\/)?\\/[-\\w+&@#/%?=~|!:,.;]+[-\\w+&@#%=~|]$/u;
+/** 找出格式为图片 url 的元素属性 */
+const getDatasetUrl = (e) => {
+	for (const key of e.getAttributeNames()) {
+		switch (key) {
+			case "src":
+			case "alt":
+			case "class":
+			case "style":
+			case "id":
+			case "title":
+			case "onload":
+			case "onerror": continue;
+		}
+		const val = e.getAttribute(key).trim();
+		if (!isImgUrlRe.test(val)) continue;
+		return val;
+	}
+};
+/**
+*
+* 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
+*
+* 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
+*/
+const triggerEleLazyLoad = async ({ e, waitTime, isLazyLoaded, runCondition }) => {
+	const nowScroll = window.scrollY;
+	e.scrollIntoView({ behavior: "instant" });
+	e.dispatchEvent(new Event("scroll", { bubbles: true }));
+	try {
+		if (isLazyLoaded && waitTime) return await helper.wait(isLazyLoaded, waitTime);
+	} finally {
+		if (runCondition()) window.scroll({
+			top: nowScroll,
+			behavior: "instant"
+		});
+	}
+};
+/** 判断一个元素是否已经成功触发完懒加载 */
+const isLazyLoaded = (e, oldSrc) => {
+	if (helper.isImageElement(e)) {
+		if (!e.src) return false;
+		if (!e.offsetParent) return false;
+		if (e.src.startsWith("data:image/svg")) return false;
+		if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
+		if (oldSrc !== void 0 && e.src !== oldSrc) return true;
+	} else {
+		const imgDomList = e.querySelectorAll("img");
+		for (const imgDom of imgDomList) if (isLazyLoaded(imgDom, oldSrc)) return true;
+	}
+	return false;
+};
+const imgMap = /* @__PURE__ */ new WeakMap();
+const getImg = (e) => imgMap.get(e) ?? createImgData();
+const MAX_TRIGGED_NUM = 5;
+/** 判断图片元素是否需要触发懒加载 */
+const needTrigged = (e) => !isLazyLoaded(e, imgMap.get(e)?.oldSrc) && (imgMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
+/** 图片懒加载触发完后调用 */
+const handleTrigged = (e) => {
+	const img = getImg(e);
+	img.observerTimeout = 0;
+	img.triggedNum += 1;
+	if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM) img.triggedNum = MAX_TRIGGED_NUM;
+	imgMap.set(e, img);
+	if (!needTrigged(e)) imgShowObserver.unobserve(e);
+};
+/** 监视图片是否被显示的 Observer */
+const imgShowObserver = new IntersectionObserver((entries) => {
+	for (const img of entries) {
+		const e = img.target;
+		if (img.isIntersecting) imgMap.set(e, {
+			...getImg(e),
+			observerTimeout: window.setTimeout(handleTrigged, 290, e)
+		});
+		else window.clearTimeout(imgMap.get(e)?.observerTimeout);
+	}
+});
+const turnPageScheduled = helper.createScheduled((fn) => helper.throttle(fn, 1e3));
+/** 触发翻页 */
+const triggerTurnPage = async (waitTime, runCondition) => {
+	if (!turnPageScheduled()) return;
+	const nowScroll = window.scrollY;
+	window.scroll({
+		top: document.body.scrollHeight,
+		behavior: "instant"
+	});
+	document.body.dispatchEvent(new Event("scroll", { bubbles: true }));
+	if (waitTime) await helper.sleep(waitTime);
+	if (runCondition()) window.scroll({
+		top: nowScroll,
+		behavior: "instant"
+	});
+};
+const waitTime = 300;
+/** 触发页面上图片元素的懒加载 */
+const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondition) => {
+	for (const e of targetImgList) {
+		imgShowObserver.observe(e);
+		if (!imgMap.has(e)) imgMap.set(e, createImgData(helper.isImageElement(e) ? e.src : ""));
+	}
+	for (const e of targetImgList) {
+		await helper.wait(runCondition);
+		await triggerTurnPage(0, runCondition);
+		if (!needTrigged(e)) continue;
+		const datasetUrl = getDatasetUrl(e);
+		if (datasetUrl) e.setAttribute("src", datasetUrl);
+		if (await triggerEleLazyLoad({
+			e,
+			waitTime,
+			isLazyLoaded: () => isLazyLoaded(e, imgMap.get(e)?.oldSrc),
+			runCondition
+		})) handleTrigged(e);
+	}
+	await triggerTurnPage(waitTime, runCondition);
+});
+//#endregion
+//#region src/userscript/autoImageScanner/index.ts
+const SELECTOR_FALLBACK_TIMEOUT = 3e3;
+const IMG_BLACK_LIST_SELECTOR = ["#pagetual-preload", "noscript"].join(",");
+/** 自动发现网页上的所有漫画图片的通用扫描器 */
+var AutoImageScanner = class {
+	/** 能获取到所有图片的 selector */
+	initSelector;
+	/** 是否要按图片在页面中的垂直位置排序，否则将按文档顺序排序 */
+	enableSortImageByTop;
+	/** 自定义图片过滤规则 */
+	filterImg;
+	/** 是否触发懒加载的条件 */
+	shouldTriggerLazyLoad;
+	/** 图片列表变化时的回调 */
+	onImgListChange;
+	/** 章节切换按钮变化时的回调 */
+	onChapterSwitchChange;
+	/** 页面上没有符合条件的图片时的回调 */
+	onEmpty;
+	/** 发现新的正确的能获取到所有图片的 selector 时的回调 */
+	onSelectorSuggest;
+	/** 是否已开始监听 */
+	started = false;
+	/** 当前生效的图片 selector */
+	imgSelector;
+	/** 显式 selector 回退定时器 */
+	selectorFallbackTimer;
+	/** 懒加载触发 promise，用于避免重复触发 */
+	triggerPromise;
+	/** 代际标记，用于忽略 stop 后过期的 handleChanged 回调 */
+	generation = 0;
+	/** 处理 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片 */
+	blobUrlResolver = new BlobUrlResolver();
+	placeholderImgList = new PlaceholderImgList();
+	/** 检测重复的加载占位图，用真实地址进行替换 */
+	updatePlaceholderImgList = helper.throttle((imgList) => {
+		this.placeholderImgList.update(imgList);
+	});
+	/** 图片监听器 */
+	imageWatcher;
+	/** 找到的所有符合条件的图片元素 */
+	imgEleList = [];
+	/** 找到的占位兄弟元素，用于提前占位 */
+	similarElements = [];
+	/** 找到的所有符合条件的图片 url */
+	imgList = [];
+	/** 当前识别到的章节切换按钮 */
+	chapterSwitch = {};
+	/**
+	* @param options 扫描器配置
+	*/
+	constructor(options) {
+		this.initSelector = options.selector;
+		this.filterImg = options.filterImg;
+		this.onImgListChange = options.onImgListChange;
+		this.onEmpty = options.onEmpty;
+		this.onChapterSwitchChange = options.onChapterSwitchChange;
+		this.onSelectorSuggest = options.onSelectorSuggest;
+		this.shouldTriggerLazyLoad = options.shouldTriggerLazyLoad;
+		this.imgSelector = options.selector ?? "";
+		this.enableSortImageByTop = options.sortImageByTop ?? false;
+		this.imageWatcher = new ImageWatcher({
+			filterImg: (info, img) => this.filterImage(info, img),
+			onChanged: (map) => this.handleChanged(map, this.generation)
+		});
+	}
+	/** 开始寻找页面图片 */
+	start() {
+		if (this.started) return;
+		this.started = true;
+		this.imageWatcher.start();
+		if (this.initSelector && this.imgSelector === this.initSelector) this.selectorFallbackTimer = window.setTimeout(() => {
+			if (helper.querySelectorAll(this.imgSelector).length > 0) return;
+			this.imgSelector = "";
+			this.triggerAllLazyLoad();
+		}, SELECTOR_FALLBACK_TIMEOUT);
+	}
+	/** 停止监听并清理资源 */
+	stop() {
+		this.started = false;
+		this.generation++;
+		this.handleChanged.clear();
+		this.imageWatcher.stop();
+		if (this.selectorFallbackTimer !== void 0) window.clearTimeout(this.selectorFallbackTimer);
+		this.selectorFallbackTimer = void 0;
+		this.triggerPromise = void 0;
+		this.blobUrlResolver.clear();
+		this.placeholderImgList.clear();
+		this.imgEleList = [];
+		this.similarElements = [];
+		this.imgList = [];
+		this.chapterSwitch = {};
+	}
+	/** 等到发现首张图片 */
+	async waitFirstImage(timeout = 1e4) {
+		const list = await helper.wait(() => this.imgList.some(Boolean) ? [...this.imgList] : void 0, timeout);
+		if (!list?.length) throw new Error(helper.t("site.changed_load_failed"));
+		return list;
+	}
+	/** 手动触发一轮懒加载 */
+	triggerLazyLoad() {
+		this.start();
+		return this.triggerAllLazyLoad();
+	}
+	/** 获取页面上所有不在黑名单中的图片元素 */
+	getAllImg = () => helper.querySelectorAll(\`:not(\${IMG_BLACK_LIST_SELECTOR}) > img\`);
+	/** 获取大概率是漫画图片的图片元素 */
+	getExpectImgList = () => this.imgSelector ? helper.querySelectorAll(this.imgSelector).filter((e) => isLazyLoaded(e, imgMap.get(e)?.oldSrc) || !imgMap.has(e) || imgMap.get(e).triggedNum <= 5) : [];
+	/** 判断当前是否应该触发懒加载 */
+	runCondition = () => this.shouldTriggerLazyLoad?.() ?? true;
+	/** 触发大概率是漫画图片的懒加载 */
+	triggerExpectImg = (num, time) => helper.wait(async () => {
+		let expectImgList = this.getExpectImgList().filter(needTrigged);
+		if (num) expectImgList = expectImgList.slice(0, num);
+		await triggerLazyLoad(expectImgList, this.runCondition);
+		return expectImgList.every((e) => !needTrigged(e));
+	}, time);
+	/** 触发一轮完整的懒加载，并对重复调用去重 */
+	triggerAllLazyLoad = () => {
+		if (this.triggerPromise) return this.triggerPromise;
+		this.triggerPromise = (async () => {
+			try {
+				if (this.imgSelector) {
+					await this.triggerExpectImg(3, 5e3);
+					await this.triggerExpectImg();
+				}
+				await triggerLazyLoad(this.getAllImg().filter(needTrigged), this.runCondition);
+				if (this.imgEleList.length > 3) {
+					const similarElements = findSimilarSiblingElements(this.imgEleList[0], 5).filter(needTrigged);
+					if (similarElements.length > 0) {
+						this.similarElements = similarElements;
+						await triggerLazyLoad(similarElements, this.runCondition);
+					}
+				}
+			} finally {
+				this.triggerPromise = void 0;
+			}
+		})();
+		return this.triggerPromise;
+	};
+	/** 记录传入的图片元素中最常见的那个 selector（仅 initSelector 失效时） */
+	saveImgEleSelector = (list) => {
+		if (list.length < 7 || this.initSelector && this.imgSelector === this.initSelector) return;
+		const newSelector = helper.getMostItem(list.map(getEleSelector));
+		if (newSelector !== this.imgSelector) {
+			this.imgSelector = newSelector;
+			this.onSelectorSuggest?.(newSelector);
+		}
+	};
+	/** 判断图片是否符合扫描条件 */
+	filterImage = (info, img) => {
+		if (img.closest(IMG_BLACK_LIST_SELECTOR)) return false;
+		if (this.imgSelector && isEleSelector(img, this.imgSelector)) return true;
+		if (this.filterImg) return this.filterImg(info, img);
+		if (info.display.height <= 100 || info.display.width <= 100) return false;
+		return info.natural.height > 500 && info.natural.width > 500;
+	};
+	/** 图片集合变化时更新图片列表、章节按钮并触发懒加载 */
+	handleChanged = helper.throttle(async (map, generation) => {
+		if (generation !== this.generation) return;
+		if (map.size === 0) return this.onEmpty?.();
+		this.similarElements = this.similarElements.filter((e) => e.isConnected && needTrigged(e));
+		const slotElements = this.enableSortImageByTop ? sortElementsByTop([...map.keys(), ...this.similarElements]) : sortElementsByDomOrder([...map.keys(), ...this.similarElements]);
+		this.imgEleList = slotElements.filter(helper.isImageElement);
+		if (slotElements.length === 0) return this.onEmpty?.();
+		if (this.imgList.length < slotElements.length) this.imgList = [...this.imgList, ...Array.from({ length: slotElements.length - this.imgList.length }, () => "")];
+		else if (this.imgList.length > slotElements.length) this.imgList = this.imgList.sliceslotElements.length;
+		this.onImgListChange?.([...this.imgList]);
+		this.updatePlaceholderImgList(this.imgList);
+		let isEdited = false;
+		await helper.plimit(slotElements.map((e, i) => async () => {
+			if (!helper.isImageElement(e)) {
+				if (this.imgList[i] === "") return;
+				isEdited ||= true;
+				this.imgList[i] = "";
+				return;
+			}
+			let newUrl = await this.blobUrlResolver.resolve(e);
+			if (this.placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? "";
+			if (newUrl === this.imgList[i]) return;
+			isEdited ||= true;
+			this.imgList[i] = newUrl;
+		}));
+		if (generation !== this.generation) return;
+		if (isEdited) this.saveImgEleSelector(this.imgEleList);
+		this.triggerAllLazyLoad();
+		this.chapterSwitch = getChapterSwitch();
+		await this.onChapterSwitchChange?.({ ...this.chapterSwitch });
+		if (generation !== this.generation) return;
+		if (isEdited) {
+			this.onImgListChange?.([...this.imgList]);
+			this.updatePlaceholderImgList(this.imgList);
+		}
+	}, 500);
+};
+//#endregion
+exports.AutoImageScanner = AutoImageScanner;
 `,
 	"worker/detectAd": `\n//#region \\0rolldown/runtime.js
 var __create = Object.create;
@@ -11082,285 +11776,7 @@ exports.upscaleImage = upscaleImage;
 	"userscript/otherSite": `\nlet solid_js_web = require("solid-js/web");
 let core = require("core");
 let helper = require("helper");
-//#region src/userscript/otherSite/chapterSwitch.ts
-const prevRe = /^上一?(?:[章話话]|章节)$|^(?:prev|previous)(?:\\s+chapter)?$|^前の章$/iu;
-const nextRe = /^下一?(?:[章話话]|章节)$|^next(?:\\s+chapter)?$|^次の章$/iu;
-const getChapterSwitch = () => {
-	let onPrev;
-	let onNext;
-	const checkElement = (e) => {
-		const texts = [e.textContent, e.ariaLabel].filter(Boolean).map((text) => text.replaceAll(/[<>()《》（）「」『』]/gu, "").trim());
-		if (texts.length === 0) return;
-		for (const text of texts) {
-			if (!onPrev && prevRe.test(text)) {
-				onPrev = () => e.click();
-				break;
-			}
-			if (!onNext && nextRe.test(text)) {
-				onNext = () => e.click();
-				break;
-			}
-		}
-	};
-	for (const e of helper.querySelectorAll("a, button")) {
-		checkElement(e);
-		if (onPrev && onNext) break;
-		for (const element of e.querySelectorAll("div, span, p")) {
-			checkElement(element);
-			if (onPrev && onNext) break;
-		}
-	}
-	return {
-		onPrev,
-		onNext
-	};
-};
-//#endregion
-//#region src/userscript/otherSite/eleSelector.ts
-const getTagText = (ele) => {
-	let text = ele.nodeName;
-	if (ele.id && !/\\d/u.test(ele.id)) text += \`#\${ele.id}\`;
-	return text;
-};
-/** 获取元素仅记录了层级结构关系的选择器 */
-const getEleSelector = (ele) => {
-	const parents = [ele.nodeName];
-	const root = ele.getRootNode();
-	let e = ele;
-	while (e.parentNode && e.parentNode !== root) {
-		e = e.parentNode;
-		parents.push(getTagText(e));
-	}
-	return parents.toReversed().join(">");
-};
-/** 判断指定元素是否符合选择器 */
-const isEleSelector = (ele, selector) => {
-	const parents = selector.split(">").toReversed();
-	let e = ele;
-	for (let i = 0; e && i < parents.length; i++) {
-		if (getTagText(e) !== parents[i]) return false;
-		e = e.parentNode;
-	}
-	return e === e.getRootNode();
-};
-//#endregion
-//#region src/userscript/otherSite/ImageWatcher.ts
-/** 监听网页上的所有图片元素的变化，筛选出符合条件的图片 */
-var ImageWatcher = class {
-	options;
-	ro;
-	mo;
-	qualifiedMap = /* @__PURE__ */ new Map();
-	targetAttributes = [
-		"src",
-		"srcset",
-		"data-src",
-		"data-original",
-		"data-srcset"
-	];
-	constructor(options) {
-		this.options = options;
-		this.ro = new ResizeObserver(this.handleResize);
-		this.mo = new MutationObserver(this.handleMutation);
-	}
-	start() {
-		for (const e of document.querySelectorAll("img")) this.observeImage(e);
-		this.mo.observe(document.body, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			attributeFilter: this.targetAttributes
-		});
-	}
-	/** 停止监听并清理资源 */
-	stop() {
-		this.mo.disconnect();
-		this.ro.disconnect();
-		this.qualifiedMap.clear();
-	}
-	/** 使用 ResizeObserver 监测图片尺寸变化 */
-	observeImage = (img) => this.ro.observe(img);
-	/** 处理 ResizeObserver 的回调，只有在图片尺寸发生实际变化（或初始化）时才会触发 */
-	handleResize = (entries) => {
-		let changed = false;
-		for (const entry of entries) {
-			const img = entry.target;
-			const imageInfo = {
-				display: {
-					width: entry.contentRect.width,
-					height: entry.contentRect.height
-				},
-				natural: {
-					width: img.naturalWidth,
-					height: img.naturalHeight
-				}
-			};
-			if (this.qualifiedMap.has(img) || !this.options.filter(imageInfo, img)) continue;
-			this.qualifiedMap.set(img, imageInfo);
-			changed = true;
-			this.ro.unobserve(img);
-		}
-		if (changed) this.options.onChanged(this.qualifiedMap);
-	};
-	/**
-	* 遍历节点及其子树中的所有图片元素
-	*/
-	forEachImage(nodes, callback) {
-		for (const node of nodes) if (helper.isImageElement(node)) callback(node);
-		else if (helper.isHTMLElement(node)) for (const img of node.querySelectorAll("img")) callback(img);
-	}
-	/**
-	* 处理 MutationObserver 的回调
-	* 负责发现新元素和属性变化
-	*/
-	handleMutation = (mutations) => {
-		let changed = false;
-		const deleteImg = (img) => {
-			if (!this.qualifiedMap.has(img)) return;
-			this.qualifiedMap.delete(img);
-			changed = true;
-		};
-		for (const mutation of mutations) switch (mutation.type) {
-			case "childList":
-				this.forEachImage(mutation.addedNodes, this.observeImage);
-				this.forEachImage(mutation.removedNodes, deleteImg);
-				break;
-			case "attributes": {
-				const node = mutation.target;
-				if (helper.isImageElement(node)) {
-					deleteImg(node);
-					this.observeImage(node);
-				}
-				break;
-			}
-		}
-		if (changed) this.options.onChanged(this.qualifiedMap);
-	};
-};
-//#endregion
-//#region src/userscript/otherSite/triggerLazyLoad.ts
-const createImgData = (oldSrc = "") => ({
-	triggedNum: 0,
-	observerTimeout: 0,
-	oldSrc
-});
-/** 用于判断是否是图片 url 的正则 */
-const isImgUrlRe = /^(?:(?:(?:https?|ftp|file):)?\\/)?\\/[-\\w+&@#/%?=~|!:,.;]+[-\\w+&@#%=~|]$/u;
-/** 找出格式为图片 url 的元素属性 */
-const getDatasetUrl = (e) => {
-	for (const key of e.getAttributeNames()) {
-		switch (key) {
-			case "src":
-			case "alt":
-			case "class":
-			case "style":
-			case "id":
-			case "title":
-			case "onload":
-			case "onerror": continue;
-		}
-		const val = e.getAttribute(key).trim();
-		if (!isImgUrlRe.test(val)) continue;
-		return val;
-	}
-};
-/**
-*
-* 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
-*
-* 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
-*/
-const triggerEleLazyLoad = async ({ e, waitTime, isLazyLoaded, runCondition }) => {
-	const nowScroll = window.scrollY;
-	e.scrollIntoView({ behavior: "instant" });
-	e.dispatchEvent(new Event("scroll", { bubbles: true }));
-	try {
-		if (isLazyLoaded && waitTime) return await helper.wait(isLazyLoaded, waitTime);
-	} finally {
-		if (runCondition()) window.scroll({
-			top: nowScroll,
-			behavior: "instant"
-		});
-	}
-};
-/** 判断一个元素是否已经成功触发完懒加载 */
-const isLazyLoaded = (e, oldSrc) => {
-	if (helper.isImageElement(e)) {
-		if (!e.src) return false;
-		if (!e.offsetParent) return false;
-		if (e.src.startsWith("data:image/svg")) return false;
-		if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
-		if (oldSrc !== void 0 && e.src !== oldSrc) return true;
-	} else {
-		const imgDomList = e.querySelectorAll("img");
-		for (const imgDom of imgDomList) if (isLazyLoaded(imgDom, oldSrc)) return true;
-	}
-	return false;
-};
-const imgMap = /* @__PURE__ */ new WeakMap();
-const getImg = (e) => imgMap.get(e) ?? createImgData();
-const MAX_TRIGGED_NUM = 5;
-/** 判断图片元素是否需要触发懒加载 */
-const needTrigged = (e) => !isLazyLoaded(e, imgMap.get(e)?.oldSrc) && (imgMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
-/** 图片懒加载触发完后调用 */
-const handleTrigged = (e) => {
-	const img = getImg(e);
-	img.observerTimeout = 0;
-	img.triggedNum += 1;
-	if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM) img.triggedNum = MAX_TRIGGED_NUM;
-	imgMap.set(e, img);
-	if (!needTrigged(e)) imgShowObserver.unobserve(e);
-};
-/** 监视图片是否被显示的 Observer */
-const imgShowObserver = new IntersectionObserver((entries) => {
-	for (const img of entries) {
-		const e = img.target;
-		if (img.isIntersecting) imgMap.set(e, {
-			...getImg(e),
-			observerTimeout: window.setTimeout(handleTrigged, 290, e)
-		});
-		else window.clearTimeout(imgMap.get(e)?.observerTimeout);
-	}
-});
-const turnPageScheduled = helper.createScheduled((fn) => helper.throttle(fn, 1e3));
-/** 触发翻页 */
-const triggerTurnPage = async (waitTime, runCondition) => {
-	if (!turnPageScheduled()) return;
-	const nowScroll = window.scrollY;
-	window.scroll({
-		top: document.body.scrollHeight,
-		behavior: "instant"
-	});
-	document.body.dispatchEvent(new Event("scroll", { bubbles: true }));
-	if (waitTime) await helper.sleep(waitTime);
-	if (runCondition()) window.scroll({
-		top: nowScroll,
-		behavior: "instant"
-	});
-};
-const waitTime = 300;
-/** 触发页面上图片元素的懒加载 */
-const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondition) => {
-	for (const e of targetImgList) {
-		imgShowObserver.observe(e);
-		if (!imgMap.has(e)) imgMap.set(e, createImgData(helper.isImageElement(e) ? e.src : ""));
-	}
-	for (const e of targetImgList) {
-		await helper.wait(runCondition);
-		await triggerTurnPage(0, runCondition);
-		if (!needTrigged(e)) continue;
-		const datasetUrl = getDatasetUrl(e);
-		if (datasetUrl) e.setAttribute("src", datasetUrl);
-		if (await triggerEleLazyLoad({
-			e,
-			waitTime,
-			isLazyLoaded: () => isLazyLoaded(e, imgMap.get(e)?.oldSrc),
-			runCondition
-		})) handleTrigged(e);
-	}
-	await triggerTurnPage(waitTime, runCondition);
-});
-//#endregion
+let userscript_autoImageScanner = require("userscript/autoImageScanner");
 //#region src/userscript/otherSite/index.tsx
 var _tmpl$ = /*#__PURE__*/ solid_js_web.template(\`<div><button>\`);
 /** 执行脚本操作。如果中途中断，将返回 true */
@@ -11383,125 +11799,27 @@ const otherSite = async () => {
 		return _el$;
 	})(), { duration: 7e3 });
 	const menuId = console.debug(helper.t("site.simple.simple_read_mode"), () => setOptions({ selector: "" }));
-	await helper.wait(() => !options.selector || helper.querySelectorAll(options.selector).length >= 2);
 	console.debug(menuId);
-	/** 记录传入的图片元素中最常见的那个 selector */
-	const saveImgEleSelector = (imgEleList) => {
-		if (imgEleList.length < 7) return;
-		const selector = helper.getMostItem(imgEleList.map(getEleSelector));
-		if (selector !== options.selector) setOptions({ selector });
-	};
-	const blobUrlMap = /* @__PURE__ */ new Map();
-	const handleBlobImg = async (e) => {
-		if (blobUrlMap.has(e.src)) return blobUrlMap.get(e.src);
-		if (!e.src.startsWith("blob:")) return e.src;
-		if (await helper.testImgUrl(e.src)) return e.src;
-		const canvas = new OffscreenCanvas(e.naturalWidth, e.naturalHeight);
-		canvas.getContext("2d").drawImage(e, 0, 0);
-		const url = URL.createObjectURL(await helper.canvasToBlob(canvas));
-		blobUrlMap.set(e.src, url);
-		return url;
-	};
-	const handleImgUrl = async (e) => {
-		const url = await handleBlobImg(e);
-		if (url.startsWith("http:") && location.protocol === "https:") return url.replace("http:", "https:");
-		return url;
-	};
-	/** 重复的加载占位图 */
-	const placeholderImgList = /* @__PURE__ */ new Set();
-	helper.createEffectOn(() => store.manga.imgList.filter((url) => url && !placeholderImgList.has(url)), helper.throttle((imgList) => {
-		if (!imgList?.length || imgList.length - new Set(imgList).size <= 4) return;
-		const repeatNumMap = /* @__PURE__ */ new Map();
-		for (const url of imgList) {
-			const repeatNum = (repeatNumMap.get(url) ?? 0) + 1;
-			repeatNumMap.set(url, repeatNum);
-			if (repeatNum > 5) placeholderImgList.add(url);
-		}
-	}));
-	const imgBlackList = ["#pagetual-preload", "noscript"];
-	const getAllImg = () => helper.querySelectorAll(\`:not(\${imgBlackList.join(",")}) > img\`);
-	/** 获取大概率是漫画图片的图片元素 */
-	const getExpectImgList = () => helper.querySelectorAll(options.selector).filter((e) => isLazyLoaded(e, imgMap.get(e)?.oldSrc) || !imgMap.has(e) || imgMap.get(e).triggedNum <= 5);
-	let imgEleList = [];
 	let timeout = 0;
-	/** 只在\`开启了阅读模式\`和\`当前可显示图片数量不足\`时通过滚动触发懒加载 */
-	const runCondition = () => store.manga.show || !timeout && store.manga.imgList.length === 0;
-	/** 触发大概率是漫画图片的懒加载 */
-	const triggerExpectImg = (num, time) => helper.wait(async () => {
-		let expectImgList = getExpectImgList().filter(needTrigged);
-		if (num) expectImgList = expectImgList.slice(0, num);
-		await triggerLazyLoad(expectImgList, runCondition);
-		return expectImgList.every((e) => !needTrigged(e));
-	}, time);
-	/** 按照元素的显示高度来排序元素 */
-	const sortElementsByTop = (elements) => {
-		const list = [...elements];
-		const topMap = /* @__PURE__ */ new WeakMap();
-		for (const e of list) topMap.set(e, e.getBoundingClientRect().top);
-		return list.toSorted((a, b) => topMap.get(a) - topMap.get(b));
-	};
-	const imageWatcher = new ImageWatcher({
-		filter: (info, img) => {
-			if (info.display.height <= 100 || info.display.width <= 100) return false;
-			if (img.closest(imgBlackList.join(","))) return false;
-			if (isEleSelector(img, options.selector)) return true;
-			return info.natural.height > 500 && info.natural.width > 500;
-		},
-		onChanged: helper.throttle(async (map) => {
-			imgEleList = sortElementsByTop([...map.keys()]);
-			if (imgEleList.length === 0) return setState((state) => {
-				state.fab.show = false;
-				state.manga.show = false;
-			});
-			if (store.manga.imgList.length < imgEleList.length) setState("comicMap", "", "imgList", [...store.manga.imgList, ...Array.from({ length: imgEleList.length - store.manga.imgList.length }, () => "")]);
-			else if (store.manga.imgList.length > imgEleList.length) setState("comicMap", "", "imgList", store.manga.imgList.sliceimgEleList.length);
-			let isEdited = false;
-			await helper.plimit(imgEleList.map((e, i) => async () => {
-				let newUrl = await handleImgUrl(e);
-				if (placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? "";
-				if (newUrl === store.manga.imgList[i]) return;
-				isEdited ||= true;
-				setState("comicMap", "", "imgList", (list) => list.with(i, newUrl));
-			}));
-			if (isEdited) saveImgEleSelector(imgEleList);
-			triggerAllLazyLoad();
-			setState("manga", getChapterSwitch());
-		}, 500)
+	const scanner = new userscript_autoImageScanner.AutoImageScanner({
+		selector: options.selector,
+		onImgListChange: (imgList) => setState("comicMap", "", "imgList", imgList),
+		onEmpty: () => setState((state) => {
+			state.fab.show = false;
+			state.manga.show = false;
+		}),
+		onChapterSwitchChange: ({ next, prev }) => setState("manga", {
+			onPrev: prev,
+			onNext: next
+		}),
+		onSelectorSuggest: (selector) => setOptions({ selector }),
+		shouldTriggerLazyLoad: () => store.manga.show || !timeout && store.manga.imgList.length === 0,
+		sortImageByTop: true
 	});
-	/** 检查兄弟元素中是否有足够多的元素与 parent 具有相同的 dataset */
-	const hasEnoughSimilarSiblings = (parent, children, threshold) => {
-		let sameNum = 0;
-		for (const siblingDom of children) {
-			if (siblingDom === parent) continue;
-			if (!("dataset" in siblingDom)) continue;
-			if (!helper.isEqual(siblingDom.dataset, parent.dataset)) continue;
-			sameNum++;
-			if (sameNum >= threshold) return true;
-		}
-		return false;
-	};
-	const triggerAllLazyLoad = async () => {
-		if (options.selector) {
-			await triggerExpectImg(3, 5e3);
-			await triggerExpectImg();
-		}
-		await triggerLazyLoad(getAllImg().filter(needTrigged), runCondition);
-		if (imgEleList.length > 3) {
-			let parent = imgEleList[0];
-			while (parent?.parentElement) {
-				const siblingList = parent.parentElement.children;
-				if (siblingList.length >= 5 && hasEnoughSimilarSiblings(parent, siblingList, 5)) {
-					await triggerLazyLoad(helper.querySelectorAll(getEleSelector(parent)), runCondition);
-					break;
-				}
-				parent = parent.parentElement;
-			}
-		}
-	};
 	setState("comicMap", "", { async getImgList() {
-		if (imgEleList.length === 0) {
-			imageWatcher.start();
-			triggerAllLazyLoad();
+		if (scanner.imgList.length === 0) {
+			scanner.start();
+			scanner.triggerLazyLoad();
 			timeout = window.setTimeout(() => {
 				if (store.manga.imgList.length > 0) return;
 				core.toast.warn(helper.t("site.simple.no_img"), {
@@ -11514,13 +11832,13 @@ const otherSite = async () => {
 				});
 			}, 3e3);
 		}
-		await helper.wait(() => store.manga.imgList.length);
+		await scanner.waitFirstImage(Number.POSITIVE_INFINITY);
 		core.toast.dismiss("no_img");
-		return store.manga.imgList;
+		return scanner.imgList;
 	} });
 	setState("manga", "onShowImgsChange", helper.throttle((showImgs) => {
 		if (!store.manga.show) return;
-		imgEleList[[...showImgs].at(-1)]?.scrollIntoView({
+		scanner.imgEleList[[...showImgs].at(-1)]?.scrollIntoView({
 			behavior: "instant",
 			block: "end"
 		});
@@ -11911,8 +12229,8 @@ const mobileApi = new class {
 	}, ...args);
 	eachGet = (url, details) => request.eachApi(url, [
 		"https://api.copy3000.com",
-		"https://api.2026copy.com",
 		"https://api.mangacopy.com",
+		"https://api.2026copy.com",
 		"https://mapi.copy20.com"
 	], {
 		responseType: "json",
@@ -11936,17 +12254,17 @@ const pcApi = new class {
 		Authorization: token ? \`Token \${token}\` : ""
 	};
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://mapi.hotmangasg.com",
-		"https://mapi.hotmangasf.com",
-		"https://mapi.fgjfghkkcenter.club",
-		"https://api.2024manga.com",
-		"https://www.manga2026.xyz",
-		"https://m.manga2025.com",
-		"https://api.manga2025.com",
-		"https://mapi.elfgjfghkk.club",
-		"https://www.manga2025.com",
 		"https://mapi.hotmangasd.com",
-		"https://mapi.fgjfghkk.club"
+		"https://mapi.fgjfghkk.club",
+		"https://www.manga2026.xyz",
+		"https://mapi.fgjfghkkcenter.club",
+		"https://mapi.elfgjfghkk.club",
+		"https://api.2024manga.com",
+		"https://mapi.hotmangasf.com",
+		"https://m.manga2025.com",
+		"https://mapi.hotmangasg.com",
+		"https://www.manga2025.com",
+		"https://api.manga2025.com"
 	], {
 		responseType: "json",
 		headers: this.headers,
@@ -12518,13 +12836,13 @@ const featureOptions = {
 	/** 快捷收藏 */
 	quick_favorite: true,
 	/** 标签染色 */
-	colorize_tag: false,
+	colorize_tag: true,
 	/** 快捷评分 */
 	quick_rating: true,
 	/** 快捷查看标签定义 */
 	quick_tag_define: true,
 	/** 悬浮标签列表 */
-	float_tag_list: false,
+	float_tag_list: true,
 	/** 自动调整配置 */
 	auto_adjust_option: false,
 	/** 标签检查 */
@@ -16246,7 +16564,7 @@ if (location.pathname === "/reader" && document.querySelector(".ip > a[href=\\"h
 	};
 	const updateProgress = async (id, pageNum) => {
 		await checkServerTracksProgress();
-		if (isServerTracksProgress) await request.request(\`/archives/\${id}/progress/\${pageNum + 1}\`, {
+		if (isServerTracksProgress) await request.request(\`/api/archives/\${id}/progress/\${pageNum + 1}\`, {
 			method: "PUT",
 			fetch: true,
 			noTip: true
@@ -17392,14 +17710,14 @@ try {
 				const btn = getNavBtn(index);
 				return btn && !btn.disabled ? () => btn.click() : void 0;
 			};
-			core.setup({
+			core.setupSimple({
 				name: "klz9",
+				selector: "main img:not(a img)",
 				isMangaPage: async () => {
 					if (!location.pathname.includes("-chapter-")) return false;
 					await helper.wait(() => helper.querySelector("main img:not(a img)"));
 					return { id: location.pathname };
 				},
-				getImgList: () => helper.querySelectorAll("main img:not(a img)").map((img) => img.src),
 				onPrev: () => handlePrevNext(0),
 				onNext: () => handlePrevNext(1)
 			});
