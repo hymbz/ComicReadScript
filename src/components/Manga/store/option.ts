@@ -110,6 +110,16 @@ export type Option = {
     alignEdge: boolean;
   };
 
+  /** 图片滤镜 */
+  imgFilter: {
+    /** 亮度 */
+    brightness: number;
+    /** 对比度 */
+    contrast: number;
+    /** 饱和度 */
+    saturate: number;
+  };
+
   /** 图像识别 */
   imgRecognition: {
     enabled: boolean;
@@ -198,9 +208,15 @@ const _defaultOption: Readonly<Option> = {
     alignEdge: false,
   },
 
+  imgFilter: {
+    brightness: 100,
+    contrast: 100,
+    saturate: 100,
+  },
+
   imgRecognition: {
     enabled: false,
-    background: true,
+    background: false,
     pageFill: true,
     upscale: false,
   },

@@ -20,11 +20,11 @@ export const fileType = {
 } as const;
 
 const CRSD: Record<string, unknown> = {};
-if (typeof window !== 'undefined')
-  Object.assign(unsafeWindow ?? window, { CRSD });
 /** 将调试变量挂到全局 CRSD 对象上 */
 export const exposeToGlobal = (obj: Record<string, unknown>) => {
   if (!isDevMode) return;
+  if (typeof window !== 'undefined' && typeof unsafeWindow !== 'undefined')
+    Object.assign(unsafeWindow ?? window, { CRSD });
   Object.assign(CRSD, obj);
 };
 

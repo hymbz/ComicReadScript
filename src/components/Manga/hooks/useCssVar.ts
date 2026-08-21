@@ -30,6 +30,17 @@ const MdImageNotSupported = `m21.9 21.9-8.49-8.49-9.82-9.82L2.1 2.1.69 3.51 3 5.
 const MdCloudDownload = `M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z`;
 const MdPhoto = `M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86-3 3.87L9 13.14 6 17h12l-3.86-5.14z`;
 
+/** 根据当前图片滤镜选项生成 filter 值，隐藏值为 100 的滤镜 */
+const getImgFilter = () => {
+  const { brightness, contrast, saturate } = store.option.imgFilter;
+  const list = [
+    brightness !== 100 && `brightness(${brightness}%)`,
+    contrast !== 100 && `contrast(${contrast}%)`,
+    saturate !== 100 && `saturate(${saturate}%)`,
+  ].filter(Boolean);
+  if (list.length > 0) return list.join(' ');
+};
+
 export const useCssVar = () => {
   const svg = () => {
     const fill = store.option.darkMode
@@ -55,6 +66,7 @@ export const useCssVar = () => {
         (store.option.darkMode ? '#000' : '#fff'),
       '--scroll-mode-spacing': () => store.option.scrollMode.spacing,
       'color-scheme': () => (store.option.darkMode ? 'dark' : 'light'),
+      '--img-filter': getImgFilter,
     },
     () => themeStyle,
     svg,

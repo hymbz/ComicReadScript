@@ -189,6 +189,46 @@ export const defaultSettingList: () => SettingList = () => [
           }
         />
 
+        <SettingsItemNumber
+          name={t('setting.option.img_filter_brightness')}
+          maxLength={3}
+          suffix="%"
+          step={5}
+          onChange={(val) => {
+            if (Number.isNaN(val)) return;
+            setOption((draftOption) => {
+              draftOption.imgFilter.brightness = clamp(0, val, 200);
+            });
+          }}
+          value={store.option.imgFilter.brightness}
+        />
+        <SettingsItemNumber
+          name={t('setting.option.img_filter_contrast')}
+          maxLength={3}
+          suffix="%"
+          step={5}
+          onChange={(val) => {
+            if (Number.isNaN(val)) return;
+            setOption((draftOption) => {
+              draftOption.imgFilter.contrast = clamp(0, val, 200);
+            });
+          }}
+          value={store.option.imgFilter.contrast}
+        />
+        <SettingsItemNumber
+          name={t('setting.option.img_filter_saturate')}
+          maxLength={3}
+          suffix="%"
+          step={5}
+          onChange={(val) => {
+            if (Number.isNaN(val)) return;
+            setOption((draftOption) => {
+              draftOption.imgFilter.saturate = clamp(0, val, 200);
+            });
+          }}
+          value={store.option.imgFilter.saturate}
+        />
+
         <Show when={isDoubleMode()}>
           <SettingsItemNumber
             name={t('setting.option.page_columns')}
