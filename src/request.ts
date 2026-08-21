@@ -1,5 +1,5 @@
 import { toast } from 'components/Toast';
-import { log, sleep, t } from 'helper';
+import { exposeToGlobal, log, sleep, t } from 'helper';
 
 export type RequestDetails<T> = Partial<Tampermonkey.Request<T>> & {
   errorText?: string;
@@ -189,8 +189,7 @@ export const request = async <T = any>(
   }
 };
 
-if (isDevMode)
-  Object.assign((window as any).unsafeWindow ?? window, { request });
+if (isDevMode) exposeToGlobal({ request });
 
 /** 轮流向多个 api 发起请求 */
 export const eachApi = async <T = any>(

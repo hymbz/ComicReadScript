@@ -1,4 +1,4 @@
-import { createRootMemo, createThrottleMemo } from 'helper';
+import { createRootMemo, createThrottleMemo, exposeToGlobal } from 'helper';
 
 import { store } from '../../store';
 import { type ComicImg, type FillEffect } from '../../store/image';
@@ -77,7 +77,4 @@ export const scrollModeScale = createRootMemo(() => {
   );
 });
 
-if (isDevMode)
-  Object.assign((window as any).unsafeWindow ?? window, {
-    _imgList: imgList,
-  });
+if (isDevMode) exposeToGlobal({ mangaImgList: imgList });

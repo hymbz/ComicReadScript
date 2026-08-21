@@ -1,5 +1,7 @@
 import { type MangaProps } from 'components/Manga';
 import {
+  createEffectOn,
+  exposeToGlobal,
   isEqual,
   onUrlChange,
   requestIdleCallback,
@@ -160,7 +162,7 @@ export const setupSiteAdapter = async <
 
   pageCtx = await waitUrlChange(() => getPageContext(pageCtx));
 
-  if (isDevMode) Object.assign(unsafeWindow, { pageCtx });
+  if (isDevMode) exposeToGlobal({ pageCtx });
 
   const coreCtx = await useInit(name, initOptions);
   const { store, setState, showComic, loadComic, init, options } = coreCtx;
@@ -311,6 +313,11 @@ export const setupSimple = async <
             setState('manga', 'show', false);
           };
         });
+
+        createEffectOn(
+          () => store.manga.show,
+          (show) => show && void scanner.triggerLazyLoad(),
+        );
 
         return () => scanner.stop();
       },

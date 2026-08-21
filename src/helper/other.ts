@@ -19,6 +19,15 @@ export const fileType = {
   b: 'bmp',
 } as const;
 
+const CRSD: Record<string, unknown> = {};
+if (typeof window !== 'undefined')
+  Object.assign(unsafeWindow ?? window, { CRSD });
+/** 将调试变量挂到全局 CRSD 对象上 */
+export const exposeToGlobal = (obj: Record<string, unknown>) => {
+  if (!isDevMode) return;
+  Object.assign(CRSD, obj);
+};
+
 export const throttle: ScheduleCallback = (fn, wait = 100) =>
   leadingAndTrailing(_throttle, fn, wait);
 

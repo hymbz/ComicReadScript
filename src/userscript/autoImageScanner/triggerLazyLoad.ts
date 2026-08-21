@@ -152,7 +152,13 @@ const triggerTurnPage = async (
   if (runCondition()) window.scroll({ top: nowScroll, behavior: 'instant' });
 };
 
+/** 触发图片的懒加载时的停留时间 */
 const waitTime = 300;
+/** 触发网页底部翻页的停留时间 */
+const turnPageWaitTime = 600;
+
+// https://www.ykmh.net/manhua/jiangfangyanshuobuhuishudegaoyanzhinvhaiquanlizhengfudebaihegushi/280311.html
+// 触发网页底部翻页的停留时间必须大于 500ms
 
 /** 触发页面上图片元素的懒加载 */
 export const triggerLazyLoad = singleThreaded(
@@ -163,9 +169,7 @@ export const triggerLazyLoad = singleThreaded(
         lazyLoadStateMap.set(e, createImgData(isImageElement(e) ? e.src : ''));
     }
     for (const e of targetImgList) {
-      await wait(runCondition);
-
-      await triggerTurnPage(0, runCondition);
+      if (!runCondition()) return;
 
       if (!needTrigged(e)) continue;
 
@@ -183,6 +187,6 @@ export const triggerLazyLoad = singleThreaded(
         handleTrigged(e);
     }
 
-    await triggerTurnPage(waitTime, runCondition);
+    await triggerTurnPage(turnPageWaitTime, runCondition);
   },
 );

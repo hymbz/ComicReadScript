@@ -1,4 +1,4 @@
-import { useStore } from 'helper';
+import { exposeToGlobal, useStore } from 'helper';
 
 import { imgState } from './image';
 import { optionState } from './option';
@@ -42,8 +42,8 @@ export const refs = {
 };
 
 if (isDevMode)
-  Object.assign((window as any).unsafeWindow ?? window, {
-    store,
-    setState,
-    refs,
+  exposeToGlobal({
+    mangeRefs: refs,
+    mangaStore: store,
+    setMangaStore: setState,
   });

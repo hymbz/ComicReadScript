@@ -94,24 +94,24 @@ export const otherSite = async () => {
   });
 
   // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
-  setState(
-    'manga',
-    'onShowImgsChange',
-    throttle((showImgs) => {
+  setState('manga', {
+    onShowImgsChange: throttle((showImgs) => {
       if (!store.manga.show) return;
       scanner.slotElements[[...showImgs].at(-1)!]?.scrollIntoView({
         behavior: 'instant',
         block: 'end',
       });
     }, 1000),
-  );
+  });
 
-  // 在退出阅读模式时跳回之前的滚动位置
+  // 在进入阅读模式时触发懒加载，退出时跳回之前的滚动位置
   createEffectOn(
     () => store.manga.show,
     (show) => {
-      if (show) laseScroll = window.scrollY;
-      else window.scroll({ top: laseScroll, behavior: 'instant' });
+      if (show) {
+        laseScroll = window.scrollY;
+        void scanner.triggerLazyLoad();
+      } else window.scroll({ top: laseScroll, behavior: 'instant' });
     },
   );
 

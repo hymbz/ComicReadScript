@@ -62,7 +62,7 @@ export const findSimilarImageSlots = (
           !(sibling instanceof HTMLElement) ||
           !isSimilarElement(sibling, current) ||
           isImageHostIneligible(sibling) ||
-          !hasValidSize(sibling)
+          (!isImageElement(sibling) && !hasValidSize(sibling))
         )
           continue;
         similarElements.push(sibling);

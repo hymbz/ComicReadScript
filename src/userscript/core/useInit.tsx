@@ -6,6 +6,7 @@ import {
   createEffectOn,
   createRootMemo,
   difference,
+  exposeToGlobal,
   log,
   once,
   range,
@@ -261,8 +262,7 @@ export const useInit = async <T extends Record<string, unknown>>(
     }),
   );
 
-  if (isDevMode)
-    Object.assign(unsafeWindow, { coreCtx, toast, coreStore: store });
+  if (isDevMode) exposeToGlobal({ coreCtx, toast, coreStore: store });
 
   return coreCtx;
 };
