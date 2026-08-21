@@ -21,6 +21,7 @@ import { getImglistByHtml } from 'userscript/copyApi';
 import { otherSite } from 'userscript/otherSite';
 
 import { getNhentaiData, toImgList } from './userscript/nhentaiApi';
+import { getZaiManHuaCommentList } from './userscript/zaimanhuaApi';
 
 try {
   switch (location.hostname) {
@@ -127,6 +128,25 @@ try {
         },
         onNext: () => querySelectorClick('#next_chapter'),
         onPrev: () => querySelectorClick('#prev_chapter'),
+        handler: ({ setState }) => {
+          const [, , , comicId, chapterId] = location.pathname.split('/');
+          if (!comicId || !chapterId)
+            throw new Error(t('site.changed_load_failed'));
+
+          // 评论异步获取，不影响其他功能
+          void (async () => {
+            try {
+              const comments = await getZaiManHuaCommentList(
+                comicId,
+                chapterId,
+              );
+              if (comments.length > 0)
+                setState('manga', 'commentList', comments);
+            } catch (error) {
+              log.error(error);
+            }
+          })();
+        },
       });
       break;
     }
@@ -196,6 +216,21 @@ try {
 
           const pageData = await getPageData(comicId, chapterId);
           return pageData.page_url_hd;
+        },
+        handler: ({ setState }, { comicId, chapterId }) => {
+          // 评论异步获取，不影响其他功能
+          void (async () => {
+            try {
+              const comments = await getZaiManHuaCommentList(
+                comicId,
+                chapterId,
+              );
+              if (comments.length > 0)
+                setState('manga', 'commentList', comments);
+            } catch (error) {
+              log.error(error);
+            }
+          })();
         },
       });
       break;
