@@ -50,10 +50,12 @@
 1. 首先需要在浏览器上装好 [Violentmonkey](https://violentmonkey.github.io/)、[Tampermonkey](https://tampermonkey.net/) 之类的油猴扩展
 2. 然后通过 GreasyFork 安装脚本：[点我](https://sleazyfork.org/zh-CN/scripts/374903-comicread)
 
-> 如果你是通过 AdGuard 安装的油猴脚本，请使用 [AdGuard 版](https://github.com/hymbz/ComicReadScript/raw/master/ComicRead-AdGuard.user.js)
+> 如果你是通过 AdGuard 安装的油猴脚本，请使用 [AdGuard 版](https://github.com/hymbz/ComicReadScript/raw/master/ComicRead-AdGuard.user.js)（[jsDelivr 链接](https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript/ComicRead-AdGuard.user.js)）
 > 因为 AdGuard 安装的脚本没有扩展菜单可以点击，所以 AdGuard 版删除了简易阅读模式，只在支持网站上运行。
 >
 > 但通过 AdGuard 安装的油猴脚本会和其他广告屏蔽软件发生冲突，需要在发生冲突时为其他广告屏蔽软件添加对应站点的白名单规则，具体可参考 [issue](https://github.com/hymbz/ComicReadScript/issues/170#issuecomment-2208946970)
+
+> 如果你所处的网络环境无法正常访问 [npmmirror](https://npmmirror.com/)，请使用 [jsDelivr 版](https://github.com/hymbz/ComicReadScript/raw/master/ComicRead-jsDelivr.user.js)（[jsDelivr 链接](https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript/ComicRead-jsDelivr.user.js)）
 
 ## 配置
 
