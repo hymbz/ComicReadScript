@@ -395,7 +395,12 @@ export const defaultSettingList: () => SettingList = () => [
           step={1}
           onChange={(val) => {
             if (!Number.isNaN(val))
-              setState('option', 'autoScroll', 'interval', val * 1000);
+              setState(
+                'option',
+                'autoScroll',
+                'interval',
+                Math.max(1, val) * 1000,
+              );
           }}
           value={store.option.autoScroll.interval / 1000}
         />
@@ -406,10 +411,17 @@ export const defaultSettingList: () => SettingList = () => [
           step={20}
           onChange={(val) => {
             if (!Number.isNaN(val))
-              setState('option', 'autoScroll', 'distance', val);
+              setState('option', 'autoScroll', 'distance', Math.max(1, val));
           }}
           value={store.option.autoScroll.distance}
         />
+
+        <SettingsShowItem when={isScrollMode()}>
+          <SettingsItemSwitch
+            name={t('setting.option.auto_scroll_continuous')}
+            {...bindOption('autoScroll', 'continuous')}
+          />
+        </SettingsShowItem>
 
         <SettingsItemSwitch
           name={t('setting.option.auto_scroll_trigger_end')}

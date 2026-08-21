@@ -142,6 +142,7 @@
       "autoFullscreen": "自动全屏",
       "autoHiddenMouse": "自动隐藏鼠标",
       "auto_scale": "自动缩放",
+      "auto_scroll_continuous": "持续滚动",
       "auto_scroll_trigger_end": "在结束页上继续滚动",
       "auto_switch_page_mode": "按屏幕比例切换单双页",
       "background_color": "背景颜色",

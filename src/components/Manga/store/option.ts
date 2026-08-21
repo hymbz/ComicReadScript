@@ -139,8 +139,12 @@ export type Option = {
   /** 自动滚动 */
   autoScroll: {
     enabled: boolean;
+    /** 间隔 */
     interval: number;
+    /** 距离 */
     distance: number;
+    /** 持续滚动（仅卷轴模式） */
+    continuous: boolean;
     /** 是否触发退出和上/下话 */
     triggerEnd: boolean;
   };
@@ -215,6 +219,7 @@ const _defaultOption: Readonly<Option> = {
     enabled: false,
     interval: 3000,
     distance: 200,
+    continuous: true,
     triggerEnd: false,
   },
 };

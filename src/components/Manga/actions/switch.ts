@@ -1,10 +1,10 @@
-import { type State, refs, setState } from '../store';
+import { type State, refs, setState, store } from '../store';
 import { setOption } from './helper';
 import { updatePageData } from './image';
 import { syncImgLoadState, updateImgLoadType } from './imageLoad';
 import { handleImgRecognition } from './imageRecognition';
 import { activeImgIndex, autoPageNum, nowFillIndex, pageNum } from './memo';
-import { jumpToImg } from './scroll';
+import { constantScroll, jumpToImg } from './scroll';
 import { zoom } from './zoom';
 
 /** 切换页面填充 */
@@ -69,6 +69,13 @@ export const switchFullscreen = () => {
 /** 切换自动滚动 */
 export const switchAutoScroll = () =>
   setState('autoScroll', 'play', (val) => !val);
+
+/** 停止自动滚动 */
+export const stopAutoScroll = () => {
+  if (!store.autoScroll.play) return;
+  setState('autoScroll', 'play', false);
+  constantScroll.cancel();
+};
 
 /** 切换图片识别相关功能 */
 export const switchImgRecognition = (

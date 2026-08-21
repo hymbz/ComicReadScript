@@ -142,6 +142,7 @@
       "autoFullscreen": "Auto fullscreen",
       "autoHiddenMouse": "Auto hide mouse",
       "auto_scale": "Auto Scale",
+      "auto_scroll_continuous": "Continuous scroll",
       "auto_scroll_trigger_end": "Continue scrolling on the end page",
       "auto_switch_page_mode": "Auto switch single/double page mode by aspect ratio",
       "background_color": "Background Color",

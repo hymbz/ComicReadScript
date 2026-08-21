@@ -142,6 +142,7 @@
       "autoFullscreen": "Automatikus teljes képernyő",
       "autoHiddenMouse": "Egér automatikus elrejtése",
       "auto_scale": "Automatikus méretezés",
+      "auto_scroll_continuous": "Folyamatos görgetés",
       "auto_scroll_trigger_end": "Görgetés folytatása a végoldalon",
       "auto_switch_page_mode": "Egy- és kétoldalas mód váltása képernyőarány alapján",
       "background_color": "Háttérszín",

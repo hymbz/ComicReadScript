@@ -33,6 +33,7 @@ import {
   scrollPageList,
   scrollTo,
   scrollTop,
+  stopAutoScroll,
   touches,
 } from '../actions';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
@@ -46,6 +47,9 @@ export const ComicImgFlow: Component = () => {
   const hiddenMouse = useHiddenMouse(() => refs.mangaFlow);
 
   const handleDrag: UseDrag = (state, e) => {
+    // 用户手动拖拽时，停止自动滚动
+    stopAutoScroll();
+
     if (touches.size > 1) return handlePinchZoom(state, e);
     if (store.option.zoom.ratio !== 100) return handleZoomDrag(state, e);
     if (store.option.scrollMode.enabled) return handleScrollModeDrag(state, e);

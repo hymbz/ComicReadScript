@@ -18,6 +18,7 @@ import {
 import { showImgList } from './renderPage';
 import { constantScroll, scrollBy, scrollTo } from './scroll';
 import {
+  stopAutoScroll,
   switchAutoScroll,
   switchDir,
   switchFillEffect,
@@ -111,7 +112,8 @@ const handleSwapPageTurnKey = (nextPage: boolean) => {
 };
 
 export const handleHotkey = (hotkey: string, e?: KeyboardEvent) => {
-  // 任何快捷键都先直接走完当前翻页动画，避免出现 bug
+  // 用户手动触发快捷键时，停止自动滚动并直接走完当前翻页动画
+  stopAutoScroll();
   finishTurnAnimation();
 
   // 并排卷轴模式下的快捷键

@@ -141,6 +141,7 @@
       "autoFullscreen": "Pantalla completa automática",
       "autoHiddenMouse": "Ocultar automáticamente el cursor del ratón",
       "auto_scale": "Escalado automático",
+      "auto_scroll_continuous": "Desplazamiento continuo",
       "auto_scroll_trigger_end": "Continúa desplazándote en la última página",
       "auto_switch_page_mode": "Cambia entre páginas simples y dobles según la relación de aspecto de la pantalla.",
       "background_color": "Color de Fondo",

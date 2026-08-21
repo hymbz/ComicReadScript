@@ -5,6 +5,8 @@ import { refs, setState, store } from '../store';
 import { scrollLength, scrollPosition, sliderHeight } from './memo';
 import { saveReadProgress } from './readProgress';
 import { scrollTo } from './scroll';
+import { stopAutoScroll } from './switch';
+import { finishTurnAnimation } from './turnPageAnimator';
 
 /** 判断点击位置在滚动条上的位置比率 */
 const getClickTop = (x: number, y: number, e: HTMLElement): number => {
@@ -46,6 +48,10 @@ let lastType: PointerState['type'] = 'up';
 /** 开始拖拽时的 sliderTop 值 */
 let startTop = 0;
 export const handleScrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
+  // 用户手动操作滚动条时，停止自动滚动并直接走完当前翻页动画
+  stopAutoScroll();
+  finishTurnAnimation();
+
   const [x, y] = xy;
 
   // 检测是否是拖动操作

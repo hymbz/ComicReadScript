@@ -7,7 +7,8 @@ import { handleHotkey } from './hotkeyAction';
 import { hotkeysMap } from './hotkeys';
 import { isScrollMode } from './memo';
 import { constantScroll } from './scroll';
-import { switchFillEffect } from './switch';
+import { stopAutoScroll, switchFillEffect } from './switch';
+import { finishTurnAnimation } from './turnPageAnimator';
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   if (e.button !== 1 || store.option.scrollMode.enabled) return;
@@ -23,6 +24,10 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return;
   }
   if ((e.target as HTMLElement).className === classes.hotkeysItem) return;
+
+  // 用户手动按键时，停止自动滚动并直接走完当前翻页动画
+  stopAutoScroll();
+  finishTurnAnimation();
 
   const code = getKeyboardCode(e);
 

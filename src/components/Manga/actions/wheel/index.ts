@@ -4,6 +4,7 @@ import { openScrollLock } from '../helper';
 import { isAbreastMode, isScrollMode } from '../memo';
 import { scrollBy } from '../scroll';
 import { handleScrollModeZoom } from '../scrollMode';
+import { stopAutoScroll } from '../switch';
 import { finishTurnAnimation, turnPageAnimation } from '../turnPageAnimator';
 import { zoom } from '../zoom';
 import { detectScrollDevice } from './scrollDevice';
@@ -20,8 +21,11 @@ const turnPageByWheel = (dir: Dir) => {
 };
 
 export const handleWheel = (e: WheelEvent) => {
+  // 用户手动滚轮时，停止自动滚动
+  stopAutoScroll();
   // 任何滚轮操作都先直接走完当前翻页动画，避免出现 bug
   finishTurnAnimation();
+
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
 

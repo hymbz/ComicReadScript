@@ -103,6 +103,7 @@ const scrollStep = new (class extends AnimationFrame {
 export const constantScroll = new (class extends AnimationFrame {
   speed = 0;
   lastTime = 0;
+  onScroll?: (delta: number) => void | false;
 
   scrollTo = (top: number) => {
     if (inRange(0, top, scrollLength())) scrollTo(top);
@@ -112,19 +113,24 @@ export const constantScroll = new (class extends AnimationFrame {
   frame = (timestamp: DOMHighResTimeStamp) => {
     if (!this.animationId) return;
 
-    if (this.lastTime) {
-      const scrollDelta = this.speed * (timestamp - this.lastTime);
-      this.scrollTo(scrollTop() + scrollDelta);
-    }
+    const scrollDelta = this.lastTime
+      ? this.speed * (timestamp - this.lastTime)
+      : 0;
     this.lastTime = timestamp;
+
+    if (this.onScroll?.(scrollDelta) === false) return this.cancel();
+
+    this.scrollTo(scrollTop() + scrollDelta);
     this.call(true);
   };
 
-  start = (speed: number) => {
-    if (this.animationId && speed === this.speed) return;
+  start = (speed: number, onScroll?: (delta: number) => void | false) => {
+    if (this.animationId && speed === this.speed && this.onScroll === onScroll)
+      return;
 
     this.cancel();
     this.speed = speed;
+    this.onScroll = onScroll;
     this.lastTime = 0;
     this.call();
   };
