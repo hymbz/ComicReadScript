@@ -211,6 +211,15 @@ type Option$1 = {
 		/** 滚动翻页时对齐边缘 */
 		alignEdge: boolean;
 	};
+	/** 图片滤镜 */
+	imgFilter: {
+		/** 亮度 */
+		brightness: number;
+		/** 对比度 */
+		contrast: number;
+		/** 饱和度 */
+		saturate: number;
+	};
 	/** 图像识别 */
 	imgRecognition: {
 		enabled: boolean;
@@ -237,8 +246,12 @@ type Option$1 = {
 	/** 自动滚动 */
 	autoScroll: {
 		enabled: boolean;
+		/** 间隔 */
 		interval: number;
+		/** 距离 */
 		distance: number;
+		/** 持续滚动（仅卷轴模式） */
+		continuous: boolean;
 		/** 是否触发退出和上/下话 */
 		triggerEnd: boolean;
 	};
@@ -399,6 +412,7 @@ declare const fileType: {
 	readonly w: "webp";
 	readonly b: "bmp";
 };
+declare const exposeToGlobal: (obj: Record<string, unknown>) => void;
 declare const throttle: ScheduleCallback;
 declare const debounce: ScheduleCallback;
 declare const sleep: (ms: number) => Promise<unknown>;
@@ -804,7 +818,7 @@ export declare const initComicReader: {
 export declare const defaultConfig: () => InitConfig;
 
 declare namespace helper {
-	export { AnimationFrame, FaviconProgress, PQueue, PointerState, ReactiveMap, ReactiveSet, SetStateFunction, StyleMap, UseDrag, UseStore, WakeLock$1 as WakeLock, approx, assign, boolDataVal, byPath, canvasToBlob, clamp, createEffectOn, createEqualsSignal, createMemoMap, createRootEffect, createRootMemo, createScheduled, createThrottleMemo, css, debounce, descRange, difference, domParse, ensureGmValue, extractRange, fileType, getFileName, getImageData, getKeyboardCode, getMostItem, hijackFn, inRange, isArray, isEqual, isHTMLElement, isImageElement, isNumber, isString, isUrl, keyboardCodeToText, lang, log, mountComponents, needDarkMode, onAutoMount, onUrlChange, once, plimit, promisifyRequest, querySelector, querySelectorAll, querySelectorClick, range, requestIdleCallback$1 as requestIdleCallback, saveAs, scrollIntoView, setInitLang, setLang, singleThreaded, sleep, t, testImgUrl, throttle, useCache, useDrag, useFaviconProgress, useStore, versionLt, wait, waitDom, waitImgLoad, waitUrlChange, withEventStop };
+	export { AnimationFrame, FaviconProgress, PQueue, PointerState, ReactiveMap, ReactiveSet, SetStateFunction, StyleMap, UseDrag, UseStore, WakeLock$1 as WakeLock, approx, assign, boolDataVal, byPath, canvasToBlob, clamp, createEffectOn, createEqualsSignal, createMemoMap, createRootEffect, createRootMemo, createScheduled, createThrottleMemo, css, debounce, descRange, difference, domParse, ensureGmValue, exposeToGlobal, extractRange, fileType, getFileName, getImageData, getKeyboardCode, getMostItem, hijackFn, inRange, isArray, isEqual, isHTMLElement, isImageElement, isNumber, isString, isUrl, keyboardCodeToText, lang, log, mountComponents, needDarkMode, onAutoMount, onUrlChange, once, plimit, promisifyRequest, querySelector, querySelectorAll, querySelectorClick, range, requestIdleCallback$1 as requestIdleCallback, saveAs, scrollIntoView, setInitLang, setLang, singleThreaded, sleep, t, testImgUrl, throttle, useCache, useDrag, useFaviconProgress, useStore, versionLt, wait, waitDom, waitImgLoad, waitUrlChange, withEventStop };
 }
 
 export {

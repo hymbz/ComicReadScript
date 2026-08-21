@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.8.0
+// @version         12.9.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、再漫画、漫画柜(manhuagui)、动漫屋(dm5)、mangabz、komiic、無限動漫、绅士漫画(wnacg)、禁漫天堂、NoyAcg、熱辣漫畫、hanime1、hitomi、hdoujin、SchaleNetwork、nude-moon、HentaiZap、IMHentai、HentaiEra、HentaiEnvy、MangaDex、welovemanga、kisslove(klz9)、kemono、nekohouse、Pixiv、明日方舟泰拉记事社、Postimages、最前線、芸能ヌード、Tachidesk、LANraragi
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | hdoujin | SchaleNetwork | nude-moon | HentaiZap | IMHentai | HentaiEra | HentaiEnvy | kemono | nekohouse | MangaDex | welovemanga | kisslove(klz9)
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -88,19 +88,19 @@
 // @connect         self
 // @connect         127.0.0.1
 // @connect         *
-// @connect         www.manga2026.xyz
-// @connect         mapi.hotmangasd.com
-// @connect         api.2024manga.com
-// @connect         api.manga2025.com
-// @connect         mapi.hotmangasf.com
 // @connect         mapi.hotmangasg.com
-// @connect         mapi.fgjfghkkcenter.club
+// @connect         mapi.fgjfghkk.club
 // @connect         mapi.elfgjfghkk.club
 // @connect         www.manga2025.com
+// @connect         api.manga2025.com
+// @connect         mapi.fgjfghkkcenter.club
+// @connect         mapi.hotmangasd.com
+// @connect         www.manga2026.xyz
 // @connect         m.manga2025.com
-// @connect         mapi.fgjfghkk.club
-// @connect         mapi.copy20.com
+// @connect         mapi.hotmangasf.com
+// @connect         api.2024manga.com
 // @connect         api.mangacopy.com
+// @connect         mapi.copy20.com
 // @connect         api.2026copy.com
 // @connect         api.copy3000.com
 // @grant           GM_getValue
@@ -382,6 +382,7 @@ var en_default = {
 			"autoFullscreen": "Auto fullscreen",
 			"autoHiddenMouse": "Auto hide mouse",
 			"auto_scale": "Auto Scale",
+			"auto_scroll_continuous": "Continuous scroll",
 			"auto_scroll_trigger_end": "Continue scrolling on the end page",
 			"auto_switch_page_mode": "Auto switch single/double page mode by aspect ratio",
 			"background_color": "Background Color",
@@ -395,6 +396,10 @@ var en_default = {
 			"disable_auto_enlarge": "Disable automatic image enlarge",
 			"first_page_fill": "Enable first page fill by default",
 			"full_width": "Viewport Width",
+			"img_filter": "Image filter",
+			"img_filter_brightness": "Brightness",
+			"img_filter_contrast": "Contrast",
+			"img_filter_saturate": "Saturation",
 			"img_recognition": "Image Recognition",
 			"img_recognition_background": "Recognition background color",
 			"img_recognition_pageFill": "Auto switch page fill",
@@ -734,6 +739,7 @@ var ru_default = {
 			"autoFullscreen": "Авто полный экран",
 			"autoHiddenMouse": "Автоматически скрывать курсор мыши",
 			"auto_scale": "Авто масштаб",
+			"auto_scroll_continuous": "Непрерывная прокрутка",
 			"auto_scroll_trigger_end": "Продолжить прокрутку на конечной странице",
 			"auto_switch_page_mode": "Автоматическое переключение режима одной/двойной страницы в зависимости от соотношения сторон",
 			"background_color": "Цвет фона",
@@ -747,6 +753,10 @@ var ru_default = {
 			"disable_auto_enlarge": "Отключить автоматическое масштабирование изображений",
 			"first_page_fill": "Включить заполнение первой страницы по умолчанию",
 			"full_width": "Ширина окна просмотра",
+			"img_filter": "Фильтр изображения",
+			"img_filter_brightness": "Яркость",
+			"img_filter_contrast": "Контраст",
+			"img_filter_saturate": "Насыщенность",
 			"img_recognition": "распознавание изображений",
 			"img_recognition_background": "Определить цвет фона",
 			"img_recognition_pageFill": "Автоматическое переключение заполнения страницы",
@@ -1086,6 +1096,7 @@ var zh_default = {
 			"autoFullscreen": "自动全屏",
 			"autoHiddenMouse": "自动隐藏鼠标",
 			"auto_scale": "自动缩放",
+			"auto_scroll_continuous": "持续滚动",
 			"auto_scroll_trigger_end": "在结束页上继续滚动",
 			"auto_switch_page_mode": "按屏幕比例切换单双页",
 			"background_color": "背景颜色",
@@ -1099,6 +1110,10 @@ var zh_default = {
 			"disable_auto_enlarge": "禁止图片自动放大",
 			"first_page_fill": "默认启用首页填充",
 			"full_width": "视窗宽度",
+			"img_filter": "图片滤镜",
+			"img_filter_brightness": "亮度",
+			"img_filter_contrast": "对比度",
+			"img_filter_saturate": "饱和度",
 			"img_recognition": "图像识别",
 			"img_recognition_background": "识别背景色",
 			"img_recognition_pageFill": "自动调整页面填充",
@@ -1529,6 +1544,8 @@ const fileType = {
 	w: "webp",
 	b: "bmp"
 };
+/** 将调试变量挂到全局 CRSD 对象上 */
+const exposeToGlobal = (obj) => {};
 const throttle = (fn, wait = 100) => leadingAndTrailing(throttle$1, fn, wait);
 const debounce = (fn, wait = 100) => debounce$1(fn, wait);
 const sleep = (ms) => new Promise((resolve) => {
@@ -2541,6 +2558,7 @@ exports.descRange = descRange;
 exports.difference = difference;
 exports.domParse = domParse;
 exports.ensureGmValue = ensureGmValue;
+exports.exposeToGlobal = exposeToGlobal;
 exports.extractRange = extractRange;
 exports.fileType = fileType;
 exports.getFileName = getFileName;
@@ -2942,9 +2960,14 @@ const _defaultOption = {
 		doubleMode: false,
 		alignEdge: false
 	},
+	imgFilter: {
+		brightness: 100,
+		contrast: 100,
+		saturate: 100
+	},
 	imgRecognition: {
 		enabled: false,
-		background: true,
+		background: false,
 		pageFill: true,
 		upscale: false
 	},
@@ -2960,6 +2983,7 @@ const _defaultOption = {
 		enabled: false,
 		interval: 3e3,
 		distance: 200,
+		continuous: true,
 		triggerEnd: false
 	}
 };
@@ -5142,23 +5166,24 @@ const scrollStep = new class extends helper.AnimationFrame {
 const constantScroll = new class extends helper.AnimationFrame {
 	speed = 0;
 	lastTime = 0;
+	onScroll;
 	scrollTo = (top) => {
 		if (helper.inRange(0, top, scrollLength())) scrollTo(top);
 		else this.cancel();
 	};
 	frame = (timestamp) => {
 		if (!this.animationId) return;
-		if (this.lastTime) {
-			const scrollDelta = this.speed * (timestamp - this.lastTime);
-			this.scrollTo(scrollTop() + scrollDelta);
-		}
+		const scrollDelta = this.lastTime ? this.speed * (timestamp - this.lastTime) : 0;
 		this.lastTime = timestamp;
+		if (this.onScroll?.(scrollDelta) === false) return this.cancel();
+		this.scrollTo(scrollTop() + scrollDelta);
 		this.call(true);
 	};
-	start = (speed) => {
-		if (this.animationId && speed === this.speed) return;
+	start = (speed, onScroll) => {
+		if (this.animationId && speed === this.speed && this.onScroll === onScroll) return;
 		this.cancel();
 		this.speed = speed;
+		this.onScroll = onScroll;
 		this.lastTime = 0;
 		this.call();
 	};
@@ -5234,6 +5259,12 @@ const switchFullscreen = () => {
 };
 /** 切换自动滚动 */
 const switchAutoScroll = () => setState("autoScroll", "play", (val) => !val);
+/** 停止自动滚动 */
+const stopAutoScroll = () => {
+	if (!store.autoScroll.play) return;
+	setState("autoScroll", "play", false);
+	constantScroll.cancel();
+};
 /** 切换图片识别相关功能 */
 const switchImgRecognition = (...path) => {
 	setOption((draftOption, state) => {
@@ -5599,6 +5630,7 @@ const handleSwapPageTurnKey = (nextPage) => {
 	return (store.option.swapPageTurnKey ? !nextPage : nextPage) ? "next" : "prev";
 };
 const handleHotkey = (hotkey, e) => {
+	stopAutoScroll();
 	finishTurnAnimation();
 	if (isAbreastMode()) switch (hotkey) {
 		case "scroll_up": return setAbreastScrollFill(abreastScrollFill() - 40);
@@ -5846,6 +5878,8 @@ const handleKeyDown = (e) => {
 		case "TEXTAREA": return;
 	}
 	if (e.target.className === classes$2.hotkeysItem) return;
+	stopAutoScroll();
+	finishTurnAnimation();
 	const code = helper.getKeyboardCode(e);
 	if (e.key === "Escape") {
 		if (store.show.pageTip || store.show.scrollbar || store.show.toolbar) {
@@ -6152,6 +6186,8 @@ let lastType = "up";
 /** 开始拖拽时的 sliderTop 值 */
 let startTop = 0;
 const handleScrollbarSlider = ({ type, xy, initial }, e) => {
+	stopAutoScroll();
+	finishTurnAnimation();
 	const [x, y] = xy;
 	if (type === "move" && lastType === type) {
 		setIsDrag(true);
@@ -6185,24 +6221,24 @@ const handleScrollbarSlider = ({ type, xy, initial }, e) => {
 const isMultipleOf = (a, b) => (a < b ? b % a : a % b) === 0;
 /** C 类设备下连续出现成倍滚动量的次数，达到阈值才允许切换为 A/B 类 */
 let consecutiveMultiple = 0;
-let lastDeltaY = Infinity;
+let lastDelta = Infinity;
 /** 根据传入的滚动事件判定滚动设备类型 */
 const detectScrollDevice = (e) => {
-	const absDeltaY = Math.abs(e.deltaY);
+	const absDelta = Math.max(Math.abs(e.deltaX), Math.abs(e.deltaY));
 	let type;
 	if (e.deltaMode !== 0) type = "a";
 	else if (e.phase !== void 0) type = "c";
-	else if (absDeltaY < 10 || lastDeltaY < 10) type = "c";
-	else if (lastDeltaY === Infinity) type = void 0;
-	else if (isMultipleOf(lastDeltaY, absDeltaY)) {
+	else if (absDelta < 10 || lastDelta < 10) type = "c";
+	else if (lastDelta === Infinity) type = void 0;
+	else if (isMultipleOf(lastDelta, absDelta)) {
 		if (store.scrollDeviceType === "c" && ++consecutiveMultiple < 3) type = void 0;
 		else {
 			consecutiveMultiple = 0;
-			type = Math.max(lastDeltaY, absDeltaY) >= 40 ? "a" : "b";
+			type = Math.max(lastDelta, absDelta) >= 40 ? "a" : "b";
 		}
 	} else type = "c";
 	if (type === "c") consecutiveMultiple = 0;
-	lastDeltaY = absDeltaY;
+	lastDelta = absDelta;
 	if (type) setState("scrollDeviceType", type);
 };
 //#endregion
@@ -6246,10 +6282,10 @@ const wheelRatchet = new class {
 		setState("wheelProgress", 0);
 	}, 300);
 	/** 处理滚动产生的连续位移，通过虚拟棘轮（累计满一个步长）实现翻页 */
-	handleContinuousWheel(e) {
+	handleContinuousWheel(delta) {
 		if (store.option.scrollMode.enabled) return;
 		openScrollLock();
-		this.wheelDy += Math.floor(-e.deltaY);
+		this.wheelDy += Math.floor(delta);
 		this.processWheelThrottled();
 		this.handleWheelEnd();
 	}
@@ -6257,6 +6293,25 @@ const wheelRatchet = new class {
 //#endregion
 //#region src/components/Manga/actions/wheel/index.ts
 let firstWheelTimer = 0;
+/** 获取滚轮事件的主轴向与主轴向滚动量 */
+const getWheelAxis = (e) => {
+	const absDeltaX = Math.abs(e.deltaX);
+	const absDeltaY = Math.abs(e.deltaY);
+	const horizontal = absDeltaX > absDeltaY;
+	return {
+		horizontal,
+		delta: horizontal ? e.deltaX : e.deltaY,
+		absDelta: horizontal ? absDeltaX : absDeltaY
+	};
+};
+/** 根据主轴向与漫画方向计算翻页方向 */
+const getWheelDir = (horizontal, delta) => {
+	if (horizontal) {
+		if (store.option.dir === "rtl") return delta < 0 ? "next" : "prev";
+		return delta > 0 ? "next" : "prev";
+	}
+	return delta > 0 ? "next" : "prev";
+};
 /** A 类设备直接翻页，不经过虚拟棘轮 */
 const turnPageByWheel = (dir) => {
 	wheelRatchet.wheelDy = 0;
@@ -6264,21 +6319,27 @@ const turnPageByWheel = (dir) => {
 	turnPageAnimation(dir);
 };
 const handleWheel = (e) => {
+	stopAutoScroll();
 	finishTurnAnimation();
 	e.stopPropagation();
 	if (e.ctrlKey || e.altKey) e.preventDefault();
-	const isWheelDown = e.deltaY > 0;
-	const dir = isWheelDown ? "next" : "prev";
-	const absDeltaY = Math.abs(e.deltaY);
-	if (absDeltaY === 0) return;
+	const { horizontal, delta, absDelta } = getWheelAxis(e);
+	const isPositiveDelta = delta > 0;
+	const dir = getWheelDir(horizontal, delta);
+	if (absDelta === 0) return;
+	if (isScrollMode() && horizontal) return;
 	if ((e.ctrlKey || e.altKey) && store.option.scrollMode.enabled && store.option.zoom.ratio === 100) {
 		e.preventDefault();
-		return handleScrollModeZoom(isWheelDown ? "sub" : "add");
+		return handleScrollModeZoom(isPositiveDelta ? "sub" : "add");
 	}
 	if (e.ctrlKey || e.altKey) {
 		e.preventDefault();
-		return zoom(store.option.zoom.ratio + (isWheelDown ? -25 : 25), e);
+		return zoom(store.option.zoom.ratio + (isPositiveDelta ? -25 : 25), e);
 	}
+	if (store.page.vertical === horizontal) setState((state) => {
+		state.page.vertical = !horizontal;
+		resetPage(state);
+	});
 	if (!isScrollMode()) e.preventDefault();
 	detectScrollDevice(e);
 	if (store.scrollDeviceType === void 0) firstWheelTimer = window.setTimeout(() => {
@@ -6289,17 +6350,17 @@ const handleWheel = (e) => {
 		clearTimeout(firstWheelTimer);
 		firstWheelTimer = 0;
 	}
-	if (absDeltaY >= 5 && handleEndTurnPage(dir)) {
+	if (absDelta >= 5 && handleEndTurnPage(dir)) {
 		openScrollLock();
 		return e.preventDefault();
 	}
 	if (isAbreastMode() && store.option.zoom.ratio === 100) {
 		e.preventDefault();
-		scrollBy(e.deltaY, true);
+		scrollBy(delta, true);
 	}
 	if (store.option.scrollMode.enabled) return;
 	if (store.scrollDeviceType === "a") return turnPageByWheel(dir);
-	return wheelRatchet.handleContinuousWheel(e);
+	return wheelRatchet.handleContinuousWheel(dir === "next" ? -absDelta : absDelta);
 };
 //#endregion
 //#region src/components/Manga/hooks/useEventListener.ts
@@ -6492,6 +6553,7 @@ var _tmpl$$35 = /*#__PURE__*/ solid_js_web.template(\`<div tabindex=-1><div tabi
 const ComicImgFlow = () => {
 	const hiddenMouse = useHiddenMouse(() => refs.mangaFlow);
 	const handleDrag = (state, e) => {
+		stopAutoScroll();
 		if (touches.size > 1) return handlePinchZoom(state, e);
 		if (store.option.zoom.ratio !== 100) return handleZoomDrag(state, e);
 		if (store.option.scrollMode.enabled) return handleScrollModeDrag(state, e);
@@ -7278,18 +7340,26 @@ var stop_default = (props = {}) => (() => {
 })();
 //#endregion
 //#region src/components/Manga/components/autoScroll.tsx
+/** 自动滚动最低速度（px/ms），避免 distance 为 0 或异常配置导致卡住 */
+const MIN_AUTO_SCROLL_SPEED = 10 / 1e3;
+const autoScrollSpeed = () => {
+	const { interval, distance } = store.option.autoScroll;
+	if (interval <= 0 || distance <= 0) return MIN_AUTO_SCROLL_SPEED;
+	return Math.max(MIN_AUTO_SCROLL_SPEED, distance / interval);
+};
 const autoScroll = new class extends helper.AnimationFrame {
 	/** 上次滚动的时间 */
 	lastTime = 0;
+	scrollEnd = () => {
+		this.stop();
+		if (!store.prop.onExit) return;
+		setState("show", "endPage", "end");
+		if (store.option.autoScroll.triggerEnd) setTimeout(handleEndTurnPage, 500, "next");
+	};
 	scroll = () => {
-		if (isBottom()) {
-			this.stop();
-			if (!store.prop.onExit) return;
-			setState("show", "endPage", "end");
-			if (store.option.autoScroll.triggerEnd) setTimeout(handleEndTurnPage, 500, "next");
-			return;
-		}
-		handleHotkey("page_down");
+		if (isBottom()) return this.scrollEnd();
+		if (isScrollMode()) return scrollBy(Math.max(1, store.option.autoScroll.distance), true);
+		return turnPageAnimation("next");
 	};
 	frame = (timestamp) => {
 		const elapsed = timestamp - this.lastTime;
@@ -7306,15 +7376,29 @@ const autoScroll = new class extends helper.AnimationFrame {
 	};
 	start = () => {
 		this.lastTime = 0;
-		this.call();
+		if (!store.option.autoScroll.continuous || !isScrollMode()) return this.call();
+		constantScroll.start(autoScrollSpeed(), (delta) => {
+			if (isBottom()) {
+				this.scrollEnd();
+				return false;
+			}
+			const { distance } = store.option.autoScroll;
+			if (distance > 0) setState("autoScroll", "progress", (store.autoScroll.progress + delta / distance) % 1);
+		});
 	};
 	stop = () => {
 		this.cancel();
+		constantScroll.cancel();
 		setState("autoScroll", "play", false);
 	};
 }();
-helper.createEffectOn(() => [...Object.values(store.option.autoScroll), store.autoScroll.play], () => {
+helper.createEffectOn(() => [
+	...Object.values(store.option.autoScroll),
+	store.autoScroll.play,
+	isScrollMode()
+], () => {
 	autoScroll.cancel();
+	constantScroll.cancel();
 	if (!store.option.autoScroll.enabled || !store.autoScroll.play) return;
 	autoScroll.start();
 });
@@ -8015,6 +8099,57 @@ const defaultSettingList = () => [
 					draftOption.pageTip = val;
 				})
 			}),
+			solid_js_web.createComponent(SettingsItemNumber, {
+				get name() {
+					return helper.t("setting.option.img_filter_brightness");
+				},
+				maxLength: 3,
+				suffix: "%",
+				step: 5,
+				onChange: (val) => {
+					if (Number.isNaN(val)) return;
+					setOption((draftOption) => {
+						draftOption.imgFilter.brightness = helper.clamp(0, val, 200);
+					});
+				},
+				get value() {
+					return store.option.imgFilter.brightness;
+				}
+			}),
+			solid_js_web.createComponent(SettingsItemNumber, {
+				get name() {
+					return helper.t("setting.option.img_filter_contrast");
+				},
+				maxLength: 3,
+				suffix: "%",
+				step: 5,
+				onChange: (val) => {
+					if (Number.isNaN(val)) return;
+					setOption((draftOption) => {
+						draftOption.imgFilter.contrast = helper.clamp(0, val, 200);
+					});
+				},
+				get value() {
+					return store.option.imgFilter.contrast;
+				}
+			}),
+			solid_js_web.createComponent(SettingsItemNumber, {
+				get name() {
+					return helper.t("setting.option.img_filter_saturate");
+				},
+				maxLength: 3,
+				suffix: "%",
+				step: 5,
+				onChange: (val) => {
+					if (Number.isNaN(val)) return;
+					setOption((draftOption) => {
+						draftOption.imgFilter.saturate = helper.clamp(0, val, 200);
+					});
+				},
+				get value() {
+					return store.option.imgFilter.saturate;
+				}
+			}),
 			solid_js_web.createComponent(solid_js.Show, {
 				get when() {
 					return isDoubleMode();
@@ -8212,7 +8347,7 @@ const defaultSettingList = () => [
 			suffix: "s",
 			step: 1,
 			onChange: (val) => {
-				if (!Number.isNaN(val)) setState("option", "autoScroll", "interval", val * 1e3);
+				if (!Number.isNaN(val)) setState("option", "autoScroll", "interval", Math.max(1, val) * 1e3);
 			},
 			get value() {
 				return store.option.autoScroll.interval / 1e3;
@@ -8226,10 +8361,20 @@ const defaultSettingList = () => [
 			suffix: "px",
 			step: 20,
 			onChange: (val) => {
-				if (!Number.isNaN(val)) setState("option", "autoScroll", "distance", val);
+				if (!Number.isNaN(val)) setState("option", "autoScroll", "distance", Math.max(1, val));
 			},
 			get value() {
 				return store.option.autoScroll.distance;
+			}
+		}),
+		solid_js_web.createComponent(SettingsShowItem, {
+			get when() {
+				return isScrollMode();
+			},
+			get children() {
+				return solid_js_web.createComponent(SettingsItemSwitch, solid_js_web.mergeProps({ get name() {
+					return helper.t("setting.option.auto_scroll_continuous");
+				} }, () => bindOption("autoScroll", "continuous")));
 			}
 		}),
 		solid_js_web.createComponent(SettingsItemSwitch, solid_js_web.mergeProps({ get name() {
@@ -8744,6 +8889,16 @@ const createSvgIcon = (fill, d) => \`url("data:image/svg+xml,%3Csvg xmlns='http:
 const MdImageNotSupported = \`m21.9 21.9-8.49-8.49-9.82-9.82L2.1 2.1.69 3.51 3 5.83V19c0 1.1.9 2 2 2h13.17l2.31 2.31 1.42-1.41zM5 18l3.5-4.5 2.5 3.01L12.17 15l3 3H5zm16 .17L5.83 3H19c1.1 0 2 .9 2 2v13.17z\`;
 const MdCloudDownload = \`M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z\`;
 const MdPhoto = \`M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86-3 3.87L9 13.14 6 17h12l-3.86-5.14z\`;
+/** 根据当前图片滤镜选项生成 filter 值，隐藏值为 100 的滤镜 */
+const getImgFilter = () => {
+	const { brightness, contrast, saturate } = store.option.imgFilter;
+	const list = [
+		brightness !== 100 && \`brightness(\${brightness}%)\`,
+		contrast !== 100 && \`contrast(\${contrast}%)\`,
+		saturate !== 100 && \`saturate(\${saturate}%)\`
+	].filter(Boolean);
+	if (list.length > 0) return list.join(" ");
+};
 const useCssVar = () => {
 	const svg = () => {
 		const fill = store.option.darkMode ? "rgb(156,156,156)" : "rgb(110,110,110)";
@@ -8762,7 +8917,8 @@ const useCssVar = () => {
 		{
 			"--bg": () => store.option.customBackground ?? (store.option.darkMode ? "#000" : "#fff"),
 			"--scroll-mode-spacing": () => store.option.scrollMode.spacing,
-			"color-scheme": () => store.option.darkMode ? "dark" : "light"
+			"color-scheme": () => store.option.darkMode ? "dark" : "light",
+			"--img-filter": getImgFilter
 		},
 		() => themeStyle,
 		svg,
@@ -8933,7 +9089,7 @@ const useInit = (props) => {
 };
 //#endregion
 //#region src/components/Manga/index.module.css?inline
-var index_module_default = ".img___7ajV4 img {\\n  display: block;\\n  width: 100%;\\n  height: 100%;\\n  object-fit: contain;\\n}\\n\\n.img___7ajV4 {\\n  position: relative;\\n\\n  align-content: center;\\n\\n  width: 100%;\\n  height: 100%;\\n  margin-right: auto;\\n  margin-left: auto;\\n}\\n\\n.img___7ajV4 > picture {\\n    position: absolute;\\n    inset: 0;\\n\\n    width: auto;\\n    max-width: 100%;\\n    height: auto;\\n    max-height: 100%;\\n    margin-top: auto;\\n    margin-right: inherit;\\n    margin-bottom: auto;\\n    margin-left: inherit;\\n  }\\n\\n.img___7ajV4 > picture,.img___7ajV4 > picture::after {\\n    background-color: var(--hover-bg-color, #fff3);\\n    background-image: var(--md-photo);\\n    background-repeat: no-repeat;\\n    background-position: center;\\n    background-size: 30%;\\n  }\\n\\n/* 已加载完毕的图片不显示灰色背景和图标 */\\n\\n.img___7ajV4:not([data-load-type]) > picture,.img___7ajV4:not([data-load-type]) > picture::after {\\n    background: none;\\n  }\\n\\n/* 遮住默认的出错图片标识 */\\n\\n.img___7ajV4[data-load-type='error'] > picture::after {\\n    pointer-events: none;\\n    content: '';\\n\\n    position: absolute;\\n    top: 0;\\n    right: 0;\\n\\n    width: 100%;\\n    height: 100%;\\n\\n    background-color: #eee;\\n    background-image: var(--md-image-not-supported);\\n  }\\n\\n.img___7ajV4[data-load-type='loading'] > picture {\\n    background-image: var(--md-cloud-download);\\n\\n    /* 加载中的图片先隐藏一下，避免出错图片的元素被直接显示出来 */\\n  }\\n\\n:is(.img___7ajV4[data-load-type='loading'] > picture) img {\\n      animation: show___HzwUa 100ms forwards;\\n    }\\n\\n.img___7ajV4[data-load-type='error'] > picture {\\n    cursor: pointer;\\n  }\\n\\n.mangaFlow___jMZgq[dir='ltr'] .img___7ajV4[data-show='1'],\\n.mangaFlow___jMZgq[dir='rtl'] .img___7ajV4[data-show='0'] {\\n  margin-right: auto;\\n  margin-left: 0;\\n}\\n\\n.mangaFlow___jMZgq[dir='ltr'] .img___7ajV4[data-show='0'],\\n.mangaFlow___jMZgq[dir='rtl'] .img___7ajV4[data-show='1'] {\\n  margin-right: 0;\\n  margin-left: auto;\\n}\\n\\n.mangaFlow___jMZgq {\\n  touch-action: none;\\n  will-change: left, top;\\n  -webkit-user-select: none;\\n          user-select: none;\\n\\n  position: absolute;\\n  transform-origin: 0 0;\\n\\n  contain: layout;\\n  overflow: visible;\\n  display: grid;\\n  grid-auto-columns: 100%;\\n  grid-auto-flow: column;\\n  grid-auto-rows: 100%;\\n  row-gap: 0;\\n  place-items: center;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  color: var(--text);\\n\\n  backface-visibility: hidden;\\n}\\n\\n.mangaFlow___jMZgq[data-disable-zoom] .img___7ajV4 > picture {\\n    width: fit-content;\\n    height: fit-content;\\n  }\\n\\n.mangaFlow___jMZgq[data-hidden-mouse='true'] {\\n    cursor: none;\\n  }\\n\\n.mangaFlow___jMZgq[data-vertical] {\\n    grid-auto-flow: row;\\n  }\\n\\n.mangaBox___48Jek {\\n  transform-origin: 0 0;\\n\\n  contain: layout style;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  transition-duration: 0ms;\\n}\\n\\n.mangaBox___48Jek[data-animation='page'] .mangaFlow___jMZgq,.mangaBox___48Jek[data-animation='zoom'] {\\n    transition-duration: 300ms;\\n  }\\n\\n.root___Hf5H2 .mangaBox___48Jek {\\n  /* 隐藏滚动条但不影响滚动 */\\n  scrollbar-width: none;\\n\\n  /* 隐藏滚动条但不影响滚动 */\\n}\\n\\n:is(.root___Hf5H2 .mangaBox___48Jek)::-webkit-scrollbar {\\n    display: none;\\n  }\\n\\n.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek {\\n  overflow: auto;\\n}\\n\\n:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq {\\n    touch-action: pan-y;\\n    row-gap: calc(var(--scroll-mode-spacing) * 7px);\\n    height: fit-content;\\n  }\\n\\n[data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) {\\n    touch-action: none;\\n    overflow: hidden;\\n  }\\n\\n[data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq {\\n      column-gap: calc(var(--scroll-mode-spacing) * 7px);\\n      align-items: start;\\n      height: 100%;\\n    }\\n\\n:is([data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq) .img___7ajV4 {\\n        width: 100%;\\n        height: auto;\\n      }\\n\\n[data-show]:is(:is([data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq) .img___7ajV4) {\\n          will-change: transform;\\n        }\\n\\n:is(:is([data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq) .img___7ajV4) > picture {\\n          position: relative;\\n        }\\n\\n.pageTip___P7thU {\\n  pointer-events: none;\\n\\n  position: absolute;\\n  z-index: 1;\\n  right: 0.4em;\\n  bottom: 0.4em;\\n\\n  padding: 0.1em 0.4em;\\n  border-radius: 0.25em;\\n\\n  font-size: 1.5em;\\n  line-height: 1.5;\\n  color: var(--text);\\n\\n  opacity: 0;\\n  background-color: color-mix(in srgb, var(--text-bg) 80%, transparent);\\n\\n  transition: opacity 150ms;\\n}\\n\\n.root___Hf5H2[data-page-tip] .pageTip___P7thU {\\n  opacity: 1;\\n}\\n\\n@keyframes show___HzwUa {\\n  0% {\\n    opacity: 0;\\n  }\\n\\n  90% {\\n    opacity: 0;\\n  }\\n\\n  100% {\\n    opacity: 1;\\n  }\\n}\\n\\n.endPage___iOZmk,\\n.endPageBody___g-dz- {\\n  z-index: 10;\\n\\n  display: flex;\\n  align-items: center;\\n  justify-content: center;\\n\\n  width: 100%;\\n  height: 100%;\\n}\\n\\n.endPage___iOZmk {\\n  pointer-events: none;\\n\\n  position: absolute;\\n  top: 0;\\n  left: 0;\\n\\n  color: white;\\n\\n  opacity: 0;\\n  background-color: #333d;\\n\\n  transition: opacity 500ms;\\n}\\n\\n.endPage___iOZmk[data-show] {\\n    pointer-events: all;\\n    opacity: 1;\\n  }\\n\\n.endPage___iOZmk[data-type='start'] .tip___fyxqg {\\n    transform: translateY(-10em);\\n  }\\n\\n.endPage___iOZmk[data-type='end'] .tip___fyxqg {\\n    transform: translateY(10em);\\n  }\\n\\n.endPage___iOZmk .endPageBody___g-dz- {\\n    transform: translate(0, var(--drag-y, 0));\\n    transition: transform 200ms;\\n  }\\n\\n:is(.endPage___iOZmk .endPageBody___g-dz-) button {\\n      cursor: pointer;\\n\\n      transform-origin: center;\\n\\n      font-size: 1.2em;\\n      color: inherit;\\n\\n      background-color: transparent;\\n\\n      animation: jello___wXBLg 0.3s forwards;\\n    }\\n\\n[data-is-end]:is(:is(.endPage___iOZmk .endPageBody___g-dz-) button) {\\n        margin: 2em;\\n        font-size: 3em;\\n      }\\n\\n:is(.endPage___iOZmk .endPageBody___g-dz-) .tip___fyxqg {\\n      position: absolute;\\n      margin: auto;\\n    }\\n\\n.endPage___iOZmk[data-drag] .endPageBody___g-dz- {\\n    transition: transform 00ms;\\n  }\\n\\n.root___Hf5H2[data-mobile] .endPage___iOZmk > button {\\n  width: 1em;\\n}\\n\\n.comments___9ITQv {\\n  position: absolute;\\n  right: 1em;\\n\\n  overflow: auto;\\n  display: flex;\\n  flex-direction: column;\\n  align-items: flex-end;\\n\\n  width: 20em;\\n  max-height: 80%;\\n  padding-right: 0.5em;\\n\\n  opacity: 0.3;\\n}\\n\\n.comments___9ITQv > p {\\n    margin: 0.5em 0.1em;\\n    padding: 0.2em 0.5em;\\n    border-radius: 0.5em;\\n    background-color: #333b;\\n  }\\n\\n.comments___9ITQv:hover {\\n    opacity: 1;\\n  }\\n\\n.root___Hf5H2[data-mobile] .comments___9ITQv {\\n  bottom: 0;\\n  max-height: 15em;\\n  opacity: 0.8;\\n}\\n\\n@keyframes jello___wXBLg {\\n  0%,\\n  11.1%,\\n  100% {\\n    transform: translate3d(0, 0, 0);\\n  }\\n\\n  22.2% {\\n    transform: skewX(-12.5deg) skewY(-12.5deg);\\n  }\\n\\n  33.3% {\\n    transform: skewX(6.25deg) skewY(6.25deg);\\n  }\\n\\n  44.4% {\\n    transform: skewX(-3.125deg) skewY(-3.125deg);\\n  }\\n\\n  55.5% {\\n    transform: skewX(1.5625deg) skewY(1.5625deg);\\n  }\\n\\n  66.6% {\\n    transform: skewX(-0.7812deg) skewY(-0.7812deg);\\n  }\\n\\n  77.7% {\\n    transform: skewX(0.3906deg) skewY(0.3906deg);\\n  }\\n\\n  88.8% {\\n    transform: skewX(-0.1953deg) skewY(-0.1953deg);\\n  }\\n}\\n\\n.toolbar___RMjHL {\\n  position: fixed;\\n  z-index: 9;\\n  top: 0;\\n\\n  display: flex;\\n  align-items: center;\\n  justify-content: flex-start;\\n\\n  height: 100%;\\n}\\n\\n/* 工具栏面板 */\\n.toolbarPanel___XYjgc {\\n  position: relative;\\n  transform: translateX(-100%);\\n\\n  display: flex;\\n  flex-direction: column;\\n\\n  padding: 0.5em;\\n\\n  transition: transform 200ms;\\n}\\n.toolbarPanel___XYjgc > hr {\\n    height: 1em;\\n    margin: 0;\\n    border: none;\\n    visibility: hidden;\\n  }\\n\\n:is(.toolbar___RMjHL[data-show], .toolbar___RMjHL:hover) .toolbarPanel___XYjgc {\\n  transform: none;\\n}\\n\\n.toolbarBg___i4oTA {\\n  position: absolute;\\n  top: 0;\\n  right: 0;\\n\\n  width: 100%;\\n  height: 100%;\\n  border-top-right-radius: 1em;\\n  border-bottom-right-radius: 1em;\\n\\n  background-color: var(--page-bg);\\n  filter: opacity(0.8);\\n}\\n\\n/* 移动端优化 */\\n/* 调大样式 */\\n.root___Hf5H2[data-mobile] .toolbar___RMjHL {\\n    font-size: 1.3em;\\n  }\\n/* 只能通过点击中心来唤出工具栏，防止误触 */\\n.root___Hf5H2[data-mobile] .toolbar___RMjHL:not([data-show]) {\\n    pointer-events: none;\\n  }\\n/* 减少背景的透明度，方便辨识 */\\n.root___Hf5H2[data-mobile] .toolbarBg___i4oTA {\\n    filter: opacity(0.8);\\n  }\\n/* 设置面板所在的悬浮框样式 */\\n.SettingPanelPopper___uEBz3 {\\n  pointer-events: unset !important;\\n  transform: none !important;\\n  height: 0 !important;\\n  padding: 0 !important;\\n}\\n\\n.SettingPanel___ZRvFB {\\n  -webkit-user-select: text;\\n          user-select: text;\\n\\n  position: fixed;\\n  z-index: 1;\\n  top: 0;\\n  bottom: 0;\\n\\n  overflow: auto;\\n\\n  max-width: calc(100% - 5em);\\n  height: fit-content;\\n  max-height: 95%;\\n  margin: auto;\\n  border-radius: 0.3em;\\n\\n  font-size: 1.2em;\\n  color: var(--text);\\n\\n  background-color: var(--page-bg);\\n  box-shadow:\\n    rgb(0 0 0 / 20%) 0 3px 1px -2px,\\n    rgb(0 0 0 / 14%) 0 2px 2px 0,\\n    rgb(0 0 0 / 12%) 0 1px 5px 0;\\n}\\n\\n.SettingPanel___ZRvFB hr {\\n    margin: 0.5em 0;\\n    color: white;\\n  }\\n\\n.SettingPanel___ZRvFB > hr {\\n    margin: 0;\\n  }\\n\\n.SettingBlock___qxNyt {\\n  display: grid;\\n  grid-template-rows: max-content 1fr;\\n  transition: grid-template-rows 200ms ease-out;\\n}\\n\\n.SettingBlock___qxNyt .SettingBlockBody___Wirnd {\\n    z-index: 0;\\n    overflow: hidden;\\n    padding: 0 0.5em;\\n    padding-bottom: 1em;\\n  }\\n\\n:is(.SettingBlock___qxNyt .SettingBlockBody___Wirnd) > div + :is(.SettingBlock___qxNyt .SettingBlockBody___Wirnd) > div {\\n      margin-top: 1em;\\n    }\\n\\n:is(.SettingBlock___qxNyt .SettingBlockBody___Wirnd) input,:is(.SettingBlock___qxNyt .SettingBlockBody___Wirnd) textarea {\\n      width: 97%;\\n      margin-top: 0.3em;\\n    }\\n\\n.SettingBlock___qxNyt[data-show='false'] {\\n    grid-template-rows: max-content 0fr;\\n    padding-bottom: unset;\\n  }\\n\\n.SettingBlock___qxNyt[data-show='false'] .SettingBlockBody___Wirnd {\\n      padding: unset;\\n    }\\n\\n.SettingBlockSubtitle___cv0Ji {\\n  cursor: pointer;\\n\\n  position: sticky;\\n  z-index: 1;\\n  top: 0;\\n\\n  height: 3em;\\n  margin-bottom: 0.1em;\\n\\n  font-size: 0.7em;\\n  line-height: 3em;\\n  color: var(--text-secondary);\\n  text-align: center;\\n\\n  background-color: var(--page-bg);\\n}\\n\\n.SettingBlockBody___Wirnd .SettingBlockSubtitle___cv0Ji {\\n  position: unset;\\n  height: 1em;\\n  line-height: 1em;\\n}\\n\\n.SettingsItem___aJhRD {\\n  position: relative;\\n  display: flex;\\n  align-items: center;\\n  justify-content: space-between;\\n}\\n\\n:is(.SettingsItem___aJhRD,.SettingsShowItem___l-D2E) + .SettingsItem___aJhRD {\\n    margin-top: 1em;\\n  }\\n\\n.SettingsItem___aJhRD[data-disabled] {\\n    opacity: 0.5;\\n  }\\n\\n.SettingsItem___aJhRD[data-disabled] button {\\n      cursor: not-allowed;\\n    }\\n\\n.SettingsItemName___UP6zJ {\\n  max-width: calc(100% - 4em);\\n\\n  font-size: 0.9em;\\n  text-align: start;\\n  overflow-wrap: anywhere;\\n  white-space: pre-wrap;\\n}\\n\\n/* 开关式设置项 */\\n.SettingsItemSwitch___LVGr9 {\\n  cursor: pointer;\\n\\n  display: inline-flex;\\n  align-items: center;\\n\\n  width: 2.3em;\\n  height: 0.8em;\\n  margin: 0.3em;\\n  padding: 0;\\n  border: 0;\\n  border-radius: 1em;\\n\\n  background-color: var(--switch-bg);\\n}\\n\\n/* 开关里的圆形按钮 */\\n.SettingsItemSwitchRound___Ds0B8 {\\n  transform: translateX(-10%);\\n\\n  width: 1.15em;\\n  height: 1.15em;\\n  border-radius: 100%;\\n\\n  background: var(--switch);\\n  box-shadow:\\n    0 2px 1px -1px rgb(0 0 0 / 20%),\\n    0 1px 1px 0 rgb(0 0 0 / 14%),\\n    0 1px 3px 0 rgb(0 0 0 / 12%);\\n\\n  transition: transform 100ms;\\n}\\n\\n.SettingsItemSwitch___LVGr9[data-checked='true'] {\\n  background: var(--secondary-bg);\\n}\\n\\n.SettingsItemSwitch___LVGr9[data-checked='true'] .SettingsItemSwitchRound___Ds0B8 {\\n    transform: translateX(110%);\\n    background: var(--secondary);\\n  }\\n\\n/* 图标按钮式设置项 */\\n.SettingsItemIconButton___Cs7BQ {\\n  cursor: pointer;\\n\\n  position: absolute;\\n  right: 0;\\n\\n  height: 1em;\\n  border: none;\\n\\n  font-size: 1.5em;\\n  color: var(--text);\\n\\n  background-color: transparent;\\n}\\n\\n/* 选择器设置项 */\\n.SettingsItemSelect___CvFKx {\\n  cursor: pointer;\\n\\n  max-width: 6.5em;\\n  margin: 0;\\n  padding: 0.3em;\\n  border: none;\\n  border-radius: 5px;\\n\\n  font-size: 0.9em;\\n  color: var(--text);\\n\\n  background-color: var(--hover-bg-color);\\n  outline: none;\\n}\\n.SettingsItemSelect___CvFKx::picker(select) {\\n    color: var(--text);\\n    background-color: var(--page-bg);\\n  }\\n.SettingsItemSelect___CvFKx option {\\n    color: var(--text);\\n    background-color: var(--page-bg);\\n  }\\n\\n/* 关闭设置弹窗的遮罩 */\\n.closeCover___qLIp5 {\\n  position: fixed;\\n  top: 0;\\n  left: 0;\\n\\n  width: 100%;\\n  height: 100%;\\n}\\n\\n.SettingsShowItem___l-D2E {\\n  display: grid;\\n  transition: grid-template-rows 200ms ease-out;\\n}\\n\\n.SettingsShowItem___l-D2E > .SettingsShowItemBody___bgxxq {\\n    overflow: hidden;\\n    display: flex;\\n    flex-direction: column;\\n  }\\n\\n:is(.SettingsShowItem___l-D2E > .SettingsShowItemBody___bgxxq) > .SettingsItem___aJhRD {\\n      margin-top: 1em;\\n    }\\n\\n:is(.SettingsShowItem___l-D2E > .SettingsShowItemBody___bgxxq) > :is(textarea,input) {\\n      margin: 0.4em 0.2em 0;\\n      line-height: 1.2;\\n    }\\n\\n[data-only-number] {\\n  padding: 0 0.2em;\\n}\\n\\n[data-only-number] + span {\\n    margin-left: -0.1em;\\n  }\\n\\n.hotkeys___uu-Xe {\\n  position: relative;\\n  z-index: 1;\\n\\n  display: flex;\\n  flex-grow: 1;\\n  flex-wrap: wrap;\\n  align-items: center;\\n\\n  padding: 0.2em;\\n  padding-top: 2em;\\n  border-bottom: 1px solid var(--secondary-bg);\\n\\n  font-size: 0.9em;\\n  color: var(--text);\\n}\\n\\n.hotkeys___uu-Xe + .hotkeys___uu-Xe {\\n    margin-top: 0.5em;\\n  }\\n\\n.hotkeys___uu-Xe:last-child {\\n    border-bottom: none;\\n  }\\n\\n.hotkeysItem___d9IKS {\\n  cursor: pointer;\\n\\n  display: flex;\\n  align-items: center;\\n\\n  box-sizing: content-box;\\n  height: 1em;\\n  margin: 0.3em;\\n  padding: 0.2em 1.2em;\\n  border-radius: 0.3em;\\n\\n  font-family: serif;\\n\\n  outline: 1px solid;\\n  outline-color: var(--secondary-bg);\\n}\\n\\n.hotkeysItem___d9IKS > svg {\\n    display: none;\\n\\n    height: 1em;\\n    margin-left: 0.4em;\\n    border-radius: 1em;\\n\\n    color: var(--page-bg);\\n\\n    opacity: 0.5;\\n    background-color: var(--text);\\n  }\\n\\n:is(.hotkeysItem___d9IKS > svg):hover {\\n      opacity: 0.9;\\n    }\\n\\n.hotkeysItem___d9IKS:hover {\\n    padding: 0.2em 0.5em;\\n  }\\n\\n.hotkeysItem___d9IKS:hover > svg {\\n      display: unset;\\n    }\\n\\n.hotkeysItem___d9IKS:focus,.hotkeysItem___d9IKS:focus-visible {\\n    outline: var(--text) solid 2px;\\n  }\\n\\n.hotkeysHeader___jU7vr {\\n  position: absolute;\\n  top: 0;\\n  left: 0;\\n\\n  display: flex;\\n  align-items: center;\\n\\n  box-sizing: border-box;\\n  width: 100%;\\n  padding: 0 0.5em;\\n}\\n\\n.hotkeysHeader___jU7vr > p {\\n    line-height: 1em;\\n    text-align: start;\\n    overflow-wrap: anywhere;\\n    white-space: pre-wrap;\\n\\n    background-color: var(--page-bg);\\n  }\\n\\n.hotkeysHeader___jU7vr > div[title] {\\n    cursor: pointer;\\n\\n    transform: scale(0);\\n\\n    display: flex;\\n\\n    background-color: var(--page-bg);\\n\\n    transition: transform 100ms;\\n  }\\n\\n:is(.hotkeysHeader___jU7vr > div[title]) > svg {\\n      width: 1.6em;\\n    }\\n\\n.hotkeys___uu-Xe:hover div[title] {\\n  transform: scale(1);\\n}\\n\\n.scrollbar___hLToV {\\n  --arrow-y: clamp(\\n    0.45em,\\n    calc(var(--slider-midpoint)),\\n    calc(var(--scroll-length) - 0.45em)\\n  );\\n\\n  touch-action: none;\\n  -webkit-user-select: none;\\n          user-select: none;\\n\\n  position: absolute;\\n  z-index: 9;\\n  top: 1%;\\n  right: 3px;\\n\\n  display: flex;\\n  flex-direction: column;\\n\\n  width: 5px;\\n  height: 98%;\\n\\n  /* 扩大触发范围 */\\n  border-left: max(6vw, 1em) solid transparent;\\n}\\n\\n.scrollbar___hLToV > div {\\n    pointer-events: none;\\n\\n    display: flex;\\n    flex-direction: column;\\n    flex-grow: 1;\\n    align-items: center;\\n    justify-content: center;\\n  }\\n\\n.scrollbarPage___qghUs {\\n  transform-origin: bottom;\\n  transform: scaleY(1);\\n\\n  flex-grow: 1;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  background-color: var(--secondary);\\n\\n  transition: transform 1s;\\n}\\n\\n.scrollbarPage___qghUs[data-type='loaded'] {\\n    transform: scaleY(0);\\n  }\\n\\n.scrollbarPage___qghUs[data-upscale] {\\n    transform: scaleY(1);\\n    background-color: #b39ddb;\\n  }\\n\\n.scrollbarPage___qghUs[data-upscale='loading'] {\\n    background-color: #d1c4e9;\\n  }\\n\\n.scrollbarPage___qghUs[data-translation-type] {\\n    transform-origin: top;\\n    transform: scaleY(1);\\n    background-color: transparent;\\n  }\\n\\n.scrollbarPage___qghUs[data-translation-type='wait'] {\\n    background-color: #81c784;\\n  }\\n\\n.scrollbarPage___qghUs[data-translation-type='show'] {\\n    background-color: #4caf50;\\n  }\\n\\n.scrollbarPage___qghUs[data-translation-type='error'] {\\n    background-color: #f005;\\n  }\\n\\n.scrollbarPage___qghUs[data-type='wait'] {\\n    opacity: 0.4;\\n  }\\n\\n.scrollbarPage___qghUs[data-type='error'] {\\n    background-color: #f005;\\n  }\\n\\n/* 滚动条滑块 */\\n.scrollbarSlider___r1fWf {\\n  position: absolute;\\n  z-index: 1;\\n  transform: translateY(var(--slider-top));\\n\\n  justify-content: center;\\n\\n  width: 100%;\\n  height: var(--slider-height);\\n  border-radius: 1em;\\n\\n  opacity: 1;\\n  background-color: #fff5;\\n\\n  transition:\\n    transform 150ms,\\n    opacity 150ms;\\n}\\n\\n/* 悬浮框 */\\n.scrollbarPoper___XK5Rk {\\n  --poper-top: clamp(\\n    0%,\\n    calc(var(--slider-midpoint) - 50%),\\n    calc(var(--scroll-length) - 100%)\\n  );\\n\\n  position: absolute;\\n  right: 2em;\\n  transform: translateY(var(--poper-top));\\n\\n  width: fit-content;\\n  min-width: 1em;\\n  min-height: 1.5em;\\n  padding: 0.2em 0.5em;\\n  border-radius: 0.3em;\\n\\n  font-size: 0.8em;\\n  line-height: 1.5em;\\n  color: white;\\n  text-align: center;\\n  white-space: pre;\\n\\n  background-color: #303030;\\n}\\n\\n/* 悬浮框箭头 */\\n.scrollbar___hLToV::before {\\n  content: '';\\n\\n  position: absolute;\\n  right: 2em;\\n  transform: translate(140%, calc(var(--arrow-y) - 50%));\\n\\n  border: 0.4em solid transparent;\\n  border-left: 0.5em solid #303030;\\n\\n  background-color: transparent;\\n}\\n\\n/*\\n * 滚动条部件的显隐\\n */\\n\\n/* 悬浮提示默认隐藏 */\\n.scrollbar___hLToV::before,\\n.scrollbarPoper___XK5Rk {\\n  opacity: 0;\\n  transition:\\n    opacity 150ms,\\n    transform 150ms;\\n}\\n\\n/* 控制滚动条悬浮提示的显示 */\\n:is(.scrollbar___hLToV:hover,.scrollbar___hLToV[data-force-show]) .scrollbarPoper___XK5Rk,:is(.scrollbar___hLToV:hover,.scrollbar___hLToV[data-force-show]) .scrollbarSlider___r1fWf,:is(.scrollbar___hLToV:hover,.scrollbar___hLToV[data-force-show])::before {\\n    opacity: 1;\\n  }\\n\\n/* 拖动滚动条时取消移动过渡动画，确保跟手 */\\n.scrollbar___hLToV[data-drag]::before,.scrollbar___hLToV[data-drag] .scrollbarPoper___XK5Rk,.scrollbar___hLToV[data-drag] .scrollbarSlider___r1fWf {\\n    transition: opacity 150ms;\\n  }\\n\\n/* 实现自动隐藏 */\\n.scrollbar___hLToV[data-auto-hidden]:not([data-force-show]) .scrollbarSlider___r1fWf {\\n    opacity: 0;\\n  }\\n.scrollbar___hLToV[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider___r1fWf {\\n    opacity: 1;\\n  }\\n\\n/*\\n * 滚动条位置\\n */\\n\\n.scrollbar___hLToV[data-position='hidden'] {\\n  display: none;\\n}\\n\\n.scrollbar___hLToV[data-position='top'] {\\n  top: 1px;\\n\\n  /* 扩大触发范围 */\\n  border-bottom: max(6vh, 1em) solid transparent;\\n}\\n\\n.scrollbar___hLToV[data-position='top']::before {\\n    top: 1.2em;\\n    right: 0;\\n    transform: translate(var(--arrow-x), -120%);\\n    border-bottom: 0.5em solid #303030;\\n  }\\n\\n.scrollbar___hLToV[data-position='top'] .scrollbarPoper___XK5Rk {\\n    top: 1.2em;\\n  }\\n\\n.scrollbar___hLToV[data-position='bottom'] {\\n  top: unset;\\n  bottom: 1px;\\n\\n  /* 扩大触发范围 */\\n  border-top: max(6vh, 1em) solid transparent;\\n}\\n\\n.scrollbar___hLToV[data-position='bottom']::before {\\n    right: 0;\\n    bottom: 1.2em;\\n    transform: translate(var(--arrow-x), 120%);\\n    border-top: 0.5em solid #303030;\\n  }\\n\\n.scrollbar___hLToV[data-position='bottom'] .scrollbarPoper___XK5Rk {\\n    bottom: 1.2em;\\n  }\\n\\n.scrollbar___hLToV[data-position='top'],\\n.scrollbar___hLToV[data-position='bottom'] {\\n  --arrow-x: calc(var(--arrow-y) * -1 + 50%);\\n\\n  right: 1%;\\n\\n  flex-direction: row-reverse;\\n\\n  width: 98%;\\n  height: 5px;\\n  border-left: none;\\n}\\n\\n:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom'])::before {\\n    border-left: 0.4em solid transparent;\\n  }\\n\\n/* stylelint-disable-next-line no-descending-specificity */\\n\\n:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarSlider___r1fWf {\\n    transform: translateX(calc(var(--slider-top) * -1));\\n    width: var(--slider-height);\\n    height: 100%;\\n  }\\n\\n:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPoper___XK5Rk {\\n    right: unset;\\n    transform: translateX(calc(var(--poper-top) * -1));\\n    padding: 0.1em 0.3em;\\n  }\\n\\n[data-dir='ltr']:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) {\\n    --arrow-x: calc(var(--arrow-y) - 50%);\\n\\n    flex-direction: row;\\n  }\\n\\n[data-dir='ltr']:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom'])::before {\\n      right: unset;\\n      left: 0;\\n    }\\n\\n/* stylelint-disable-next-line no-descending-specificity */\\n\\n[data-dir='ltr']:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarSlider___r1fWf {\\n      transform: translateX(var(--top));\\n    }\\n\\n[data-dir='ltr']:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPoper___XK5Rk {\\n      transform: translateX(var(--poper-top));\\n    }\\n\\n/* 将 scaleY 改成 scaleX */\\n\\n:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPage___qghUs {\\n    transform: scaleX(1);\\n  }\\n\\n[data-type='loaded']:is(:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPage___qghUs) {\\n      transform: scaleX(0);\\n    }\\n\\n[data-translation-type]:is(:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPage___qghUs) {\\n      transform: scaleX(1);\\n    }\\n\\n/* stylelint-disable-next-line no-descending-specificity */\\n\\n.scrollbar___hLToV[data-is-abreast-mode] .scrollbarPoper___XK5Rk {\\n    writing-mode: vertical-rl;\\n    line-height: 1.5em;\\n    text-orientation: upright;\\n  }\\n\\n.scrollbar___hLToV[data-is-abreast-mode][data-dir='ltr'] .scrollbarPoper___XK5Rk {\\n    writing-mode: vertical-lr;\\n  }\\n\\n/* 卷轴模式下取消滚动条的位移动画 */\\n.root___Hf5H2[data-scroll-mode] .scrollbar___hLToV::before,\\n.root___Hf5H2[data-scroll-mode] :is(.scrollbarSlider___r1fWf, .scrollbarPoper___XK5Rk) {\\n  transition: opacity 150ms;\\n}\\n\\n/* 移动端下禁用悬浮显示 */\\n:is(.root___Hf5H2[data-mobile] .scrollbar___hLToV:hover)::before,:is(.root___Hf5H2[data-mobile] .scrollbar___hLToV:hover) .scrollbarPoper___XK5Rk {\\n      opacity: 0;\\n    }\\n.touchAreaRoot___UN-W1 {\\n  pointer-events: none;\\n  -webkit-user-select: none;\\n          user-select: none;\\n\\n  position: absolute;\\n  top: 0;\\n\\n  display: grid;\\n  grid-template-columns: 1fr min(30%, 10em) 1fr;\\n  grid-template-rows: 1fr min(20%, 10em) 1fr;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  font-size: 3em;\\n  color: white;\\n  letter-spacing: 0.5em;\\n\\n  opacity: 0;\\n\\n  transition: opacity 400ms;\\n}\\n.touchAreaRoot___UN-W1[data-show] {\\n    opacity: 1;\\n  }\\n.touchAreaRoot___UN-W1 .touchArea___F6Hkh {\\n    display: flex;\\n    align-items: center;\\n    justify-content: center;\\n    text-align: center;\\n  }\\n[data-area='prev']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh),[data-area='PREV']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh) {\\n      background-color: #95e1d3e6;\\n    }\\n[data-area='menu']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh),[data-area='MENU']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh) {\\n      background-color: #fce38ae6;\\n    }\\n[data-area='next']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh),[data-area='NEXT']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh) {\\n      background-color: #f38181e6;\\n    }\\n[data-area='PREV']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh)::after {\\n      content: var(--i18n-touch-area-prev);\\n    }\\n[data-area='MENU']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh)::after {\\n      content: var(--i18n-touch-area-menu);\\n    }\\n[data-area='NEXT']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh)::after {\\n      content: var(--i18n-touch-area-next);\\n    }\\n.touchAreaRoot___UN-W1[data-vert='true'] {\\n    flex-direction: column !important;\\n  }\\n.touchAreaRoot___UN-W1:not([data-turn-page]) .touchArea___F6Hkh[data-area='next'],.touchAreaRoot___UN-W1:not([data-turn-page]) .touchArea___F6Hkh[data-area='NEXT'],.touchAreaRoot___UN-W1:not([data-turn-page]) .touchArea___F6Hkh[data-area='prev'],.touchAreaRoot___UN-W1:not([data-turn-page]) .touchArea___F6Hkh[data-area='PREV'] {\\n      visibility: hidden;\\n    }\\n.touchAreaRoot___UN-W1[data-shrink-menu] {\\n    grid-template-columns: 1fr 2em 1fr;\\n  }\\n.touchAreaRoot___UN-W1[data-shrink-menu] .touchArea___F6Hkh[data-area='MENU'] {\\n      letter-spacing: 0;\\n    }\\n\\n.root___Hf5H2[data-mobile] .touchAreaRoot___UN-W1 {\\n    flex-direction: column !important;\\n    letter-spacing: 0;\\n  }\\n\\n.root___Hf5H2[data-mobile] [data-area]::after {\\n    font-size: 0.8em;\\n  }\\n\\n.root___Hf5H2 {\\n  position: relative;\\n\\n  overflow: hidden;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  font-size: 1em;\\n\\n  background-color: var(--bg);\\n  outline: 0;\\n}\\n\\n.root___Hf5H2 a {\\n    color: var(--text-secondary);\\n  }\\n\\n.root___Hf5H2[data-mobile] {\\n    font-size: 0.8em;\\n  }\\n\\n.hidden___rxU-6 {\\n  display: none !important;\\n}\\n\\n.invisible___cO-hs {\\n  visibility: hidden !important;\\n}\\n\\n.beautifyScrollbar___lb6kJ {\\n  /* 火狐的滚动条样式 */\\n  scrollbar-color: var(--scrollbar-slider) transparent;\\n  scrollbar-width: thin;\\n\\n  /* chrome 的滚动条样式 */\\n}\\n\\n.beautifyScrollbar___lb6kJ::-webkit-scrollbar {\\n    width: 5px;\\n    height: 10px;\\n  }\\n\\n.beautifyScrollbar___lb6kJ::-webkit-scrollbar-track {\\n    background: transparent;\\n  }\\n\\n.beautifyScrollbar___lb6kJ::-webkit-scrollbar-thumb {\\n    background: var(--scrollbar-slider);\\n  }\\n\\np,\\nimg {\\n  margin: 0;\\n}\\n\\n:where(div, div:focus, div:focus-within, div:focus-visible, button) {\\n  border: none;\\n  outline: none;\\n}\\n\\nblockquote {\\n  margin: 0.5em 0;\\n  padding: 0;\\n  padding-left: 1em;\\n  border-left: 0.25em solid var(--text-secondary, #607d8b);\\n\\n  font-size: 0.9em;\\n  font-style: italic;\\n  line-height: 1.2em;\\n  color: var(--text-secondary);\\n  text-align: start;\\n  overflow-wrap: anywhere;\\n  white-space: pre-wrap;\\n}\\n\\nsvg {\\n  width: 1em;\\n}\\n";
+var index_module_default = ".img___7ajV4 img {\\n  display: block;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  object-fit: contain;\\n  filter: var(--img-filter, none);\\n}\\n\\n.img___7ajV4 {\\n  position: relative;\\n\\n  align-content: center;\\n\\n  width: 100%;\\n  height: 100%;\\n  margin-right: auto;\\n  margin-left: auto;\\n}\\n\\n.img___7ajV4 > picture {\\n    position: absolute;\\n    inset: 0;\\n\\n    width: auto;\\n    max-width: 100%;\\n    height: auto;\\n    max-height: 100%;\\n    margin-top: auto;\\n    margin-right: inherit;\\n    margin-bottom: auto;\\n    margin-left: inherit;\\n  }\\n\\n.img___7ajV4 > picture,.img___7ajV4 > picture::after {\\n    background-color: var(--hover-bg-color, #fff3);\\n    background-image: var(--md-photo);\\n    background-repeat: no-repeat;\\n    background-position: center;\\n    background-size: 30%;\\n  }\\n\\n/* 已加载完毕的图片不显示灰色背景和图标 */\\n\\n.img___7ajV4:not([data-load-type]) > picture,.img___7ajV4:not([data-load-type]) > picture::after {\\n    background: none;\\n  }\\n\\n/* 遮住默认的出错图片标识 */\\n\\n.img___7ajV4[data-load-type='error'] > picture::after {\\n    pointer-events: none;\\n    content: '';\\n\\n    position: absolute;\\n    top: 0;\\n    right: 0;\\n\\n    width: 100%;\\n    height: 100%;\\n\\n    background-color: #eee;\\n    background-image: var(--md-image-not-supported);\\n  }\\n\\n.img___7ajV4[data-load-type='loading'] > picture {\\n    background-image: var(--md-cloud-download);\\n\\n    /* 加载中的图片先隐藏一下，避免出错图片的元素被直接显示出来 */\\n  }\\n\\n:is(.img___7ajV4[data-load-type='loading'] > picture) img {\\n      animation: show___HzwUa 100ms forwards;\\n    }\\n\\n.img___7ajV4[data-load-type='error'] > picture {\\n    cursor: pointer;\\n  }\\n\\n.mangaFlow___jMZgq[dir='ltr'] .img___7ajV4[data-show='1'],\\n.mangaFlow___jMZgq[dir='rtl'] .img___7ajV4[data-show='0'] {\\n  margin-right: auto;\\n  margin-left: 0;\\n}\\n\\n.mangaFlow___jMZgq[dir='ltr'] .img___7ajV4[data-show='0'],\\n.mangaFlow___jMZgq[dir='rtl'] .img___7ajV4[data-show='1'] {\\n  margin-right: 0;\\n  margin-left: auto;\\n}\\n\\n.mangaFlow___jMZgq {\\n  touch-action: none;\\n  will-change: left, top;\\n  -webkit-user-select: none;\\n          user-select: none;\\n\\n  position: absolute;\\n  transform-origin: 0 0;\\n\\n  contain: layout;\\n  overflow: visible;\\n  display: grid;\\n  grid-auto-columns: 100%;\\n  grid-auto-flow: column;\\n  grid-auto-rows: 100%;\\n  row-gap: 0;\\n  place-items: center;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  color: var(--text);\\n\\n  backface-visibility: hidden;\\n}\\n\\n.mangaFlow___jMZgq[data-disable-zoom] .img___7ajV4 > picture {\\n    width: fit-content;\\n    height: fit-content;\\n  }\\n\\n.mangaFlow___jMZgq[data-hidden-mouse='true'] {\\n    cursor: none;\\n  }\\n\\n.mangaFlow___jMZgq[data-vertical] {\\n    grid-auto-flow: row;\\n  }\\n\\n.mangaBox___48Jek {\\n  transform-origin: 0 0;\\n\\n  contain: layout style;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  transition-duration: 0ms;\\n}\\n\\n.mangaBox___48Jek[data-animation='page'] .mangaFlow___jMZgq,.mangaBox___48Jek[data-animation='zoom'] {\\n    transition-duration: 300ms;\\n  }\\n\\n.root___Hf5H2 .mangaBox___48Jek {\\n  /* 隐藏滚动条但不影响滚动 */\\n  scrollbar-width: none;\\n\\n  /* 隐藏滚动条但不影响滚动 */\\n}\\n\\n:is(.root___Hf5H2 .mangaBox___48Jek)::-webkit-scrollbar {\\n    display: none;\\n  }\\n\\n.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek {\\n  overflow: auto;\\n}\\n\\n:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq {\\n    touch-action: pan-y;\\n    row-gap: calc(var(--scroll-mode-spacing) * 7px);\\n    height: fit-content;\\n  }\\n\\n[data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) {\\n    touch-action: none;\\n    overflow: hidden;\\n  }\\n\\n[data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq {\\n      column-gap: calc(var(--scroll-mode-spacing) * 7px);\\n      align-items: start;\\n      height: 100%;\\n    }\\n\\n:is([data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq) .img___7ajV4 {\\n        width: 100%;\\n        height: auto;\\n      }\\n\\n[data-show]:is(:is([data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq) .img___7ajV4) {\\n          will-change: transform;\\n        }\\n\\n:is(:is([data-abreast-scroll]:is(.root___Hf5H2[data-scroll-mode] .mangaBox___48Jek) .mangaFlow___jMZgq) .img___7ajV4) > picture {\\n          position: relative;\\n        }\\n\\n.pageTip___P7thU {\\n  pointer-events: none;\\n\\n  position: absolute;\\n  z-index: 1;\\n  right: 0.4em;\\n  bottom: 0.4em;\\n\\n  padding: 0.1em 0.4em;\\n  border-radius: 0.25em;\\n\\n  font-size: 1.5em;\\n  line-height: 1.5;\\n  color: var(--text);\\n\\n  opacity: 0;\\n  background-color: color-mix(in srgb, var(--text-bg) 80%, transparent);\\n\\n  transition: opacity 150ms;\\n}\\n\\n.root___Hf5H2[data-page-tip] .pageTip___P7thU {\\n  opacity: 1;\\n}\\n\\n@keyframes show___HzwUa {\\n  0% {\\n    opacity: 0;\\n  }\\n\\n  90% {\\n    opacity: 0;\\n  }\\n\\n  100% {\\n    opacity: 1;\\n  }\\n}\\n\\n.endPage___iOZmk,\\n.endPageBody___g-dz- {\\n  z-index: 10;\\n\\n  display: flex;\\n  align-items: center;\\n  justify-content: center;\\n\\n  width: 100%;\\n  height: 100%;\\n}\\n\\n.endPage___iOZmk {\\n  pointer-events: none;\\n\\n  position: absolute;\\n  top: 0;\\n  left: 0;\\n\\n  color: white;\\n\\n  opacity: 0;\\n  background-color: #333d;\\n\\n  transition: opacity 500ms;\\n}\\n\\n.endPage___iOZmk[data-show] {\\n    pointer-events: all;\\n    opacity: 1;\\n  }\\n\\n.endPage___iOZmk[data-type='start'] .tip___fyxqg {\\n    transform: translateY(-10em);\\n  }\\n\\n.endPage___iOZmk[data-type='end'] .tip___fyxqg {\\n    transform: translateY(10em);\\n  }\\n\\n.endPage___iOZmk .endPageBody___g-dz- {\\n    transform: translate(0, var(--drag-y, 0));\\n    transition: transform 200ms;\\n  }\\n\\n:is(.endPage___iOZmk .endPageBody___g-dz-) button {\\n      cursor: pointer;\\n\\n      transform-origin: center;\\n\\n      font-size: 1.2em;\\n      color: inherit;\\n\\n      background-color: transparent;\\n\\n      animation: jello___wXBLg 0.3s forwards;\\n    }\\n\\n[data-is-end]:is(:is(.endPage___iOZmk .endPageBody___g-dz-) button) {\\n        margin: 2em;\\n        font-size: 3em;\\n      }\\n\\n:is(.endPage___iOZmk .endPageBody___g-dz-) .tip___fyxqg {\\n      position: absolute;\\n      margin: auto;\\n    }\\n\\n.endPage___iOZmk[data-drag] .endPageBody___g-dz- {\\n    transition: transform 00ms;\\n  }\\n\\n.root___Hf5H2[data-mobile] .endPage___iOZmk > button {\\n  width: 1em;\\n}\\n\\n.comments___9ITQv {\\n  position: absolute;\\n  right: 1em;\\n\\n  overflow: auto;\\n  display: flex;\\n  flex-direction: column;\\n  align-items: flex-end;\\n\\n  width: 20em;\\n  max-height: 80%;\\n  padding-right: 0.5em;\\n\\n  opacity: 0.3;\\n}\\n\\n.comments___9ITQv > p {\\n    margin: 0.5em 0.1em;\\n    padding: 0.2em 0.5em;\\n    border-radius: 0.5em;\\n    background-color: #333b;\\n  }\\n\\n.comments___9ITQv:hover {\\n    opacity: 1;\\n  }\\n\\n.root___Hf5H2[data-mobile] .comments___9ITQv {\\n  bottom: 0;\\n  max-height: 15em;\\n  opacity: 0.8;\\n}\\n\\n@keyframes jello___wXBLg {\\n  0%,\\n  11.1%,\\n  100% {\\n    transform: translate3d(0, 0, 0);\\n  }\\n\\n  22.2% {\\n    transform: skewX(-12.5deg) skewY(-12.5deg);\\n  }\\n\\n  33.3% {\\n    transform: skewX(6.25deg) skewY(6.25deg);\\n  }\\n\\n  44.4% {\\n    transform: skewX(-3.125deg) skewY(-3.125deg);\\n  }\\n\\n  55.5% {\\n    transform: skewX(1.5625deg) skewY(1.5625deg);\\n  }\\n\\n  66.6% {\\n    transform: skewX(-0.7812deg) skewY(-0.7812deg);\\n  }\\n\\n  77.7% {\\n    transform: skewX(0.3906deg) skewY(0.3906deg);\\n  }\\n\\n  88.8% {\\n    transform: skewX(-0.1953deg) skewY(-0.1953deg);\\n  }\\n}\\n\\n.toolbar___RMjHL {\\n  position: fixed;\\n  z-index: 9;\\n  top: 0;\\n\\n  display: flex;\\n  align-items: center;\\n  justify-content: flex-start;\\n\\n  height: 100%;\\n}\\n\\n/* 工具栏面板 */\\n.toolbarPanel___XYjgc {\\n  position: relative;\\n  transform: translateX(-100%);\\n\\n  display: flex;\\n  flex-direction: column;\\n\\n  padding: 0.5em;\\n\\n  transition: transform 200ms;\\n}\\n.toolbarPanel___XYjgc > hr {\\n    height: 1em;\\n    margin: 0;\\n    border: none;\\n    visibility: hidden;\\n  }\\n\\n:is(.toolbar___RMjHL[data-show], .toolbar___RMjHL:hover) .toolbarPanel___XYjgc {\\n  transform: none;\\n}\\n\\n.toolbarBg___i4oTA {\\n  position: absolute;\\n  top: 0;\\n  right: 0;\\n\\n  width: 100%;\\n  height: 100%;\\n  border-top-right-radius: 1em;\\n  border-bottom-right-radius: 1em;\\n\\n  background-color: var(--page-bg);\\n  filter: opacity(0.8);\\n}\\n\\n/* 移动端优化 */\\n/* 调大样式 */\\n.root___Hf5H2[data-mobile] .toolbar___RMjHL {\\n    font-size: 1.3em;\\n  }\\n/* 只能通过点击中心来唤出工具栏，防止误触 */\\n.root___Hf5H2[data-mobile] .toolbar___RMjHL:not([data-show]) {\\n    pointer-events: none;\\n  }\\n/* 减少背景的透明度，方便辨识 */\\n.root___Hf5H2[data-mobile] .toolbarBg___i4oTA {\\n    filter: opacity(0.8);\\n  }\\n/* 设置面板所在的悬浮框样式 */\\n.SettingPanelPopper___uEBz3 {\\n  pointer-events: unset !important;\\n  transform: none !important;\\n  height: 0 !important;\\n  padding: 0 !important;\\n}\\n\\n.SettingPanel___ZRvFB {\\n  -webkit-user-select: text;\\n          user-select: text;\\n\\n  position: fixed;\\n  z-index: 1;\\n  top: 0;\\n  bottom: 0;\\n\\n  overflow: auto;\\n\\n  max-width: calc(100% - 5em);\\n  height: fit-content;\\n  max-height: 95%;\\n  margin: auto;\\n  border-radius: 0.3em;\\n\\n  font-size: 1.2em;\\n  color: var(--text);\\n\\n  background-color: var(--page-bg);\\n  box-shadow:\\n    rgb(0 0 0 / 20%) 0 3px 1px -2px,\\n    rgb(0 0 0 / 14%) 0 2px 2px 0,\\n    rgb(0 0 0 / 12%) 0 1px 5px 0;\\n}\\n\\n.SettingPanel___ZRvFB hr {\\n    margin: 0.5em 0;\\n    color: white;\\n  }\\n\\n.SettingPanel___ZRvFB > hr {\\n    margin: 0;\\n  }\\n\\n.SettingBlock___qxNyt {\\n  display: grid;\\n  grid-template-rows: max-content 1fr;\\n  transition: grid-template-rows 200ms ease-out;\\n}\\n\\n.SettingBlock___qxNyt .SettingBlockBody___Wirnd {\\n    z-index: 0;\\n    overflow: hidden;\\n    padding: 0 0.5em;\\n    padding-bottom: 1em;\\n  }\\n\\n:is(.SettingBlock___qxNyt .SettingBlockBody___Wirnd) > div + :is(.SettingBlock___qxNyt .SettingBlockBody___Wirnd) > div {\\n      margin-top: 1em;\\n    }\\n\\n:is(.SettingBlock___qxNyt .SettingBlockBody___Wirnd) input,:is(.SettingBlock___qxNyt .SettingBlockBody___Wirnd) textarea {\\n      width: 97%;\\n      margin-top: 0.3em;\\n    }\\n\\n.SettingBlock___qxNyt[data-show='false'] {\\n    grid-template-rows: max-content 0fr;\\n    padding-bottom: unset;\\n  }\\n\\n.SettingBlock___qxNyt[data-show='false'] .SettingBlockBody___Wirnd {\\n      padding: unset;\\n    }\\n\\n.SettingBlockSubtitle___cv0Ji {\\n  cursor: pointer;\\n\\n  position: sticky;\\n  z-index: 1;\\n  top: 0;\\n\\n  height: 3em;\\n  margin-bottom: 0.1em;\\n\\n  font-size: 0.7em;\\n  line-height: 3em;\\n  color: var(--text-secondary);\\n  text-align: center;\\n\\n  background-color: var(--page-bg);\\n}\\n\\n.SettingBlockBody___Wirnd .SettingBlockSubtitle___cv0Ji {\\n  position: unset;\\n  height: 1em;\\n  line-height: 1em;\\n}\\n\\n.SettingsItem___aJhRD {\\n  position: relative;\\n  display: flex;\\n  align-items: center;\\n  justify-content: space-between;\\n}\\n\\n:is(.SettingsItem___aJhRD,.SettingsShowItem___l-D2E) + .SettingsItem___aJhRD {\\n    margin-top: 1em;\\n  }\\n\\n.SettingsItem___aJhRD[data-disabled] {\\n    opacity: 0.5;\\n  }\\n\\n.SettingsItem___aJhRD[data-disabled] button {\\n      cursor: not-allowed;\\n    }\\n\\n.SettingsItemName___UP6zJ {\\n  max-width: calc(100% - 4em);\\n\\n  font-size: 0.9em;\\n  text-align: start;\\n  overflow-wrap: anywhere;\\n  white-space: pre-wrap;\\n}\\n\\n/* 开关式设置项 */\\n.SettingsItemSwitch___LVGr9 {\\n  cursor: pointer;\\n\\n  display: inline-flex;\\n  align-items: center;\\n\\n  width: 2.3em;\\n  height: 0.8em;\\n  margin: 0.3em;\\n  padding: 0;\\n  border: 0;\\n  border-radius: 1em;\\n\\n  background-color: var(--switch-bg);\\n}\\n\\n/* 开关里的圆形按钮 */\\n.SettingsItemSwitchRound___Ds0B8 {\\n  transform: translateX(-10%);\\n\\n  width: 1.15em;\\n  height: 1.15em;\\n  border-radius: 100%;\\n\\n  background: var(--switch);\\n  box-shadow:\\n    0 2px 1px -1px rgb(0 0 0 / 20%),\\n    0 1px 1px 0 rgb(0 0 0 / 14%),\\n    0 1px 3px 0 rgb(0 0 0 / 12%);\\n\\n  transition: transform 100ms;\\n}\\n\\n.SettingsItemSwitch___LVGr9[data-checked='true'] {\\n  background: var(--secondary-bg);\\n}\\n\\n.SettingsItemSwitch___LVGr9[data-checked='true'] .SettingsItemSwitchRound___Ds0B8 {\\n    transform: translateX(110%);\\n    background: var(--secondary);\\n  }\\n\\n/* 图标按钮式设置项 */\\n.SettingsItemIconButton___Cs7BQ {\\n  cursor: pointer;\\n\\n  position: absolute;\\n  right: 0;\\n\\n  height: 1em;\\n  border: none;\\n\\n  font-size: 1.5em;\\n  color: var(--text);\\n\\n  background-color: transparent;\\n}\\n\\n/* 选择器设置项 */\\n.SettingsItemSelect___CvFKx {\\n  cursor: pointer;\\n\\n  max-width: 6.5em;\\n  margin: 0;\\n  padding: 0.3em;\\n  border: none;\\n  border-radius: 5px;\\n\\n  font-size: 0.9em;\\n  color: var(--text);\\n\\n  background-color: var(--hover-bg-color);\\n  outline: none;\\n}\\n.SettingsItemSelect___CvFKx::picker(select) {\\n    color: var(--text);\\n    background-color: var(--page-bg);\\n  }\\n.SettingsItemSelect___CvFKx option {\\n    color: var(--text);\\n    background-color: var(--page-bg);\\n  }\\n\\n/* 关闭设置弹窗的遮罩 */\\n.closeCover___qLIp5 {\\n  position: fixed;\\n  top: 0;\\n  left: 0;\\n\\n  width: 100%;\\n  height: 100%;\\n}\\n\\n.SettingsShowItem___l-D2E {\\n  display: grid;\\n  transition: grid-template-rows 200ms ease-out;\\n}\\n\\n.SettingsShowItem___l-D2E > .SettingsShowItemBody___bgxxq {\\n    overflow: hidden;\\n    display: flex;\\n    flex-direction: column;\\n  }\\n\\n:is(.SettingsShowItem___l-D2E > .SettingsShowItemBody___bgxxq) > .SettingsItem___aJhRD {\\n      margin-top: 1em;\\n    }\\n\\n:is(.SettingsShowItem___l-D2E > .SettingsShowItemBody___bgxxq) > :is(textarea,input) {\\n      margin: 0.4em 0.2em 0;\\n      line-height: 1.2;\\n    }\\n\\n[data-only-number] {\\n  padding: 0 0.2em;\\n}\\n\\n[data-only-number] + span {\\n    margin-left: -0.1em;\\n  }\\n\\n.hotkeys___uu-Xe {\\n  position: relative;\\n  z-index: 1;\\n\\n  display: flex;\\n  flex-grow: 1;\\n  flex-wrap: wrap;\\n  align-items: center;\\n\\n  padding: 0.2em;\\n  padding-top: 2em;\\n  border-bottom: 1px solid var(--secondary-bg);\\n\\n  font-size: 0.9em;\\n  color: var(--text);\\n}\\n\\n.hotkeys___uu-Xe + .hotkeys___uu-Xe {\\n    margin-top: 0.5em;\\n  }\\n\\n.hotkeys___uu-Xe:last-child {\\n    border-bottom: none;\\n  }\\n\\n.hotkeysItem___d9IKS {\\n  cursor: pointer;\\n\\n  display: flex;\\n  align-items: center;\\n\\n  box-sizing: content-box;\\n  height: 1em;\\n  margin: 0.3em;\\n  padding: 0.2em 1.2em;\\n  border-radius: 0.3em;\\n\\n  font-family: serif;\\n\\n  outline: 1px solid;\\n  outline-color: var(--secondary-bg);\\n}\\n\\n.hotkeysItem___d9IKS > svg {\\n    display: none;\\n\\n    height: 1em;\\n    margin-left: 0.4em;\\n    border-radius: 1em;\\n\\n    color: var(--page-bg);\\n\\n    opacity: 0.5;\\n    background-color: var(--text);\\n  }\\n\\n:is(.hotkeysItem___d9IKS > svg):hover {\\n      opacity: 0.9;\\n    }\\n\\n.hotkeysItem___d9IKS:hover {\\n    padding: 0.2em 0.5em;\\n  }\\n\\n.hotkeysItem___d9IKS:hover > svg {\\n      display: unset;\\n    }\\n\\n.hotkeysItem___d9IKS:focus,.hotkeysItem___d9IKS:focus-visible {\\n    outline: var(--text) solid 2px;\\n  }\\n\\n.hotkeysHeader___jU7vr {\\n  position: absolute;\\n  top: 0;\\n  left: 0;\\n\\n  display: flex;\\n  align-items: center;\\n\\n  box-sizing: border-box;\\n  width: 100%;\\n  padding: 0 0.5em;\\n}\\n\\n.hotkeysHeader___jU7vr > p {\\n    line-height: 1em;\\n    text-align: start;\\n    overflow-wrap: anywhere;\\n    white-space: pre-wrap;\\n\\n    background-color: var(--page-bg);\\n  }\\n\\n.hotkeysHeader___jU7vr > div[title] {\\n    cursor: pointer;\\n\\n    transform: scale(0);\\n\\n    display: flex;\\n\\n    background-color: var(--page-bg);\\n\\n    transition: transform 100ms;\\n  }\\n\\n:is(.hotkeysHeader___jU7vr > div[title]) > svg {\\n      width: 1.6em;\\n    }\\n\\n.hotkeys___uu-Xe:hover div[title] {\\n  transform: scale(1);\\n}\\n\\n.scrollbar___hLToV {\\n  --arrow-y: clamp(\\n    0.45em,\\n    calc(var(--slider-midpoint)),\\n    calc(var(--scroll-length) - 0.45em)\\n  );\\n\\n  touch-action: none;\\n  -webkit-user-select: none;\\n          user-select: none;\\n\\n  position: absolute;\\n  z-index: 9;\\n  top: 1%;\\n  right: 3px;\\n\\n  display: flex;\\n  flex-direction: column;\\n\\n  width: 5px;\\n  height: 98%;\\n\\n  /* 扩大触发范围 */\\n  border-left: max(6vw, 1em) solid transparent;\\n}\\n\\n.scrollbar___hLToV > div {\\n    pointer-events: none;\\n\\n    display: flex;\\n    flex-direction: column;\\n    flex-grow: 1;\\n    align-items: center;\\n    justify-content: center;\\n  }\\n\\n.scrollbarPage___qghUs {\\n  transform-origin: bottom;\\n  transform: scaleY(1);\\n\\n  flex-grow: 1;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  background-color: var(--secondary);\\n\\n  transition: transform 1s;\\n}\\n\\n.scrollbarPage___qghUs[data-type='loaded'] {\\n    transform: scaleY(0);\\n  }\\n\\n.scrollbarPage___qghUs[data-upscale] {\\n    transform: scaleY(1);\\n    background-color: #b39ddb;\\n  }\\n\\n.scrollbarPage___qghUs[data-upscale='loading'] {\\n    background-color: #d1c4e9;\\n  }\\n\\n.scrollbarPage___qghUs[data-translation-type] {\\n    transform-origin: top;\\n    transform: scaleY(1);\\n    background-color: transparent;\\n  }\\n\\n.scrollbarPage___qghUs[data-translation-type='wait'] {\\n    background-color: #81c784;\\n  }\\n\\n.scrollbarPage___qghUs[data-translation-type='show'] {\\n    background-color: #4caf50;\\n  }\\n\\n.scrollbarPage___qghUs[data-translation-type='error'] {\\n    background-color: #f005;\\n  }\\n\\n.scrollbarPage___qghUs[data-type='wait'] {\\n    opacity: 0.4;\\n  }\\n\\n.scrollbarPage___qghUs[data-type='error'] {\\n    background-color: #f005;\\n  }\\n\\n/* 滚动条滑块 */\\n.scrollbarSlider___r1fWf {\\n  position: absolute;\\n  z-index: 1;\\n  transform: translateY(var(--slider-top));\\n\\n  justify-content: center;\\n\\n  width: 100%;\\n  height: var(--slider-height);\\n  border-radius: 1em;\\n\\n  opacity: 1;\\n  background-color: #fff5;\\n\\n  transition:\\n    transform 150ms,\\n    opacity 150ms;\\n}\\n\\n/* 悬浮框 */\\n.scrollbarPoper___XK5Rk {\\n  --poper-top: clamp(\\n    0%,\\n    calc(var(--slider-midpoint) - 50%),\\n    calc(var(--scroll-length) - 100%)\\n  );\\n\\n  position: absolute;\\n  right: 2em;\\n  transform: translateY(var(--poper-top));\\n\\n  width: fit-content;\\n  min-width: 1em;\\n  min-height: 1.5em;\\n  padding: 0.2em 0.5em;\\n  border-radius: 0.3em;\\n\\n  font-size: 0.8em;\\n  line-height: 1.5em;\\n  color: white;\\n  text-align: center;\\n  white-space: pre;\\n\\n  background-color: #303030;\\n}\\n\\n/* 悬浮框箭头 */\\n.scrollbar___hLToV::before {\\n  content: '';\\n\\n  position: absolute;\\n  right: 2em;\\n  transform: translate(140%, calc(var(--arrow-y) - 50%));\\n\\n  border: 0.4em solid transparent;\\n  border-left: 0.5em solid #303030;\\n\\n  background-color: transparent;\\n}\\n\\n/*\\n * 滚动条部件的显隐\\n */\\n\\n/* 悬浮提示默认隐藏 */\\n.scrollbar___hLToV::before,\\n.scrollbarPoper___XK5Rk {\\n  opacity: 0;\\n  transition:\\n    opacity 150ms,\\n    transform 150ms;\\n}\\n\\n/* 控制滚动条悬浮提示的显示 */\\n:is(.scrollbar___hLToV:hover,.scrollbar___hLToV[data-force-show]) .scrollbarPoper___XK5Rk,:is(.scrollbar___hLToV:hover,.scrollbar___hLToV[data-force-show]) .scrollbarSlider___r1fWf,:is(.scrollbar___hLToV:hover,.scrollbar___hLToV[data-force-show])::before {\\n    opacity: 1;\\n  }\\n\\n/* 拖动滚动条时取消移动过渡动画，确保跟手 */\\n.scrollbar___hLToV[data-drag]::before,.scrollbar___hLToV[data-drag] .scrollbarPoper___XK5Rk,.scrollbar___hLToV[data-drag] .scrollbarSlider___r1fWf {\\n    transition: opacity 150ms;\\n  }\\n\\n/* 实现自动隐藏 */\\n.scrollbar___hLToV[data-auto-hidden]:not([data-force-show]) .scrollbarSlider___r1fWf {\\n    opacity: 0;\\n  }\\n.scrollbar___hLToV[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider___r1fWf {\\n    opacity: 1;\\n  }\\n\\n/*\\n * 滚动条位置\\n */\\n\\n.scrollbar___hLToV[data-position='hidden'] {\\n  display: none;\\n}\\n\\n.scrollbar___hLToV[data-position='top'] {\\n  top: 1px;\\n\\n  /* 扩大触发范围 */\\n  border-bottom: max(6vh, 1em) solid transparent;\\n}\\n\\n.scrollbar___hLToV[data-position='top']::before {\\n    top: 1.2em;\\n    right: 0;\\n    transform: translate(var(--arrow-x), -120%);\\n    border-bottom: 0.5em solid #303030;\\n  }\\n\\n.scrollbar___hLToV[data-position='top'] .scrollbarPoper___XK5Rk {\\n    top: 1.2em;\\n  }\\n\\n.scrollbar___hLToV[data-position='bottom'] {\\n  top: unset;\\n  bottom: 1px;\\n\\n  /* 扩大触发范围 */\\n  border-top: max(6vh, 1em) solid transparent;\\n}\\n\\n.scrollbar___hLToV[data-position='bottom']::before {\\n    right: 0;\\n    bottom: 1.2em;\\n    transform: translate(var(--arrow-x), 120%);\\n    border-top: 0.5em solid #303030;\\n  }\\n\\n.scrollbar___hLToV[data-position='bottom'] .scrollbarPoper___XK5Rk {\\n    bottom: 1.2em;\\n  }\\n\\n.scrollbar___hLToV[data-position='top'],\\n.scrollbar___hLToV[data-position='bottom'] {\\n  --arrow-x: calc(var(--arrow-y) * -1 + 50%);\\n\\n  right: 1%;\\n\\n  flex-direction: row-reverse;\\n\\n  width: 98%;\\n  height: 5px;\\n  border-left: none;\\n}\\n\\n:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom'])::before {\\n    border-left: 0.4em solid transparent;\\n  }\\n\\n/* stylelint-disable-next-line no-descending-specificity */\\n\\n:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarSlider___r1fWf {\\n    transform: translateX(calc(var(--slider-top) * -1));\\n    width: var(--slider-height);\\n    height: 100%;\\n  }\\n\\n:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPoper___XK5Rk {\\n    right: unset;\\n    transform: translateX(calc(var(--poper-top) * -1));\\n    padding: 0.1em 0.3em;\\n  }\\n\\n[data-dir='ltr']:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) {\\n    --arrow-x: calc(var(--arrow-y) - 50%);\\n\\n    flex-direction: row;\\n  }\\n\\n[data-dir='ltr']:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom'])::before {\\n      right: unset;\\n      left: 0;\\n    }\\n\\n/* stylelint-disable-next-line no-descending-specificity */\\n\\n[data-dir='ltr']:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarSlider___r1fWf {\\n      transform: translateX(var(--top));\\n    }\\n\\n[data-dir='ltr']:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPoper___XK5Rk {\\n      transform: translateX(var(--poper-top));\\n    }\\n\\n/* 将 scaleY 改成 scaleX */\\n\\n:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPage___qghUs {\\n    transform: scaleX(1);\\n  }\\n\\n[data-type='loaded']:is(:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPage___qghUs) {\\n      transform: scaleX(0);\\n    }\\n\\n[data-translation-type]:is(:is(.scrollbar___hLToV[data-position='top'],.scrollbar___hLToV[data-position='bottom']) .scrollbarPage___qghUs) {\\n      transform: scaleX(1);\\n    }\\n\\n/* stylelint-disable-next-line no-descending-specificity */\\n\\n.scrollbar___hLToV[data-is-abreast-mode] .scrollbarPoper___XK5Rk {\\n    writing-mode: vertical-rl;\\n    line-height: 1.5em;\\n    text-orientation: upright;\\n  }\\n\\n.scrollbar___hLToV[data-is-abreast-mode][data-dir='ltr'] .scrollbarPoper___XK5Rk {\\n    writing-mode: vertical-lr;\\n  }\\n\\n/* 卷轴模式下取消滚动条的位移动画 */\\n.root___Hf5H2[data-scroll-mode] .scrollbar___hLToV::before,\\n.root___Hf5H2[data-scroll-mode] :is(.scrollbarSlider___r1fWf, .scrollbarPoper___XK5Rk) {\\n  transition: opacity 150ms;\\n}\\n\\n/* 移动端下禁用悬浮显示 */\\n:is(.root___Hf5H2[data-mobile] .scrollbar___hLToV:hover)::before,:is(.root___Hf5H2[data-mobile] .scrollbar___hLToV:hover) .scrollbarPoper___XK5Rk {\\n      opacity: 0;\\n    }\\n.touchAreaRoot___UN-W1 {\\n  pointer-events: none;\\n  -webkit-user-select: none;\\n          user-select: none;\\n\\n  position: absolute;\\n  top: 0;\\n\\n  display: grid;\\n  grid-template-columns: 1fr min(30%, 10em) 1fr;\\n  grid-template-rows: 1fr min(20%, 10em) 1fr;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  font-size: 3em;\\n  color: white;\\n  letter-spacing: 0.5em;\\n\\n  opacity: 0;\\n\\n  transition: opacity 400ms;\\n}\\n.touchAreaRoot___UN-W1[data-show] {\\n    opacity: 1;\\n  }\\n.touchAreaRoot___UN-W1 .touchArea___F6Hkh {\\n    display: flex;\\n    align-items: center;\\n    justify-content: center;\\n    text-align: center;\\n  }\\n[data-area='prev']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh),[data-area='PREV']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh) {\\n      background-color: #95e1d3e6;\\n    }\\n[data-area='menu']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh),[data-area='MENU']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh) {\\n      background-color: #fce38ae6;\\n    }\\n[data-area='next']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh),[data-area='NEXT']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh) {\\n      background-color: #f38181e6;\\n    }\\n[data-area='PREV']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh)::after {\\n      content: var(--i18n-touch-area-prev);\\n    }\\n[data-area='MENU']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh)::after {\\n      content: var(--i18n-touch-area-menu);\\n    }\\n[data-area='NEXT']:is(.touchAreaRoot___UN-W1 .touchArea___F6Hkh)::after {\\n      content: var(--i18n-touch-area-next);\\n    }\\n.touchAreaRoot___UN-W1[data-vert='true'] {\\n    flex-direction: column !important;\\n  }\\n.touchAreaRoot___UN-W1:not([data-turn-page]) .touchArea___F6Hkh[data-area='next'],.touchAreaRoot___UN-W1:not([data-turn-page]) .touchArea___F6Hkh[data-area='NEXT'],.touchAreaRoot___UN-W1:not([data-turn-page]) .touchArea___F6Hkh[data-area='prev'],.touchAreaRoot___UN-W1:not([data-turn-page]) .touchArea___F6Hkh[data-area='PREV'] {\\n      visibility: hidden;\\n    }\\n.touchAreaRoot___UN-W1[data-shrink-menu] {\\n    grid-template-columns: 1fr 2em 1fr;\\n  }\\n.touchAreaRoot___UN-W1[data-shrink-menu] .touchArea___F6Hkh[data-area='MENU'] {\\n      letter-spacing: 0;\\n    }\\n\\n.root___Hf5H2[data-mobile] .touchAreaRoot___UN-W1 {\\n    flex-direction: column !important;\\n    letter-spacing: 0;\\n  }\\n\\n.root___Hf5H2[data-mobile] [data-area]::after {\\n    font-size: 0.8em;\\n  }\\n\\n.root___Hf5H2 {\\n  position: relative;\\n\\n  overflow: hidden;\\n\\n  width: 100%;\\n  height: 100%;\\n\\n  font-size: 1em;\\n\\n  background-color: var(--bg);\\n  outline: 0;\\n}\\n\\n.root___Hf5H2 a {\\n    color: var(--text-secondary);\\n  }\\n\\n.root___Hf5H2[data-mobile] {\\n    font-size: 0.8em;\\n  }\\n\\n.hidden___rxU-6 {\\n  display: none !important;\\n}\\n\\n.invisible___cO-hs {\\n  visibility: hidden !important;\\n}\\n\\n.beautifyScrollbar___lb6kJ {\\n  /* 火狐的滚动条样式 */\\n  scrollbar-color: var(--scrollbar-slider) transparent;\\n  scrollbar-width: thin;\\n\\n  /* chrome 的滚动条样式 */\\n}\\n\\n.beautifyScrollbar___lb6kJ::-webkit-scrollbar {\\n    width: 5px;\\n    height: 10px;\\n  }\\n\\n.beautifyScrollbar___lb6kJ::-webkit-scrollbar-track {\\n    background: transparent;\\n  }\\n\\n.beautifyScrollbar___lb6kJ::-webkit-scrollbar-thumb {\\n    background: var(--scrollbar-slider);\\n  }\\n\\np,\\nimg {\\n  margin: 0;\\n}\\n\\n:where(div, div:focus, div:focus-within, div:focus-visible, button) {\\n  border: none;\\n  outline: none;\\n}\\n\\nblockquote {\\n  margin: 0.5em 0;\\n  padding: 0;\\n  padding-left: 1em;\\n  border-left: 0.25em solid var(--text-secondary, #607d8b);\\n\\n  font-size: 0.9em;\\n  font-style: italic;\\n  line-height: 1.2em;\\n  color: var(--text-secondary);\\n  text-align: start;\\n  overflow-wrap: anywhere;\\n  white-space: pre-wrap;\\n}\\n\\nsvg {\\n  width: 1em;\\n}\\n";
 //#endregion
 //#region src/components/Manga/index.tsx
 var _tmpl$ = /*#__PURE__*/ solid_js_web.template(\`<div>\`);
@@ -9105,6 +9261,7 @@ exports.showImgList = showImgList;
 exports.sliderHeight = sliderHeight;
 exports.sliderMidpoint = sliderMidpoint;
 exports.sliderTop = sliderTop;
+exports.stopAutoScroll = stopAutoScroll;
 exports.store = store;
 exports.switchAutoScroll = switchAutoScroll;
 exports.switchDir = switchDir;
@@ -10389,6 +10546,14 @@ const handleVersionUpdate = async () => {
 	if (helper.lang() === "zh") {
 		components_Toast.toast(() => {
 			const changes = Object.entries({
+				"12.9.0": {
+					"date": "2026-08-21",
+					"feat": [
+						"增加漫画滤镜功能",
+						"支持显示再漫画的评论",
+						"支持在卷轴模式下持续滚动"
+					]
+				},
 				"12.8.0": {
 					"date": "2026-08-21",
 					"feat": [
@@ -10750,6 +10915,7 @@ const setupSimple = async ({ name, initOptions, isMangaPage, onPrev, onNext, onE
 					setState("manga", "show", false);
 				};
 			});
+			helper.createEffectOn(() => store.manga.show, (show) => show && void scanner.triggerLazyLoad());
 			return () => scanner.stop();
 		} }
 	});
@@ -10993,7 +11159,10 @@ const triggerTurnPage = async (waitTime, runCondition) => {
 		behavior: "instant"
 	});
 };
+/** 触发图片的懒加载时的停留时间 */
 const waitTime = 300;
+/** 触发网页底部翻页的停留时间 */
+const turnPageWaitTime = 600;
 /** 触发页面上图片元素的懒加载 */
 const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondition) => {
 	for (const e of targetImgList) {
@@ -11001,8 +11170,7 @@ const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondit
 		if (!lazyLoadStateMap.has(e)) lazyLoadStateMap.set(e, createImgData(helper.isImageElement(e) ? e.src : ""));
 	}
 	for (const e of targetImgList) {
-		await helper.wait(runCondition);
-		await triggerTurnPage(0, runCondition);
+		if (!runCondition()) return;
 		if (!needTrigged(e)) continue;
 		const datasetUrl = getDatasetUrl(e);
 		if (datasetUrl) e.setAttribute("src", datasetUrl);
@@ -11013,7 +11181,7 @@ const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondit
 			runCondition
 		})) handleTrigged(e);
 	}
-	await triggerTurnPage(waitTime, runCondition);
+	await triggerTurnPage(turnPageWaitTime, runCondition);
 });
 //#endregion
 //#region src/userscript/autoImageScanner/imageSlot.ts
@@ -11056,7 +11224,7 @@ const findSimilarImageSlots = (element, threshold) => {
 		if (siblingList.length >= threshold) {
 			const similarElements = [];
 			for (const sibling of siblingList) {
-				if (!(sibling instanceof HTMLElement) || !isSimilarElement(sibling, current) || isImageHostIneligible(sibling) || !hasValidSize(sibling)) continue;
+				if (!(sibling instanceof HTMLElement) || !isSimilarElement(sibling, current) || isImageHostIneligible(sibling) || !helper.isImageElement(sibling) && !hasValidSize(sibling)) continue;
 				similarElements.push(sibling);
 			}
 			if (similarElements.length >= threshold) return similarElements;
@@ -12181,16 +12349,18 @@ const otherSite = async () => {
 		core.toast.dismiss("no_img");
 		return scanner.imgList;
 	} });
-	setState("manga", "onShowImgsChange", helper.throttle((showImgs) => {
+	setState("manga", { onShowImgsChange: helper.throttle((showImgs) => {
 		if (!store.manga.show) return;
 		scanner.slotElements[[...showImgs].at(-1)]?.scrollIntoView({
 			behavior: "instant",
 			block: "end"
 		});
-	}, 1e3));
+	}, 1e3) });
 	helper.createEffectOn(() => store.manga.show, (show) => {
-		if (show) laseScroll = window.scrollY;
-		else window.scroll({
+		if (show) {
+			laseScroll = window.scrollY;
+			scanner.triggerLazyLoad();
+		} else window.scroll({
 			top: laseScroll,
 			behavior: "instant"
 		});
@@ -12573,8 +12743,8 @@ const mobileApi = new class {
 		...details
 	}, ...args);
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://mapi.copy20.com",
 		"https://api.mangacopy.com",
+		"https://mapi.copy20.com",
 		"https://api.2026copy.com",
 		"https://api.copy3000.com"
 	], {
@@ -12599,17 +12769,17 @@ const pcApi = new class {
 		Authorization: token ? \`Token \${token}\` : ""
 	};
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://www.manga2026.xyz",
-		"https://mapi.hotmangasd.com",
-		"https://api.2024manga.com",
-		"https://api.manga2025.com",
-		"https://mapi.hotmangasf.com",
 		"https://mapi.hotmangasg.com",
-		"https://mapi.fgjfghkkcenter.club",
+		"https://mapi.fgjfghkk.club",
 		"https://mapi.elfgjfghkk.club",
 		"https://www.manga2025.com",
+		"https://api.manga2025.com",
+		"https://mapi.fgjfghkkcenter.club",
+		"https://mapi.hotmangasd.com",
+		"https://www.manga2026.xyz",
 		"https://m.manga2025.com",
-		"https://mapi.fgjfghkk.club"
+		"https://mapi.hotmangasf.com",
+		"https://api.2024manga.com"
 	], {
 		responseType: "json",
 		headers: this.headers,
@@ -17490,6 +17660,14 @@ const toImgList = (data) => data.pages.map((page) => ({
 	height: page.height
 }));
 //#endregion
+//#region src/userscript/zaimanhuaApi.ts
+/** 获取再漫画吐槽列表 */
+const getZaiManHuaCommentList = async (comicId, chapterId) => {
+	const { errno, errmsg, data: { list = [] } = {} } = (await request.request(`https://v4api.zaimanhua.com/app/v1/viewpoint/list?type=0&comicId=${comicId}&chapterId=${chapterId}`, { responseType: "json" })).response;
+	if (errno) throw new Error(errmsg || "获取吐槽列表失败");
+	return list.map((comment) => comment[7]).filter(Boolean);
+};
+//#endregion
 //#region src/index.ts
 try {
 	switch (location.hostname) {
@@ -17538,6 +17716,7 @@ try {
 		case "2025copy.com":
 		case "www.copy20.com":
 		case "copy20.com":
+		case "www.copy4000.com":
 		case "mangacopy.com":
 		case "www.mangacopy.com":
 			selfImport("site/copymanga");
@@ -17562,7 +17741,19 @@ try {
 					return helper.querySelectorAll(".scrollbar-demo-item img").map((img) => img.src);
 				},
 				onNext: () => helper.querySelectorClick("#next_chapter"),
-				onPrev: () => helper.querySelectorClick("#prev_chapter")
+				onPrev: () => helper.querySelectorClick("#prev_chapter"),
+				handler: ({ setState }) => {
+					const [, , , comicId, chapterId] = location.pathname.split("/");
+					if (!comicId || !chapterId) throw new Error(helper.t("site.changed_load_failed"));
+					(async () => {
+						try {
+							const comments = await getZaiManHuaCommentList(comicId, chapterId);
+							if (comments.length > 0) setState("manga", "commentList", comments);
+						} catch (error) {
+							helper.log.error(error);
+						}
+					})();
+				}
 			});
 			break;
 		case "m.zaimanhua.com": {
@@ -17596,6 +17787,16 @@ try {
 						onNext: createChapterNav(chapterIndex + 1)
 					});
 					return (await getPageData(comicId, chapterId)).page_url_hd;
+				},
+				handler: ({ setState }, { comicId, chapterId }) => {
+					(async () => {
+						try {
+							const comments = await getZaiManHuaCommentList(comicId, chapterId);
+							if (comments.length > 0) setState("manga", "commentList", comments);
+						} catch (error) {
+							helper.log.error(error);
+						}
+					})();
 				}
 			});
 			break;
@@ -17792,17 +17993,14 @@ try {
 				buttonDom.style.setProperty("background-color", "#607d8b");
 				buttonDom.style.setProperty("background-image", "none");
 			}
-			let getImgList;
-			if (unsafeWindow.imglist) getImgList = () => unsafeWindow.imglist.filter(({ caption }) => caption !== "喜歡紳士漫畫的同學請加入收藏哦！").map(({ url }) => url);
-			else if (location.pathname.includes("-aid-")) getImgList = async () => {
-				const id = /aid-(?<id>\d+).html/u.exec(location.pathname)?.groups?.id;
-				if (!id) throw new Error(helper.t("site.changed_load_failed"));
-				const res = await core.request(`/photos-item-aid-${id}.html`);
+			const match = /\/photos-(?<type>slist|slide|list)-aid-(?<id>\d+)/u.exec(location.pathname)?.groups;
+			if (!match?.type || !match?.id || match?.type === "index") break;
+			const getImgList = unsafeWindow.imglist ? () => unsafeWindow.imglist.filter(({ caption }) => caption !== "喜歡紳士漫畫的同學請加入收藏哦！").map(({ url }) => url) : async () => {
+				const res = await core.request(`/photos-item-aid-${match.id}.html`);
 				const pageUrl = /"page_url":(?<pageUrl>\[.+\]),/u.exec(res.responseText)?.groups.pageUrl;
 				if (!pageUrl) throw new Error(helper.t("site.changed_load_failed"));
 				return eval(pageUrl);
 			};
-			else break;
 			core.setup({
 				name: "wnacg",
 				getImgList
@@ -17860,7 +18058,8 @@ try {
 			core.setup({
 				name: "hitomi",
 				isMangaPage: () => helper.wait(() => unsafeWindow.galleryinfo && Reflect.has(unsafeWindow.galleryinfo, "files") && unsafeWindow.galleryinfo.type !== "anime", 5e3),
-				getImgList: () => unsafeWindow.galleryinfo.files.map((img) => unsafeWindow.url_from_url_from_hash(unsafeWindow.galleryinfo.id, img, "webp"))
+				getImgList: () => unsafeWindow.galleryinfo.files.map((img) => unsafeWindow.url_from_url_from_hash(unsafeWindow.galleryinfo.id, img, "webp")),
+				initOptions: { defaultOption: { imgRecognition: { enabled: true } } }
 			});
 			break;
 		case "hdoujin.org": {

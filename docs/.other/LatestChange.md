@@ -1,11 +1,7 @@
-## [12.8.0](https://github.com/hymbz/ComicReadScript/compare/v12.7.1...v12.8.0) (2026-08-21)
+## [12.9.0](https://github.com/hymbz/ComicReadScript/compare/v12.8.0...v12.9.0) (2026-08-21)
 
 ### Features
 
-- :sparkles: 增加滚动动画时长的配置项 ([1d4c3d3](https://github.com/hymbz/ComicReadScript/commit/1d4c3d3724733848d661e01d3abf5bea8360a331))
-- :sparkles: 增加可配置的翻页滚动动画 ([48a0818](https://github.com/hymbz/ComicReadScript/commit/48a08185b844d7019c74817269ff72de3849b710)), closes [#207](https://github.com/hymbz/ComicReadScript/issues/207)
-- :sparkles: 优化简易阅读模式的图片选择机制，尽量排除干扰项 ([06b406a](https://github.com/hymbz/ComicReadScript/commit/06b406ad470015f537b9d54ffbfb8f947711b5eb)), closes [#344](https://github.com/hymbz/ComicReadScript/issues/344)
-
-### Bug Fixes
-
-- :bug: 修复在绅士漫画上的部分网页失效的 bug ([70d4a29](https://github.com/hymbz/ComicReadScript/commit/70d4a29bb96d5abcd4f6bf6845e24b9c6af8f4bc)), closes [337784#comment-663678](https://sleazyfork.org/scripts/374903/discussions/337784#comment-663678)
+- :sparkles: 增加漫画滤镜功能 ([c68128b](https://github.com/hymbz/ComicReadScript/commit/c68128b2c931511d14c6a9c8d4da281c8929d43e)), closes [330969#comment-651866](https://sleazyfork.org/scripts/374903/discussions/330969#comment-651866)
+- :sparkles: 支持显示再漫画的评论 ([285e30e](https://github.com/hymbz/ComicReadScript/commit/285e30ecb81a0e70d4b60ba4f0e474cf738dc91d)), closes [332149#comment-653812](https://sleazyfork.org/scripts/374903/discussions/332149#comment-653812)
+- :sparkles: 支持在卷轴模式下持续滚动 ([e3f96f7](https://github.com/hymbz/ComicReadScript/commit/e3f96f772582454d335e9fc1f42527a6baa075fb)), closes [336859#comment-661864](https://sleazyfork.org/scripts/374903/discussions/336859#comment-661864)
