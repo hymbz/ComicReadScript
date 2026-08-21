@@ -640,6 +640,10 @@ try {
                 'webp',
               ) as string,
           ),
+        initOptions: {
+          // 默认开启图像识别，避免图片 url 过期后还要刷新
+          defaultOption: { imgRecognition: { enabled: true } },
+        },
       });
       break;
     }
