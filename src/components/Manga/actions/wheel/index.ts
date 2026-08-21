@@ -4,6 +4,7 @@ import { openScrollLock } from '../helper';
 import { isAbreastMode, isScrollMode } from '../memo';
 import { scrollBy } from '../scroll';
 import { handleScrollModeZoom } from '../scrollMode';
+import { resetPage } from '../show';
 import { stopAutoScroll } from '../switch';
 import { finishTurnAnimation, turnPageAnimation } from '../turnPageAnimator';
 import { zoom } from '../zoom';
@@ -11,6 +12,25 @@ import { detectScrollDevice } from './scrollDevice';
 import { wheelRatchet } from './wheelRatchet';
 
 let firstWheelTimer = 0;
+
+/** 获取滚轮事件的主轴向与主轴向滚动量 */
+const getWheelAxis = (e: WheelEvent) => {
+  const absDeltaX = Math.abs(e.deltaX);
+  const absDeltaY = Math.abs(e.deltaY);
+  const horizontal = absDeltaX > absDeltaY;
+  const delta = horizontal ? e.deltaX : e.deltaY;
+  const absDelta = horizontal ? absDeltaX : absDeltaY;
+  return { horizontal, delta, absDelta };
+};
+
+/** 根据主轴向与漫画方向计算翻页方向 */
+const getWheelDir = (horizontal: boolean, delta: number): Dir => {
+  if (horizontal) {
+    if (store.option.dir === 'rtl') return delta < 0 ? 'next' : 'prev';
+    return delta > 0 ? 'next' : 'prev';
+  }
+  return delta > 0 ? 'next' : 'prev';
+};
 
 /** A 类设备直接翻页，不经过虚拟棘轮 */
 const turnPageByWheel = (dir: Dir) => {
@@ -29,12 +49,15 @@ export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
 
-  const isWheelDown = e.deltaY > 0;
-  const dir = isWheelDown ? 'next' : 'prev';
-  const absDeltaY = Math.abs(e.deltaY);
+  const { horizontal, delta, absDelta } = getWheelAxis(e);
+  const isPositiveDelta = delta > 0;
+  const dir = getWheelDir(horizontal, delta);
 
   // 忽略滚动量为 0 的事件（如触摸板抬手）
-  if (absDeltaY === 0) return;
+  if (absDelta === 0) return;
+
+  // 普通竖向卷轴模式不处理横向滚轮
+  if (isScrollMode() && horizontal) return;
 
   // 卷轴模式下的图片缩放
   if (
@@ -43,12 +66,20 @@ export const handleWheel = (e: WheelEvent) => {
     store.option.zoom.ratio === 100
   ) {
     e.preventDefault();
-    return handleScrollModeZoom(isWheelDown ? 'sub' : 'add');
+    return handleScrollModeZoom(isPositiveDelta ? 'sub' : 'add');
   }
 
   if (e.ctrlKey || e.altKey) {
     e.preventDefault();
-    return zoom(store.option.zoom.ratio + (isWheelDown ? -25 : 25), e);
+    return zoom(store.option.zoom.ratio + (isPositiveDelta ? -25 : 25), e);
+  }
+
+  // 根据主轴向切换漫画排列方向
+  if (store.page.vertical === horizontal) {
+    setState((state) => {
+      state.page.vertical = !horizontal;
+      resetPage(state);
+    });
   }
 
   // 只有卷轴模式可以直接滚动网页
@@ -71,7 +102,7 @@ export const handleWheel = (e: WheelEvent) => {
   }
 
   // 过小的滚动量（如触摸板模拟出的惯性滚动）不触发结束页，但仍会累计棘轮进度
-  if (absDeltaY >= 5 && handleEndTurnPage(dir)) {
+  if (absDelta >= 5 && handleEndTurnPage(dir)) {
     openScrollLock();
     return e.preventDefault();
   }
@@ -79,7 +110,7 @@ export const handleWheel = (e: WheelEvent) => {
   // 并排卷轴模式下
   if (isAbreastMode() && store.option.zoom.ratio === 100) {
     e.preventDefault();
-    scrollBy(e.deltaY, true);
+    scrollBy(delta, true);
   }
 
   if (store.option.scrollMode.enabled) return;
@@ -87,7 +118,9 @@ export const handleWheel = (e: WheelEvent) => {
   // A 类设备直接按方向翻页
   if (store.scrollDeviceType === 'a') return turnPageByWheel(dir);
 
-  return wheelRatchet.handleContinuousWheel(e);
+  return wheelRatchet.handleContinuousWheel(
+    dir === 'next' ? -absDelta : absDelta,
+  );
 };
 
 export * from './wheelRatchet';

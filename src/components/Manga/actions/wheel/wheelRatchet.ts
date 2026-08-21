@@ -56,11 +56,11 @@ export const wheelRatchet = new (class {
   }, 300);
 
   /** 处理滚动产生的连续位移，通过虚拟棘轮（累计满一个步长）实现翻页 */
-  handleContinuousWheel(e: WheelEvent) {
+  handleContinuousWheel(delta: number) {
     if (store.option.scrollMode.enabled) return;
 
     openScrollLock();
-    this.wheelDy += Math.floor(-e.deltaY);
+    this.wheelDy += Math.floor(delta);
     this.processWheelThrottled();
     this.handleWheelEnd();
   }
