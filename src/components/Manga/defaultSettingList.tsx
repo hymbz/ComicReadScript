@@ -2,6 +2,7 @@ import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/f
 import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
 import { clamp, lang, needDarkMode, setLang, t, throttle } from 'helper';
 import { type Component, Show } from 'solid-js';
+import { supportWorker } from 'userscript/supportWorker';
 
 import {
   autoPageNum,
@@ -487,7 +488,7 @@ export const defaultSettingList: () => SettingList = () => [
           </blockquote>
         </Show>
 
-        <Show when={!store.supportWorker}>
+        <Show when={!supportWorker}>
           <blockquote>
             {/* oxlint-disable-next-line solid/no-innerhtml */}
             <p innerHTML={t('setting.option.img_recognition_warn_2')} />

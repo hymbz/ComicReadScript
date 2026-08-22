@@ -77,6 +77,8 @@ export default defineConfig({
     ],
     // 禁止在 Promise executor 中使用 async 函数
     'no-async-promise-executor': 'off',
+    // 禁止在 Promise 中 return
+    'no-promise-executor-return': 'off',
     // 禁止在循环中使用 await
     'no-await-in-loop': 'off',
     // 禁止使用 console

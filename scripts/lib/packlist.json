@@ -11,6 +11,7 @@
     "userscript/detectAd",
     "userscript/core",
     "userscript/autoImageScanner",
+    "userscript/supportWorker",
     "worker/detectAd",
     "worker/ImageRecognition",
     "worker/ImageUpscale",

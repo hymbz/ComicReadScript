@@ -252,15 +252,6 @@ export const useInit = (props: MangaProps) => {
     throttle(handleImgList, 500),
   );
 
-  // 通过手动创建一个 Worker 来检测是否支持 Worker，避免因为 CSP 限制而出错
-  setTimeout(() => {
-    const codeUrl = URL.createObjectURL(
-      new Blob(['self.close();'], { type: 'text/javascript' }),
-    );
-    setTimeout(() => URL.revokeObjectURL(codeUrl));
-    setState('supportWorker', Boolean(new Worker(codeUrl)));
-  });
-
   // 更新 fullscreen 参数
   refs.root.addEventListener('fullscreenchange', () => {
     if (!document.fullscreenElement) return setState('fullscreen', false);

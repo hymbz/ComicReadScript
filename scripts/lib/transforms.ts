@@ -25,7 +25,7 @@ export const transforms = {
       ],
     };
 
-    return `${createMetaHeader(metaData)}\n${importCode}\n${code}`;
+    return [createMetaHeader(metaData), importCode, code].join('\n');
   },
 
   dev: (code) =>

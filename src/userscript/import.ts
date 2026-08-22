@@ -1,6 +1,7 @@
 import { libCodeMap } from 'virtual:lib-code';
 
-let supportWorker = typeof Worker !== 'undefined';
+// oxlint-disable-next-line prefer-const
+let supportWorker: boolean | undefined;
 
 const gmApi = {
   GM: typeof GM === 'undefined' ? undefined : GM,
@@ -102,9 +103,7 @@ moduleMap['Comlink'].expose(exports);`;
         worker,
       );
       return;
-    } catch {
-      supportWorker = false;
-    }
+    } catch {}
   }
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
@@ -189,3 +188,5 @@ export const require = (name: string): unknown => {
 };
 
 crsLib.require = require;
+({ supportWorker } =
+  require('userscript/supportWorker') as typeof import('userscript/supportWorker'));
