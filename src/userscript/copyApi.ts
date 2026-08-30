@@ -2,11 +2,12 @@ import { toast } from 'core';
 import { querySelector, t } from 'helper';
 import { request } from 'request';
 
-let contentKey = '';
-let decryptKey = '';
+let contentKey: string | undefined;
+let decryptKey: string | undefined;
 
 const getKeys = async (url?: string): Promise<[string, string]> => {
-  if (contentKey && decryptKey) return [contentKey, decryptKey];
+  if (contentKey !== undefined && decryptKey !== undefined)
+    return [contentKey, decryptKey];
 
   // 热辣漫画放在网页元素里
   if (querySelector('.disData[contentkey]')) {
@@ -20,10 +21,10 @@ const getKeys = async (url?: string): Promise<[string, string]> => {
   }
 
   // 拷贝 PC 端直接放在网页变量里，不过另一个变量的名字会变
-  if (unsafeWindow.contentKey && unsafeWindow.cct) {
+  if (unsafeWindow.contentKey !== undefined && unsafeWindow.cct !== undefined) {
     contentKey = unsafeWindow.contentKey; // oxlint-disable-line prefer-destructuring
     decryptKey = unsafeWindow.cct;
-    return [contentKey, decryptKey];
+    return [contentKey!, decryptKey!];
   }
 
   // 如果另一个变量的名字变了，或者是在拷贝的移动端，就得从 PC 端的网页里解析获取了
@@ -35,24 +36,17 @@ const getKeys = async (url?: string): Promise<[string, string]> => {
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36',
       },
     });
-    const { script } = html.responseText.match(
-      /(?<=<script>\s+)(?<script>var .+?contentKey =.+?)(?=<\/script)/gsu,
-    )!.groups;
 
-    const res: Record<string, string> = {};
-    for (const {
-      groups: { key, value },
-    } of script.matchAll(/var (?<key>\S+) = '(?<value>.+?)';\n/gu))
-      res[key] = value;
-
-    contentKey = res.contentKey; // oxlint-disable-line prefer-destructuring
-
-    const passKey = Object.keys(res).find((key) => key !== 'contentKey');
-    if (!passKey) {
+    const match =
+      /(?:var\s+contentKey\s*=\s*['"](?<contentKey>[^'"]*)['"])|(?:var\s+(?!contentKey\b)[a-zA-Z_][a-zA-Z0-9_]*\s*=\s*['"](?<decryptKey>[^'"]*)['"])/gsu.exec(
+        html.responseText,
+      )?.groups;
+    if (!match) {
       toast.error(t('site.changed_load_failed'));
       throw new Error(t('site.changed_load_failed'));
     }
-    decryptKey = res[passKey];
+
+    ({ contentKey, decryptKey } = match);
     return [contentKey, decryptKey];
   }
 
