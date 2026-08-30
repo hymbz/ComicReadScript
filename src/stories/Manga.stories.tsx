@@ -1,3 +1,4 @@
+import { DebugPopup } from 'components/DebugPopup';
 import {
   Manga,
   type MangaProps,
@@ -7,12 +8,11 @@ import {
   setState,
 } from 'components/Manga';
 import { Toaster, toast } from 'components/Toast';
-import { type RequestDetails, request } from 'request';
 import rfdc from 'rfdc';
 import { mergeProps } from 'solid-js';
 import { type Meta, type StoryObj } from 'storybook-solidjs-vite';
 
-import { imgList, waitImgLoaded } from './helper';
+import { imgList, mockGM_xmlhttpRequest, waitImgLoaded } from './helper';
 
 const cloneArray = (arr: string[], count: number) =>
   Array.from<string[]>({ length: count }).fill(arr).flat();
@@ -25,8 +25,7 @@ export type Props = MangaProps & {
 };
 export type PartialProps = Partial<Props>;
 
-window.GM_xmlhttpRequest = ((details: RequestDetails<any>) =>
-  request(details.url!, { ...details, fetch: true })) as any;
+window.GM_xmlhttpRequest = mockGM_xmlhttpRequest as any;
 
 const meta = {
   title: '漫画',
@@ -58,6 +57,7 @@ const meta = {
           })}
         />
         <Toaster />
+        <DebugPopup />
       </>
     );
   },

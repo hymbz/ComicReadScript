@@ -126,11 +126,5 @@
     "vitepress": "^2.0.0-alpha.17",
     "vitest": "^4.1.10",
     "wdio-vscode-service": "^8.0.0"
-  },
-  "pnpm": {
-    "neverBuiltDependencies": [],
-    "overrides": {
-      "dts-bundle-generator>typescript": "5.9.3"
-    }
   }
 }

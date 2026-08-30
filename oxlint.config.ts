@@ -281,6 +281,8 @@ export default defineConfig({
     'unicorn/switch-case-braces': 'off',
     // 禁止将 await 表达式的结果作为成员表达式的一部分
     'unicorn/no-await-expression-member': 'off',
+    // 禁止要求数字字面量区分大小写
+    'unicorn/number-literal-case': 'off',
 
     // Promise
 
