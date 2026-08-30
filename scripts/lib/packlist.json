@@ -18,6 +18,7 @@
     "userscript/otherSite",
     "userscript/ehTagRules"
   ],
+  "devPacklist": ["components/DebugPopup"],
   "umdPacklist": [
     "helper/languages",
     "helper",

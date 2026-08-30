@@ -1,19 +1,30 @@
-// oxlint-disable max-params
-import { toGrayList } from './workHelper';
+import { toGrayListByRgb } from '.';
 
 // 通过计算 pHash 的汉明距离来判断图片相似度
 // 优点是可以识别黑白化和轻微的形变剪切，并且不需要两张图片长宽相同
 // 缺点是需要使用 Canvas 进行缩放
 
+/** 计算图片哈希的输入参数 */
+type ImgHashInput = {
+  /** 原始图片像素数据 */
+  rawImgData: Uint8ClampedArray;
+  /** 原始图片宽度 */
+  width: number;
+  /** 原始图片高度 */
+  height: number;
+  /** 哈希边长，默认 8 */
+  size?: number;
+};
+
 /** 缩小图片 */
-const resizeImg = async (
-  data: Uint8ClampedArray,
-  width: number,
-  height: number,
+const resizeImg = async ({
+  rawImgData,
+  width,
+  height,
   size = 8,
-) => {
+}: ImgHashInput) => {
   const imgBitmap = await createImageBitmap(
-    new ImageData(data as ImageDataArray, width, height),
+    new ImageData(rawImgData as ImageDataArray, width, height),
   );
   const canvas = new OffscreenCanvas(size, size);
   const ctx = canvas.getContext('2d')!;
@@ -49,15 +60,15 @@ const getAverage = (pixels: number[]) => {
 
 // by: https://github.com/freearhey/phash-js
 /** 计算图片哈希 */
-export const getImgHash = async (
-  rawImgData: Uint8ClampedArray,
-  width: number,
-  height: number,
+export const getImgHash = async ({
+  rawImgData,
+  width,
+  height,
   size = 8,
-) => {
-  const imgData = await resizeImg(rawImgData, width, height);
+}: ImgHashInput) => {
+  const imgData = await resizeImg({ rawImgData, width, height, size });
 
-  const grayList = toGrayList(imgData, 0);
+  const grayList = toGrayListByRgb(imgData, 0);
 
   const rows: number[][] = [];
   for (let y = 0; y < size; y++) {

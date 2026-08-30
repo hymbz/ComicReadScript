@@ -4,7 +4,10 @@ import fs from 'node:fs';
 import { buildAdGuard, buildUMD } from './additional-variants';
 import { isDevMode } from './lib/ctx';
 import { docGeneratorPlugin } from './lib/doc-generator';
-import { packlist } from './lib/packlist.json' with { type: 'json' };
+import {
+  devPacklist,
+  packlist,
+} from './lib/packlist.json' with { type: 'json' };
 import { createBundleConfigs } from './lib/shared-config';
 import { transforms } from './lib/transforms';
 import {
@@ -26,15 +29,21 @@ const siteList = fs
     item.isFile() ? `site/${item.name}` : `site/${item.name}/index.tsx`,
   );
 
+const mainPacklist = isDevMode ? [...packlist, ...devPacklist] : packlist;
+
 const closes = await runWatcher(
   ...createBundleConfigs(
-    [...packlist, ...siteList, { path: 'dev', transforms: [transforms.dev] }],
+    [
+      ...mainPacklist,
+      ...siteList,
+      { path: 'dev', transforms: [transforms.dev] },
+    ],
     [
       {
         path: 'userscript/import',
         plugins: [
           virtualPacklistPlugin([
-            ...packlist,
+            ...mainPacklist,
             ...siteList.map((path) =>
               path.replace(/(?<_>\/index)?\.tsx?/u, ''),
             ),

@@ -507,7 +507,28 @@ export const defaultSettingList: () => SettingList = () => [
           value={store.option.imgRecognition.pageFill}
           onChange={() => switchImgRecognition('pageFill')}
         />
-
+        <SettingsItemSwitch
+          name={t('setting.option.img_recognition_crop')}
+          disabled={!store.option.imgRecognition.enabled}
+          value={store.option.imgRecognition.crop}
+          onChange={() => switchImgRecognition('crop')}
+        />
+        <SettingsItemNumber
+          name={t('setting.option.img_recognition_keepMargin')}
+          disabled={!store.option.imgRecognition.enabled}
+          maxLength={4}
+          suffix="px"
+          step={1}
+          onChange={(val) =>
+            setOption((draftOption) => {
+              draftOption.imgRecognition.keepMargin = Math.max(
+                0,
+                Math.round(val),
+              );
+            })
+          }
+          value={store.option.imgRecognition.keepMargin}
+        />
         <Show when={!store.isMobile}>
           <SettingsItemSwitch
             name={t('upscale.title')}

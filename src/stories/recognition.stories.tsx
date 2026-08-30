@@ -55,7 +55,10 @@ export const 识别背景色 = {
       '/杂/纯黑背景.webp',
       '/杂/渐变背景.webp',
     ],
-    option: { imgRecognition: { enabled: true } },
+    option: {
+      imgRecognition: { enabled: true, background: true },
+      scrollMode: { enabled: true },
+    },
   } satisfies PartialProps,
   async play() {
     await waitImgLoaded();
@@ -72,6 +75,26 @@ export const 自动调整页面填充 = {
   async play() {
     await waitImgLoaded();
     await handlePercy();
+  },
+};
+
+export const 边缘裁切 = {
+  args: {
+    图源: undefined,
+    imgList: ['/杂/拷贝水印.webp', ...imgList['方便的陪跑友（四格）']],
+    option: {
+      customBackground: 'purple',
+      imgRecognition: {
+        enabled: true,
+        background: false,
+        pageFill: false,
+        crop: true,
+      },
+    },
+  } satisfies PartialProps,
+  async play() {
+    await waitImgLoaded();
+    await handlePercy((url) => store.imgMap[url].blankMargin !== undefined);
   },
 };
 

@@ -1,72 +1,60 @@
-import { type State } from 'components/Manga';
-
 import { getBackground } from './background';
+import { detectBackgroundRegions } from './backgroundDetection';
 import { getBlankMargin } from './blankMargin';
-import {
-  type ImgContext,
-  type ImgContextMargin,
-  mainFn,
-  resizeImg,
-  toGrayList,
-} from './workHelper';
+import { ImgContext } from './imgContext';
+import { type ImgContextInput } from './types';
+import { mainFn } from './workHelper';
 
-export { getAreaEdgeRatio } from './colorArea';
 export { setMainFn } from './workHelper';
-export type { MainFn } from './workHelper';
+export type { ImgContext } from './imgContext';
+export type { MainFn } from './types';
 
-// oxlint-disable-next-line max-params
-export const recognitionImg = (
+// /** 把 ImgContext 转成可通过 Comlink 传输的调试数据，提前计算 getter */
+// const toDebugImg = (img: ImgContext): ImgContext =>
+//   ({
+//     data: img.data,
+//     width: img.width,
+//     height: img.height,
+//     url: img.url,
+//     index: img.index,
+//     version: img.version,
+//     grayList: img.grayList,
+//   }) as unknown as ImgContext;
+
+export const recognitionImg = async (
   imgData: Uint8ClampedArray,
-  width: number,
-  height: number,
-  url: string,
-  option: State['option']['imgRecognition'],
+  data: Omit<ImgContextInput, 'imgData'>,
 ) => {
-  const startTime = Date.now();
+  await Promise.resolve();
 
-  const { w, h, data } = resizeImg(imgData, width, height);
-  // if (isDevMode) mainFn.showCanvas?.(data, w, h);
+  const img = new ImgContext({ imgData, ...data });
+  // if (isDevMode) {
+  //   await mainFn.showImage?.(img);
+  //   img.logger.mark('调试数据渲染完成');
+  // }
 
-  const grayList = toGrayList(data, 5);
-  // if (isDevMode) mainFn.showGrayList?.(grayList, w, h);
-
-  const context = { data, grayList, width: w, height: h } as ImgContext;
-
-  let blankMargin: ReturnType<typeof getBlankMargin> | undefined;
-  if (option.pageFill || option.background) {
-    blankMargin = getBlankMargin(context);
-    if (blankMargin) {
-      for (const key of ['top', 'bottom', 'left', 'right'] as const)
-        blankMargin[key] &&= blankMargin[key] / w;
-      mainFn.setImg(url, 'blankMargin', {
-        left: blankMargin.left,
-        right: blankMargin.right,
-      });
-      mainFn.updatePageData();
-      (context as ImgContextMargin).blankMargin = blankMargin;
-    } else mainFn.setImg(url, 'blankMargin', null);
+  if (data.option.pageFill || data.option.crop) {
+    const blankMargin = getBlankMargin(img);
+    mainFn.setImg({
+      url: img.url,
+      key: 'blankMargin',
+      val: blankMargin,
+      version: img.version,
+    });
+    if (blankMargin) mainFn.updatePageData();
   }
 
-  let bgColor: string | undefined;
-  if (option.background) {
-    // 虽然也想支持渐变背景，但浏览器上不像手机端那样只需要显示上下背景，可以无视中间的渐变
-    // 大部分时候都要显示左右区域的背景，不能和实际背景一致的话就会很突兀
-    // 要是图片能一直占满屏幕的话，那还能通过单独显示上下或左右部分的背景色来实现
-    // 但偏偏又有「禁止图片自动放大」功能，需要把图片的四边背景都显示出来
-    bgColor = getBackground(context);
-    if (bgColor) mainFn.setImg(url, 'background', bgColor);
+  if (data.option.background) {
+    detectBackgroundRegions(img);
+    const background = getBackground(img);
+    mainFn.setImg({
+      url: img.url,
+      key: 'background',
+      val: background,
+      version: img.version,
+    });
   }
 
-  let logText = `${url}\n耗时 ${Date.now() - startTime}ms 处理完成`;
-  const resList: string[] = [];
-  if (blankMargin)
-    resList.push(
-      `空白边缘：${Object.entries(blankMargin)
-        .filter(([, v]) => v)
-        .map(([k, v]) => `${k}:${v && (v * 100).toFixed(2)}%`)
-        .join(' ')}`,
-    );
-  if (bgColor) resList.push(`背景色: ${bgColor}`);
-  if (resList.length > 0) logText += `\n${resList.join('\n')}`;
-  mainFn.log?.(logText);
+  img.logger.logs.push([`${img.logger.totalTime.toFixed(2)}ms`, '总耗时']);
+  mainFn.log?.(`${img.url}\n${img.logger.format()}`);
 };

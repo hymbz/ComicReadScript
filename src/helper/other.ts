@@ -763,12 +763,26 @@ export class WakeLock {
   };
 }
 
-export const getImageData = (img: HTMLImageElement) => {
+/**
+ * 获取图片像素数据
+ *
+ * 传入 maxSize 时按最长边缩放到该尺寸内
+ */
+export const getImageData = (img: HTMLImageElement, maxSize?: number) => {
   const { naturalWidth: width, naturalHeight: height } = img;
-  const canvas = new OffscreenCanvas(width, height);
+  if (!width || !height) throw new Error(`图片未加载完成: ${img.src}`);
+
+  const scale =
+    maxSize && maxSize > 0 ? Math.min(maxSize / width, maxSize / height) : 1;
+  const w = Math.max(1, Math.floor(width * scale));
+  const h = Math.max(1, Math.floor(height * scale));
+
+  const canvas = new OffscreenCanvas(w, h);
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
-  ctx.drawImage(img, 0, 0);
-  return ctx.getImageData(0, 0, width, height);
+  // 禁止缩放平滑，确保不会出现渐变颜色干扰图像识别时的判断
+  if (scale !== 1) ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, 0, 0, w, h);
+  return ctx.getImageData(0, 0, w, h);
 };
 
 export const withEventStop =

@@ -1,0 +1,94 @@
+.root {
+  cursor: move;
+  user-select: none;
+
+  position: fixed;
+  z-index: 2147483647;
+
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  width: 480px;
+  max-width: calc(80vw);
+  max-height: calc(80vh);
+  border: 1px solid #555;
+  border-radius: 8px;
+
+  color: #eee;
+
+  background: rgb(30 30 30 / 95%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 50%);
+}
+
+.header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  padding: 8px 12px;
+  border-bottom: 1px solid #444;
+
+  font-size: 14px;
+}
+
+.header button {
+  cursor: pointer;
+
+  padding: 2px 8px;
+  border: 1px solid #666;
+  border-radius: 4px;
+
+  color: #eee;
+
+  background: #333;
+}
+
+.clear {
+  margin-left: auto;
+}
+
+.close {
+  margin-left: 0;
+}
+
+.list {
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+
+  padding: 8px;
+}
+
+.item {
+  --debug-grid-size: 8px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin: 0;
+  padding: 4px;
+  border-radius: 4px;
+
+  background: #222;
+}
+
+.item img {
+  pointer-events: none;
+
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  background: repeating-conic-gradient(#fff 0% 25%, #ccc 0% 50%);
+  background-size: var(--debug-grid-size) var(--debug-grid-size);
+}
+
+.caption {
+  font-size: 12px;
+  color: #aaa;
+  word-break: break-all;
+}

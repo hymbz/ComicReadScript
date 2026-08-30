@@ -4,8 +4,6 @@ import { downloadImg } from 'request';
 import { type Promisable } from 'type-fest';
 import * as worker from 'worker/detectAd';
 
-import { showCanvas, showGrayList } from '../worker/helper';
-
 /** 用常识逻辑进行判断，以期能在检测失误时减小影响范围和遗漏 */
 const getAdPage = async <T>(
   list: (T | undefined)[],
@@ -96,6 +94,5 @@ export const getAdPageByContent = (
 
 const initWorker = once(() => {
   const mainFn = { log } satisfies worker.MainFn;
-  if (isDevMode) Object.assign(mainFn, { showCanvas, showGrayList });
   worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
 });

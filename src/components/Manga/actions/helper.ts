@@ -12,9 +12,10 @@ export const getImg = (i: number, state = store) =>
 export const getImgIndexs = (url: string) => imgIndexMap().get(url) ?? [];
 
 /** 找到指定 url 图片的 dom */
-export const getImgEle = (target: string | number) => {
+export const getImgEle = (target: string | number, loaded = false) => {
   const url = typeof target === 'number' ? store.imgList[target] : target;
-  return refs.imgEleMap[url]?.values().next().value;
+  for (const element of refs.imgEleMap[url] ?? [])
+    if (!loaded || element.complete) return element;
 };
 
 /** 触发 onOptionChange */

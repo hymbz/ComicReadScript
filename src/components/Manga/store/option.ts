@@ -129,6 +129,10 @@ export type Option = {
     pageFill: boolean;
     /** 图片放大 */
     upscale: boolean;
+    /** 边缘裁切 */
+    crop: boolean;
+    /** 保留白边 */
+    keepMargin: number;
   };
 
   /** 翻译 */
@@ -203,7 +207,7 @@ const _defaultOption: Readonly<Option> = {
     adjustToWidth: 'disable',
     abreastMode: false,
     abreastDuplicate: 0.1,
-    pageColumns: 2,
+    pageColumns: 1,
     doubleMode: false,
     alignEdge: false,
   },
@@ -219,6 +223,8 @@ const _defaultOption: Readonly<Option> = {
     background: false,
     pageFill: true,
     upscale: false,
+    crop: false,
+    keepMargin: 10,
   },
 
   translation: {

@@ -3,9 +3,7 @@ import { type RequestDetails, downloadImg as _downloadImg } from 'request';
 import { setState, store } from './store';
 
 /** 阻止事件冒泡 */
-export const stopPropagation = (e: Event) => {
-  e.stopPropagation();
-};
+export const stopPropagation = (e: Event) => e.stopPropagation();
 
 /** 从头开始播放元素的动画 */
 export const playAnimation = (e?: HTMLElement) => {

@@ -163,6 +163,8 @@
       "img_recognition": "Image Recognition",
       "img_recognition_background": "Recognition background color",
       "img_recognition_pageFill": "Auto switch page fill",
+      "img_recognition_crop": "Edge cropping",
+      "img_recognition_keepMargin": "Keep margin",
       "img_recognition_warn": "❗ The current browser does not support Web Workers. Enabling this feature may cause page lag. It's recommended to upgrade or switch browsers.",
       "img_recognition_warn_2": "❗ The current website does not support Web Workers. Enabling this feature may cause page lag.",
       "paragraph_appearance": "Appearance",

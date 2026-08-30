@@ -163,6 +163,8 @@
       "img_recognition": "பட ஏற்பு",
       "img_recognition_background": "அடையாள பின்னணி நிறம்",
       "img_recognition_pageFill": "தானியங்கி சரிசெய்தல் பக்கம் நிரப்புதல்",
+      "img_recognition_crop": "ஓரங்களை நீக்கு",
+      "img_recognition_keepMargin": "ஓரத்தை வைத்திரு",
       "img_recognition_warn": "Brows இந்த அம்சத்தைத் திறப்பது பக்கத்தை மாற்றுவதற்கு பரிந்துரைக்கப்படுகிறது.",
       "img_recognition_warn_2": "தற்போதைய வலைத்தளம் வலைத் தொழிலாளர்களை ஆதரிக்காது.",
       "paragraph_appearance": "தோற்றம்",

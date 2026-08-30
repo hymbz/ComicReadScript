@@ -163,6 +163,8 @@
       "img_recognition": "图像识别",
       "img_recognition_background": "识别背景色",
       "img_recognition_pageFill": "自动调整页面填充",
+      "img_recognition_crop": "边缘裁切",
+      "img_recognition_keepMargin": "保留白边",
       "img_recognition_warn": "❗ 当前浏览器不支持 Web Worker，开启此功能可能导致页面卡顿，建议升级或更换浏览器。",
       "img_recognition_warn_2": "❗ 当前网站不支持 Web Worker，开启此功能可能导致页面卡顿。",
       "paragraph_appearance": "外观",

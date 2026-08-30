@@ -2,7 +2,7 @@ import { type State, refs, setState, store } from '../store';
 import { setOption } from './helper';
 import { updatePageData } from './image';
 import { syncImgLoadState, updateImgLoadType } from './imageLoad';
-import { handleImgRecognition } from './imageRecognition';
+import { invalidateRecognition } from './imageRecognition';
 import { activeImgIndex, autoPageNum, nowFillIndex, pageNum } from './memo';
 import { constantScroll, jumpToImg } from './scroll';
 import { zoom } from './zoom';
@@ -77,10 +77,15 @@ export const stopAutoScroll = () => {
   constantScroll.cancel();
 };
 
+type ImgRecognitionBooleanKey = {
+  [
+    K in keyof State['option']['imgRecognition']
+  ]: State['option']['imgRecognition'][K] extends boolean ? K : never;
+}[keyof State['option']['imgRecognition']];
+
 /** 切换图片识别相关功能 */
-export const switchImgRecognition = (
-  ...path: (keyof State['option']['imgRecognition'])[]
-) => {
+export const switchImgRecognition = (...path: ImgRecognitionBooleanKey[]) => {
+  const onlyUpscale = path.length === 1 && path[0] === 'upscale';
   setOption((draftOption, state) => {
     const option = draftOption.imgRecognition;
     if (path.length === 0) path.push('enabled');
@@ -88,12 +93,12 @@ export const switchImgRecognition = (
 
     if (!option.enabled) return syncImgLoadState(state);
 
-    for (const img of Object.values(state.imgMap)) {
+    for (const img of Object.values(state.imgMap))
       if (!img.blobUrl) img.loadType = 'wait';
-      if (img.loadType !== 'loaded') continue;
-      void handleImgRecognition(img.src);
-    }
+
     syncImgLoadState(state);
     if (path.includes('enabled')) void updateImgLoadType();
   });
+  // 仅切换 upscale 不会影响识别结果，不需要使正在进行的识别失效
+  if (!onlyUpscale) invalidateRecognition();
 };

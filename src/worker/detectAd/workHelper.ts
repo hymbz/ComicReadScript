@@ -1,7 +1,5 @@
 export type MainFn = {
   log: typeof import('helper').log;
-  showCanvas?: typeof import('worker/helper').showCanvas;
-  showGrayList?: typeof import('worker/helper').showGrayList;
 };
 export const mainFn = {} as MainFn;
 export const setMainFn = (helper: MainFn, keys: string[]) => {

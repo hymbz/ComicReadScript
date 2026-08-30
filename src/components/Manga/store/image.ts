@@ -1,3 +1,11 @@
+/** 图片四边的空白边缘比例 */
+export type BlankMargin = {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+};
+
 export type ComicImg = {
   loadType: 'loading' | 'loaded' | 'error' | 'wait';
   type?: 'long' | 'wide' | 'vertical' | '';
@@ -10,8 +18,12 @@ export type ComicImg = {
   blobUrl?: string;
   progress?: number;
 
-  background?: string;
-  blankMargin?: { left: number; right: number } | null;
+  /** 背景色 */
+  background?: string | null;
+  /** 边缘区域 */
+  blankMargin?: BlankMargin | null;
+  /** 图片在「图像识别」处理时使用的配置版本号 */
+  recognitionVersion?: number;
 
   translationUrl?: string;
   translationMessage?: string;

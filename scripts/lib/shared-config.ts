@@ -6,8 +6,10 @@ import latestChanges from '../../docs/.other/CHANGELOG.json' with { type: 'json'
 import { cssModules, outputPlugins, solidSvg } from '../plugin';
 import { type TransformFn, codeEdit } from '../plugin/codeEdit';
 import { isDevMode, meta } from './ctx';
-import { packlist } from './packlist.json' with { type: 'json' };
+import { devPacklist, packlist } from './packlist.json' with { type: 'json' };
 import { buildLoggerPlugin, pathResolve } from './utils';
+
+const externalPacklist = [...packlist, ...devPacklist];
 
 /** 单个构建项配置 */
 type BundleItemOpts = {
@@ -24,10 +26,10 @@ export const createBundleConfigs = (
   const base = {
     external: [
       ...Object.keys(meta.resource ?? {}),
-      ...packlist,
+      ...externalPacklist,
       'core',
       /^solid/u,
-      ...packlist.map(
+      ...externalPacklist.map(
         (p) =>
           new RegExp(
             `^${p.replaceAll(

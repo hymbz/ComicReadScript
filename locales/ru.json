@@ -163,6 +163,8 @@
       "img_recognition": "распознавание изображений",
       "img_recognition_background": "Определить цвет фона",
       "img_recognition_pageFill": "Автоматическое переключение заполнения страницы",
+      "img_recognition_crop": "Обрезка краёв",
+      "img_recognition_keepMargin": "Оставить поля",
       "img_recognition_warn": "❗ Текущий браузер не поддерживает Web Workers. Включение этой функции может вызвать задержку страницы. Рекомендуется обновить или сменить браузер.",
       "img_recognition_warn_2": "❗ Текущий веб-сайт не поддерживает Web Workers. Включение этой функции может привести к задержке страницы.",
       "paragraph_appearance": "Внешность",

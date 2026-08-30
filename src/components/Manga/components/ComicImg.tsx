@@ -1,6 +1,7 @@
 import {
   type Component,
   For,
+  type JSX,
   Show,
   createEffect,
   createMemo,
@@ -9,10 +10,12 @@ import {
 
 import {
   abreastArea,
+  getCropMargin,
   getImgEle,
   getImgTip,
   handleImgError,
   handleImgLoaded,
+  imgPageMap,
   isAbreastMode,
   isEnableBg,
 } from '../actions';
@@ -46,20 +49,77 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
     return imgPosition ? imgPosition.length - 1 : 0;
   });
 
+  /** 打开「边缘裁切」后使用的样式 */
+  const cropStyle = createMemo(
+    (): { imgEle: JSX.CSSProperties; picture: JSX.CSSProperties } | null => {
+      // TODO: 等火狐也支持 object-view-box 后就可以简化相关实现了
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1773791
+
+      const crop = getCropMargin(img);
+      if (!crop) return null;
+
+      const cw = 1 - crop.left - crop.right;
+      const ch = 1 - crop.top - crop.bottom;
+      const picture: JSX.CSSProperties = { overflow: 'clip' };
+
+      // 这些模式下 picture 的尺寸依赖普通流内容，img 改成 absolute 后需要显式指定尺寸
+      const isDisableZoomNonScroll =
+        store.option.disableZoom && !store.option.scrollMode.enabled;
+      if (isDisableZoomNonScroll || isAbreastMode()) {
+        if (isDisableZoomNonScroll) {
+          // 禁止自动放大时按图片所在页的实际宽度等比适配，避免被 CSS max 约束二次钳制
+          const pageIndex = imgPageMap()[img.index];
+          const page =
+            pageIndex === undefined ? undefined : store.pageList[pageIndex];
+          const isFullWidth = page?.length === 1;
+          const scale =
+            Math.min(
+              1,
+              (store.rootSize.width * (isFullWidth ? 1 : 0.5)) / img.size.width,
+              store.rootSize.height / img.size.height,
+            ) || 1;
+          picture.width = `${img.size.width * scale}px`;
+          picture.height = `${img.size.height * scale}px`;
+        } else {
+          picture.width = `${img.size.width}px`;
+          picture.height = `${img.size.height}px`;
+        }
+      }
+
+      return {
+        imgEle: {
+          position: 'absolute',
+          left: `${(-crop.left / cw) * 100}%`,
+          top: `${(-crop.top / ch) * 100}%`,
+          width: `${(1 / cw) * 100}%`,
+          height: `${(1 / ch) * 100}%`,
+          'max-width': 'none',
+          'max-height': 'none',
+          'object-fit': 'fill',
+        },
+        picture,
+      };
+    },
+  );
+
   const styles = createMemo(() => ({
     img: {
       'grid-area': isAbreastMode() ? 'none' : `_${img.index}`,
-      'background-color': isEnableBg() ? img.background : undefined,
+      'background-color': isEnableBg()
+        ? (img.background ?? undefined)
+        : undefined,
     },
+    imgEle: cropStyle()?.imgEle,
     picture: {
       'aspect-ratio': `${img.size.width} / ${img.size.height}`,
       background: img.progress
         ? `linear-gradient(
-            to bottom,
-            var(--secondary-bg) ${img.progress}%,
-            var(--hover-bg-color,#fff3) ${img.progress}%
-          )`
+              to bottom,
+              var(--secondary-bg) ${img.progress}%,
+              var(--hover-bg-color,#fff3) ${img.progress}%
+            )`
         : undefined,
+      ...cropStyle()?.picture,
     },
   }));
 
@@ -76,8 +136,10 @@ export const ComicImg: Component<TComicImg & { index: number }> = (img) => {
       <picture style={styles().picture}>
         <Show when={src()}>
           <img
+            style={styles().imgEle}
             ref={(el) => {
-              const set = (refs.imgEleMap[img.src] ??= new Set());
+              refs.imgEleMap[img.src] ??= new Set();
+              const set = refs.imgEleMap[img.src];
               set.add(el);
               onCleanup(() => {
                 set.delete(el);

@@ -162,6 +162,8 @@
       "img_recognition": "Képfelismerés",
       "img_recognition_background": "Háttérszín felismerése",
       "img_recognition_pageFill": "Oldal kitöltés automatikus beállítása",
+      "img_recognition_crop": "Élek levágása",
+      "img_recognition_keepMargin": "Szegély megtartása",
       "img_recognition_warn": "❗ A jelenlegi böngésző nem támogatja a Web Workert, e funkció engedélyezése a oldal lelassulását okozhatja, javasolt a böngésző frissítése vagy cseréje.",
       "img_recognition_warn_2": "❗ A jelenlegi webhely nem támogatja a Web Workert, e funkció engedélyezése a oldal lelassulását okozhatja.",
       "page_columns": "Oldalak száma soronként",

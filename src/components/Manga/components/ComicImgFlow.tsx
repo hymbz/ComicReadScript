@@ -180,7 +180,9 @@ export const ComicImgFlow: Component = () => {
           .join(' ');
     },
     'background-color': () =>
-      isEnableBg() ? getImg(activeImgIndex())?.background : undefined,
+      isEnableBg()
+        ? (getImg(activeImgIndex())?.background ?? undefined)
+        : undefined,
   });
 
   css(imgAreaStyle);

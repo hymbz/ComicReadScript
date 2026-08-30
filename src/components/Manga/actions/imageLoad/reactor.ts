@@ -3,7 +3,7 @@ import { downloadImgHeaders as headers, request } from 'request';
 
 import { setState, store } from '../../store';
 import { getImg, getImgIndexs } from '../helper';
-import { handleImgRecognition } from '../imageRecognition';
+import { handleImgRecognition, isInRenderRange } from '../imageRecognition';
 import { updateImgSize } from '../imageSize';
 import { imgList } from '../memo';
 import { showImgList } from '../renderPage';
@@ -45,7 +45,11 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
 
   updateImgSize(url, e.naturalWidth, e.naturalHeight);
 
-  if (store.option.imgRecognition.enabled && e.src === img.blobUrl)
+  if (
+    store.option.imgRecognition.enabled &&
+    e.src === img.blobUrl &&
+    isInRenderRange(url)
+  )
     setTimeout(handleImgRecognition, 0, url, e);
 
   if (store.option.translation.enabled) void translationAll();

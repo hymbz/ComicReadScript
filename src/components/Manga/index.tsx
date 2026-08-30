@@ -111,6 +111,6 @@ export { SettingsItem } from './components/SettingsItem';
 export { SettingsItemButton } from './components/SettingsItemButton';
 export { SettingsItemNumber } from './components/SettingsItemNumber';
 export { SettingsItemSwitch } from './components/SettingsItemSwitch';
-export type { ComicImg } from './store/image';
+export type { ComicImg, BlankMargin } from './store/image';
 export { initStore, refs, setState, store, type State } from './store/index';
 export { defaultOption } from './store/option';

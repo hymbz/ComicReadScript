@@ -104,13 +104,13 @@ const testMargin = (
       const img = { type: '', width: 99 } as ComicImg;
       switch (type) {
         case 'left':
-          img.blankMargin = { left: 99, right: 0 };
+          img.blankMargin = { left: 99, right: 0, top: 0, bottom: 0 };
           break;
         case 'right':
-          img.blankMargin = { left: 0, right: 99 };
+          img.blankMargin = { left: 0, right: 99, top: 0, bottom: 0 };
           break;
         case 'both':
-          img.blankMargin = { left: 99, right: 99 };
+          img.blankMargin = { left: 99, right: 99, top: 0, bottom: 0 };
           break;
         case 'wide':
           img.type = 'wide';
