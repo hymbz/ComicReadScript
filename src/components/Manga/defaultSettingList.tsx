@@ -105,10 +105,8 @@ export const defaultSettingList: () => SettingList = () => [
               step={5}
               onChange={(val) => {
                 if (Number.isNaN(val)) return;
-                setOption((draftOption) => {
-                  const newVal = clamp(0, val / 100, 0.95);
-                  draftOption.scrollMode.abreastDuplicate = newVal;
-                });
+                const newVal = clamp(0, val / 100, 0.95);
+                setOption('scrollMode', 'abreastDuplicate', newVal);
               }}
               value={Math.round(store.option.scrollMode.abreastDuplicate * 100)}
             />
@@ -129,13 +127,11 @@ export const defaultSettingList: () => SettingList = () => [
               }
               onChange={(val) => {
                 const jump = saveScrollProgress();
-                setOption((draftOption, state) => {
-                  if (val === 'custom')
-                    draftOption.scrollMode.adjustToWidth = state.isMobile
-                      ? state.rootSize.width
-                      : 1280;
-                  else draftOption.scrollMode.adjustToWidth = val;
-                });
+                let newVal: Option['scrollMode']['adjustToWidth'];
+                if (val === 'custom')
+                  newVal = store.isMobile ? store.rootSize.width : 1280;
+                else newVal = val;
+                setOption('scrollMode', 'adjustToWidth', newVal);
                 jump();
               }}
             />
@@ -166,10 +162,7 @@ export const defaultSettingList: () => SettingList = () => [
             maxLength={5}
             onChange={(val) => {
               if (Number.isNaN(val)) return;
-              const newVal = clamp(0, val, Number.POSITIVE_INFINITY);
-              setOption((draftOption) => {
-                draftOption.scrollMode.spacing = newVal;
-              });
+              setOption('scrollMode', 'spacing', clamp(0, val, Infinity));
             }}
             value={Math.round(store.option.scrollMode.spacing)}
           />
@@ -183,11 +176,7 @@ export const defaultSettingList: () => SettingList = () => [
             ['auto', t('setting.option.page_tip_auto')],
           ]}
           value={store.option.pageTip}
-          onChange={(val) =>
-            setOption((draftOption) => {
-              draftOption.pageTip = val;
-            })
-          }
+          onChange={(val) => setOption('pageTip', val)}
         />
 
         <SettingsItemNumber
@@ -197,9 +186,7 @@ export const defaultSettingList: () => SettingList = () => [
           step={5}
           onChange={(val) => {
             if (Number.isNaN(val)) return;
-            setOption((draftOption) => {
-              draftOption.imgFilter.brightness = clamp(0, val, 200);
-            });
+            setOption('imgFilter', 'brightness', clamp(0, val, 200));
           }}
           value={store.option.imgFilter.brightness}
         />
@@ -210,9 +197,7 @@ export const defaultSettingList: () => SettingList = () => [
           step={5}
           onChange={(val) => {
             if (Number.isNaN(val)) return;
-            setOption((draftOption) => {
-              draftOption.imgFilter.contrast = clamp(0, val, 200);
-            });
+            setOption('imgFilter', 'contrast', clamp(0, val, 200));
           }}
           value={store.option.imgFilter.contrast}
         />
@@ -223,9 +208,7 @@ export const defaultSettingList: () => SettingList = () => [
           step={5}
           onChange={(val) => {
             if (Number.isNaN(val)) return;
-            setOption((draftOption) => {
-              draftOption.imgFilter.saturate = clamp(0, val, 200);
-            });
+            setOption('imgFilter', 'saturate', clamp(0, val, 200));
           }}
           value={store.option.imgFilter.saturate}
         />
@@ -238,9 +221,7 @@ export const defaultSettingList: () => SettingList = () => [
             onChange={(val) => {
               if (Number.isNaN(val)) return;
               const jump = saveScrollProgress();
-              setOption((draftOption) => {
-                draftOption.scrollMode.pageColumns = clamp(1, val, 6);
-              });
+              setOption('scrollMode', 'pageColumns', clamp(1, val, 6));
               jump();
             }}
             value={store.option.scrollMode.pageColumns}
@@ -288,9 +269,7 @@ export const defaultSettingList: () => SettingList = () => [
           step={50}
           onChange={(val) => {
             if (Number.isNaN(val)) return;
-            setOption((draftOption) => {
-              draftOption.turnPageDuration = clamp(0, val, 2000);
-            });
+            setOption('turnPageDuration', clamp(0, val, 2000));
           }}
           value={store.option.turnPageDuration}
         />
@@ -301,9 +280,7 @@ export const defaultSettingList: () => SettingList = () => [
           step={50}
           onChange={(val) => {
             if (Number.isNaN(val)) return;
-            setOption((draftOption) => {
-              draftOption.scrollDuration = clamp(0, val, 2000);
-            });
+            setOption('scrollDuration', clamp(0, val, 2000));
           }}
           value={store.option.scrollDuration}
         />
@@ -520,12 +497,11 @@ export const defaultSettingList: () => SettingList = () => [
           suffix="px"
           step={1}
           onChange={(val) =>
-            setOption((draftOption) => {
-              draftOption.imgRecognition.keepMargin = Math.max(
-                0,
-                Math.round(val),
-              );
-            })
+            setOption(
+              'imgRecognition',
+              'keepMargin',
+              Math.max(0, Math.round(val)),
+            )
           }
           value={store.option.imgRecognition.keepMargin}
         />
@@ -594,9 +570,7 @@ export const defaultSettingList: () => SettingList = () => [
           maxLength={5}
           onChange={(val) => {
             if (Number.isNaN(val)) return;
-            setOption((draftOption) => {
-              draftOption.preloadPageNum = clamp(0, val, 99_999);
-            });
+            setOption('preloadPageNum', clamp(0, val, 99_999));
           }}
           value={store.option.preloadPageNum}
         />

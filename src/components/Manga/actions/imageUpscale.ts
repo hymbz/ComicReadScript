@@ -72,7 +72,7 @@ const getModel = async () => {
     if (!base64) {
       toast(t('upscale.module_downloading'), {
         id: 'upscale',
-        duration: Number.POSITIVE_INFINITY,
+        duration: Infinity,
       });
       const bin = await request<ArrayBuffer>(
         'https://cdn.jsdelivr.net/npm/@hymbz/comic-read-script@11.12.1/public/realcugan/2x-conservative-128/group1-shard1of1.bin',
@@ -101,7 +101,7 @@ const getModel = async () => {
     toast.dismiss('upscale');
     toast.error(t('upscale.module_download_failed'), {
       id: 'upscale',
-      duration: Number.POSITIVE_INFINITY,
+      duration: Infinity,
     });
     setState('supportUpscaleImage', false);
     setState('option', 'imgRecognition', 'upscale', false);

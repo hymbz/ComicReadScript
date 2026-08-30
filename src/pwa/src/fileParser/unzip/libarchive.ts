@@ -65,7 +65,7 @@ export const libarchive = async ({
             `「${zipFile.name}」 - 「${file.name}」 ${t(
               'pwa.alert.parse_error',
             )}：${(error as Error).message}`,
-            { duration: Number.POSITIVE_INFINITY },
+            { duration: Infinity },
           );
         }
       }),

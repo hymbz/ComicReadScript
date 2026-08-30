@@ -40,9 +40,7 @@ const resetToastUpdate = (id: string) =>
 export const ToastItem: Component<Toast> = (props) => {
   /** 是否要显示进度 */
   const showSchedule = createMemo(() =>
-    props.duration === Number.POSITIVE_INFINITY && props.schedule
-      ? true
-      : undefined,
+    props.duration === Infinity && props.schedule ? true : undefined,
   );
 
   const triggerDismiss = (e: AnimationEvent | MouseEvent) => {
@@ -84,12 +82,7 @@ export const ToastItem: Component<Toast> = (props) => {
       <div class={classes.msg}>
         {typeof props.msg === 'string' ? props.msg : <props.msg />}
       </div>
-      <Show
-        when={
-          props.duration !== Number.POSITIVE_INFINITY ||
-          props.schedule !== undefined
-        }
-      >
+      <Show when={props.duration !== Infinity || props.schedule !== undefined}>
         <div
           ref={scheduleRef}
           class={classes.schedule}

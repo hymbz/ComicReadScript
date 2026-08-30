@@ -1,4 +1,10 @@
-import { byPath, debounce, difference, throttle } from 'helper';
+import {
+  type SetStateFunction,
+  byPath,
+  debounce,
+  difference,
+  throttle,
+} from 'helper';
 import { onCleanup } from 'solid-js';
 
 import { type State, refs, setState, store } from '../store';
@@ -25,9 +31,16 @@ const triggerOnOptionChange = throttle(
   1000,
 );
 
+type SetOptionFunction = ((
+  fn: (option: Option, state: State) => void,
+) => void) &
+  SetStateFunction<Option>;
+
 /** 在 option 后手动触发 onOptionChange */
-export const setOption = (fn: (option: Option, state: State) => void) => {
-  setState((state) => fn(state.option, state));
+export const setOption: SetOptionFunction = (...args) => {
+  if (args.length === 1 && typeof args[0] === 'function')
+    setState((state) => args[0](state.option, state));
+  else setState('option', ...(args as [any]));
   triggerOnOptionChange();
 };
 
@@ -98,6 +111,13 @@ type SetOptionsFunctionReturn<T> = {
   onChange: (val: T) => void;
 };
 
+type PathValue<T, P extends readonly unknown[]> = P extends readonly [
+  infer K extends keyof T,
+  ...infer R,
+]
+  ? PathValue<T[K], R>
+  : T;
+
 export type SetOptionsFunction<T> = {
   <
     K1 extends keyof T,
@@ -106,12 +126,8 @@ export type SetOptionsFunction<T> = {
     K4 extends keyof T[K1][K2][K3],
     K5 extends keyof T[K1][K2][K3][K4],
   >(
-    k1: K1,
-    k2: K2,
-    k3: K3,
-    k4: K4,
-    k5: K5,
-  ): SetOptionsFunctionReturn<T[K1][K2][K3][K4][K5]>;
+    ...path: [K1, K2, K3, K4, K5]
+  ): SetOptionsFunctionReturn<PathValue<T, [K1, K2, K3, K4, K5]>>;
 
   <
     K1 extends keyof T,
@@ -119,27 +135,22 @@ export type SetOptionsFunction<T> = {
     K3 extends keyof T[K1][K2],
     K4 extends keyof T[K1][K2][K3],
   >(
-    k1: K1,
-    k2: K2,
-    k3: K3,
-    k4: K4,
-  ): SetOptionsFunctionReturn<T[K1][K2][K3][K4]>;
+    ...path: [K1, K2, K3, K4]
+  ): SetOptionsFunctionReturn<PathValue<T, [K1, K2, K3, K4]>>;
 
   <K1 extends keyof T, K2 extends keyof T[K1], K3 extends keyof T[K1][K2]>(
-    k1: K1,
-    k2: K2,
-    k3: K3,
-  ): SetOptionsFunctionReturn<T[K1][K2][K3]>;
+    ...path: [K1, K2, K3]
+  ): SetOptionsFunctionReturn<PathValue<T, [K1, K2, K3]>>;
 
   <K1 extends keyof T, K2 extends keyof T[K1]>(
-    k1: K1,
-    k2: K2,
-  ): SetOptionsFunctionReturn<T[K1][K2]>;
+    ...path: [K1, K2]
+  ): SetOptionsFunctionReturn<PathValue<T, [K1, K2]>>;
 
-  <K1 extends keyof T>(k1: K1): SetOptionsFunctionReturn<T[K1]>;
+  <K1 extends keyof T>(
+    ...path: [K1]
+  ): SetOptionsFunctionReturn<PathValue<T, [K1]>>;
 };
 export const bindOption: SetOptionsFunction<Option> = (...path: string[]) => ({
   value: byPath(store.option, path),
-  onChange: (val: unknown) =>
-    setOption((draftOption) => byPath(draftOption, path, () => val)),
+  onChange: (val: unknown) => setOption(...(path as [any]), val),
 });

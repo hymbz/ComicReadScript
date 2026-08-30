@@ -252,10 +252,8 @@ export const updateMitTranslators = async (noTip = false) => {
       ([val]) => val === store.option.translation.mit.translator.translator,
     )
   ) {
-    setOption((draftOption) => {
-      draftOption.translation.mit.translator.translator =
-        mitTranslators()[0]?.[0];
-    });
+    const translator = mitTranslators()[0]?.[0];
+    setOption('translation', 'mit', 'translator', 'translator', translator);
   }
 };
 

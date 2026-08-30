@@ -54,11 +54,8 @@ export const switchOnePageMode = () => {
 };
 
 /** 切换阅读方向 */
-export const switchDir = () => {
-  setOption((draftOption) => {
-    draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
-  });
-};
+export const switchDir = () =>
+  setOption('dir', store.option.dir === 'rtl' ? 'ltr' : 'rtl');
 
 /** 切换全屏 */
 export const switchFullscreen = () => {

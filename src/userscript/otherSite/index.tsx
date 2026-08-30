@@ -78,7 +78,7 @@ export const otherSite = async () => {
           if (store.manga.imgList.length > 0) return;
           toast.warn(t('site.simple.no_img'), {
             id: 'no_img',
-            duration: Number.POSITIVE_INFINITY,
+            duration: Infinity,
             onClick() {
               setOptions({ remember_current_site: false });
               location.reload();
@@ -87,7 +87,7 @@ export const otherSite = async () => {
         }, 3000);
       }
 
-      await scanner.waitFirstImage(Number.POSITIVE_INFINITY);
+      await scanner.waitFirstImage(Infinity);
       toast.dismiss('no_img');
       return scanner.imgList;
     },

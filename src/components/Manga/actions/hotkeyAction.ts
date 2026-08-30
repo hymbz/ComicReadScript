@@ -215,9 +215,7 @@ export const handleHotkey = (hotkey: string, e?: KeyboardEvent) => {
       return store.prop.onPrev?.();
 
     case 'switch_auto_enlarge':
-      return setOption((draftOption) => {
-        draftOption.disableZoom = !draftOption.disableZoom;
-      });
+      return setOption('disableZoom', !store.option.disableZoom);
 
     case 'reload_current_error_img':
       for (const i of showImgList()) reloadImg(getImg(i).src);

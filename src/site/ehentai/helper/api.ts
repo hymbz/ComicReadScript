@@ -105,7 +105,7 @@ export const checkIpBanned = (text: string) =>
   text.includes('IP address has been temporarily banned') &&
   toast.error(t('site.ehentai.ip_banned'), {
     throw: true,
-    duration: Number.POSITIVE_INFINITY,
+    duration: Infinity,
   });
 
 /** 从图片页获取图片地址 */

@@ -12,7 +12,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 /** 解析 PDF */
 export const handlePdf = async (file: File): Promise<ImgFile[]> => {
   const tip = `「${file.name}」${t('pwa.message.parsing')}`;
-  toast(tip, { duration: Number.POSITIVE_INFINITY });
+  toast(tip, { duration: Infinity });
 
   const outputScale = window.devicePixelRatio || 1;
   const transform =

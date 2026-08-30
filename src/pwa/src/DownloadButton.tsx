@@ -22,7 +22,7 @@ export const loadUrl = async (url: string | null | undefined) => {
     const res = await request<ArrayBuffer>(url, {
       responseType: 'arraybuffer',
       onprogress: ({ loaded, total }) => setProgress(loaded / total),
-      timeout: Number.POSITIVE_INFINITY,
+      timeout: Infinity,
     });
 
     const [fileType] = filetypeinfo(new Uint8Array(res.response));

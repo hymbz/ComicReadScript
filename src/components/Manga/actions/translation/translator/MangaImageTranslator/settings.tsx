@@ -100,9 +100,7 @@ export const mitSettings: Component = () => (
       name={t('setting.translation.options.local_url')}
       value={store.option.translation.mit.localUrl !== undefined}
       onChange={(val) => {
-        setOption((draftOption) => {
-          draftOption.translation.mit.localUrl = val ? '' : undefined;
-        });
+        setOption('translation', 'mit', 'localUrl', val ? '' : undefined);
       }}
     />
     <Show when={store.option.translation.mit.localUrl !== undefined}>
@@ -110,10 +108,8 @@ export const mitSettings: Component = () => (
         type="url"
         value={store.option.translation.mit.localUrl}
         onChange={(e) => {
-          setOption((draftOption) => {
-            const url = e.target.value.replace(/\/$/u, '');
-            draftOption.translation.mit.localUrl = url;
-          });
+          const url = e.target.value.replace(/\/$/u, '');
+          setOption('translation', 'mit', 'localUrl', url);
         }}
       />
     </Show>

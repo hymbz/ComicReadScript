@@ -573,7 +573,7 @@ setupSiteAdapter({
           log.error(error);
           if (titleDom)
             titleDom.textContent = 'ComicRead 提示您：目錄生成失敗😢';
-          toast.error('目錄生成失敗😢', { duration: Number.POSITIVE_INFINITY });
+          toast.error('目錄生成失敗😢', { duration: Infinity });
         }
       }
 

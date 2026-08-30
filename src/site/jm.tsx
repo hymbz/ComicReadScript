@@ -23,7 +23,7 @@ setupSiteAdapter({
         1000 * 5,
       );
       if (!hasOnImageLoaded) {
-        toast.error('无法获取图片', { duration: Number.POSITIVE_INFINITY });
+        toast.error('无法获取图片', { duration: Infinity });
         return;
       }
 

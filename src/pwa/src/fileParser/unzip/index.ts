@@ -28,7 +28,7 @@ export type ZipData = {
 /** 解压缩文件 */
 export const unzip = async (zipFile: File, extension: ZipExtension) => {
   const tip = `「${zipFile.name}」${t('pwa.message.parsing')}`;
-  toast(tip, { duration: Number.POSITIVE_INFINITY });
+  toast(tip, { duration: Infinity });
 
   let imgDataList: (ImgFile | undefined)[] = [];
 

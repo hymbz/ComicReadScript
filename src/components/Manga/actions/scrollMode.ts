@@ -16,15 +16,13 @@ export const setAdjustToWidth = (
   if (Number.isNaN(val)) return;
 
   const jump = saveScrollProgress();
-  setOption((draftOption) => {
-    const max = Math.ceil(store.rootSize.width);
-    draftOption.scrollMode.adjustToWidth = clamp(200, val, max);
-  });
+  const newVal = clamp(200, val, Math.ceil(store.rootSize.width));
+  setOption('scrollMode', 'adjustToWidth', newVal);
   jump();
 };
 
 const minImgWidth = createRootMemo(() => {
-  let min = Number.POSITIVE_INFINITY;
+  let min = Infinity;
   for (const img of Object.values(store.imgMap))
     if (img.width && img.width < min) min = img.width;
   return min;
@@ -36,23 +34,22 @@ export const setImgScale = (val: number | ((oldVal: number) => number)) => {
   if (Number.isNaN(val)) return;
 
   const jump = saveScrollProgress();
-  setOption((draftOption) => {
-    val = clamp(0.1, val as number, 3);
+  let newVal = clamp(0.1, val, 3);
 
-    // 如果当前最小图片宽度大于视窗宽度，并且这次操作是在调小缩放值
-    // 那就将这次操作改为：将缩放值修改为只要缩小一点就会立刻让图片变小的极限值
-    // 避免用户需要多次调小缩放值才能看到效果的情况
-    // https://github.com/hymbz/ComicReadScript/issues/285
-    if (
-      minImgWidth() > store.rootSize.width &&
-      val < draftOption.scrollMode.imgScale
-    ) {
-      const maxImgScale = store.rootSize.width / minImgWidth();
-      if (val > maxImgScale) val = maxImgScale;
-    }
+  // 如果当前最小图片宽度大于视窗宽度，并且这次操作是在调小缩放值
+  // 那就将这次操作改为：将缩放值修改为只要缩小一点就会立刻让图片变小的极限值
+  // 避免用户需要多次调小缩放值才能看到效果的情况
+  // https://github.com/hymbz/ComicReadScript/issues/285
+  if (
+    minImgWidth() > store.rootSize.width &&
+    newVal < store.option.scrollMode.imgScale
+  ) {
+    const maxImgScale = store.rootSize.width / minImgWidth();
+    if (newVal > maxImgScale) newVal = maxImgScale;
+  }
 
-    draftOption.scrollMode.imgScale = clamp(0.1, Number(val.toFixed(2)), 3);
-  });
+  newVal = Number(newVal.toFixed(2));
+  setOption('scrollMode', 'imgScale', clamp(0.1, newVal, 3));
   jump();
 
   // 并排卷轴模式下并没有一个明确直观的滚动进度，

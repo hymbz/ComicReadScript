@@ -367,7 +367,7 @@ export async function wait<T>(
 // oxlint-disable-next-line func-style
 export async function wait<T>(
   fn: () => Promisable<T>,
-  timeout = Number.POSITIVE_INFINITY,
+  timeout = Infinity,
   waitTime = 100,
 ) {
   let res: T | undefined = await fn();

@@ -53,7 +53,7 @@ export const handleVersionUpdate = async () => {
       {
         id: 'Version Tip',
         type: 'custom',
-        duration: Number.POSITIVE_INFINITY,
+        duration: Infinity,
         // 手动点击关掉通知后才不会再次弹出
         onDismiss: () => GM.setValue('@Version', GM.info.script.version),
       },
