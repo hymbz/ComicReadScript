@@ -423,11 +423,8 @@ export default defineConfig({
               {
                 group: [
                   '*/**/*',
-                  '!userscript/detectAd',
-                  '!userscript/copyApi',
-                  '!userscript/ehTagRules',
+                  ...packlistData.packlist.map((name) => `!${name}`),
                   '!solid-js/**/*',
-                  '!components/**/*',
                   '!@material*/**/*',
                   '../**/*',
                   '!.*/**/*',

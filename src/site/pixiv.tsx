@@ -1,7 +1,6 @@
 import { request, setupSiteAdapter } from 'core';
 import { createEffectOn, waitDom } from 'helper';
-
-import { useMultiSelectLoad } from '../userscript/multiSelect';
+import { useMultiSelectLoad } from 'userscript/multiSelect';
 
 let imgs: {
   urls: { original: string; regular: string };

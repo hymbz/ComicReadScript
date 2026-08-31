@@ -9,8 +9,8 @@ import {
   singleThreaded,
   t,
 } from 'helper';
+import { useMultiSelectLoad } from 'userscript/multiSelect';
 
-import { useMultiSelectLoad } from '../../userscript/multiSelect';
 import { detectAd } from './detectAd';
 import { type GalleryHandler } from './helper';
 import {
