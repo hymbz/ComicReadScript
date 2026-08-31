@@ -1006,6 +1006,12 @@ try {
       break;
     }
 
+    // #Fanbox[Pawchive](https://pawchive.pw) <sup>合订</sup>
+    // test: https://pawchive.pw/fanbox/user/82480735/post/12315432
+    case 'pawchive.pw': {
+      // falls through
+    }
+
     // #Fanbox[kemono](https://kemono.su) <sup>合订</sup>
     // test: https://kemono.cr/fanbox/user/41106591/post/6813818
     case 'kemono.cr':

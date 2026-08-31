@@ -232,7 +232,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ### Fanbox
 
-<a href="https://kemono.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://kemono.su&size=16" style="width:1em;height:1em;" loading="lazy"> kemono</a> <sup>合订</sup> · <a href="https://nekohouse.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nekohouse.su&size=16" style="width:1em;height:1em;" loading="lazy"> nekohouse</a>
+<a href="https://pawchive.pw"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://pawchive.pw&size=16" style="width:1em;height:1em;" loading="lazy"> Pawchive</a> <sup>合订</sup> · <a href="https://kemono.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://kemono.su&size=16" style="width:1em;height:1em;" loading="lazy"> kemono</a> <sup>合订</sup> · <a href="https://nekohouse.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nekohouse.su&size=16" style="width:1em;height:1em;" loading="lazy"> nekohouse</a>
 
 ### 其他
 

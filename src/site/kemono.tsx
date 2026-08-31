@@ -1,18 +1,21 @@
 import { request, setupSiteAdapter } from 'core';
 import {
   createEffectOn,
+  domParse,
   querySelectorAll,
   querySelectorClick,
   waitDom,
 } from 'helper';
+import { useMultiSelectLoad } from 'userscript/multiSelect';
 
-import { useMultiSelectLoad } from '../userscript/multiSelect';
-
-const original = () =>
-  querySelectorAll<HTMLAnchorElement>('.post__thumbnail a').map((e) => e.href);
-const thumbnail = () =>
-  querySelectorAll<HTMLImageElement>('.post__thumbnail img').map((e) => e.src);
-
+const original = (root = document) =>
+  [...root.querySelectorAll<HTMLAnchorElement>('.post__thumbnail a')].map(
+    (e) => e.href,
+  );
+const thumbnail = (root = document) =>
+  [...root.querySelectorAll<HTMLImageElement>('.post__thumbnail img')].map(
+    (e) => e.src,
+  );
 const handlePwa = () => {
   const zipExtension = new Set(['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7']);
   for (const e of querySelectorAll<HTMLAnchorElement>('.post__attachment a')) {
@@ -36,17 +39,17 @@ setupSiteAdapter({
   },
   getPageContext: () => {
     const { listId, postId } =
-      /\/fanbox\/user\/(?<listId>\w+)|\/post\/(?<postId>\w+)/u.exec(
+      /\/user\/(?<listId>[^/]+)(?:\/post\/(?<postId>[^/]+))?/u.exec(
         location.pathname,
       )?.groups ?? {};
+
+    if (postId) return { type: 'manga', id: postId } as const;
 
     if (listId) {
       const offset = Number(new URLSearchParams(location.search).get('o')) || 0;
       // 传递 offset 是为了在翻页时能被判定为页面改变
       return { type: 'list', id: listId, offset } as const;
     }
-
-    if (postId) return { type: 'manga', id: postId } as const;
   },
 
   handlers: {
@@ -63,15 +66,13 @@ setupSiteAdapter({
       );
 
       setState((state) => {
-        state.comicMap.original = { getImgList: original };
-        state.comicMap.thumbnail = { getImgList: thumbnail };
+        state.comicMap.original = { getImgList: () => original() };
+        state.comicMap.thumbnail = { getImgList: () => thumbnail() };
         state.manga.onNext = querySelectorClick('.post__nav-link.next');
         state.manga.onPrev = querySelectorClick('.post__nav-link.prev');
       });
     },
     list: async (coreCtx, { id }) => {
-      const { options } = coreCtx;
-
       const ms = await useMultiSelectLoad(coreCtx, {
         id,
         onStart: () => {
@@ -79,21 +80,11 @@ setupSiteAdapter({
             item.style.position = 'relative';
         },
         getImgList: async (postId) => {
-          const res = await request<{
-            previews: { name: string; path: string; serer: string }[];
-          }>(`/api/v1${location.pathname}/post/${postId}`, {
-            responseType: 'json',
-            headers: { Accept: 'text/css' },
-          });
-
-          if (options.load_original_image)
-            return res.response.previews.map(
-              ({ serer, path, name }) => `${serer}/data${path}?f=${name}`,
-            );
-
-          return res.response.previews.map(
-            ({ path }) => `https://img.${location.host}/thumbnail/data${path}`,
-          );
+          const res = await request(`${location.pathname}/post/${postId}`);
+          const doc = domParse(res.responseText);
+          return coreCtx.options.load_original_image
+            ? original(doc)
+            : thumbnail(doc);
         },
       });
 
