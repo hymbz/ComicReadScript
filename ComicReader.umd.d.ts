@@ -6,6 +6,13 @@ import { Accessor, Component, EffectFunction, JSX, MemoOptions, Owner, createEff
 import { SetStoreFunction } from 'solid-js/store';
 import { PartialDeep, Promisable } from 'type-fest';
 
+/** 图片四边的空白边缘比例 */
+export type BlankMargin = {
+	top: number;
+	right: number;
+	bottom: number;
+	left: number;
+};
 export type ComicImg = {
 	loadType: "loading" | "loaded" | "error" | "wait";
 	type?: "long" | "wide" | "vertical" | "";
@@ -19,11 +26,12 @@ export type ComicImg = {
 	};
 	blobUrl?: string;
 	progress?: number;
-	background?: string;
-	blankMargin?: {
-		left: number;
-		right: number;
-	} | null;
+	/** 背景色 */
+	background?: string | null;
+	/** 边缘区域 */
+	blankMargin?: BlankMargin | null;
+	/** 图片在「图像识别」处理时使用的配置版本号 */
+	recognitionVersion?: number;
 	translationUrl?: string;
 	translationMessage?: string;
 	translationType?: "wait" | "show" | "hide" | "error";
@@ -197,7 +205,7 @@ type Option$1 = {
 		 *
 		 * - 'disable': 禁用
 		 * - 'full': 全部图片缩放适应页宽
-		 * - number: 通过调整图片缩放比例，让**大多数**图片的宽度接近指定值
+		 * - number: 将图片宽度限定至指定值，但宽图只会放大不缩小
 		 */
 		adjustToWidth: "disable" | "full" | number;
 		/** 并排模式 */
@@ -229,6 +237,10 @@ type Option$1 = {
 		pageFill: boolean;
 		/** 图片放大 */
 		upscale: boolean;
+		/** 边缘裁切 */
+		crop: boolean;
+		/** 保留白边 */
+		keepMargin: number;
 	};
 	/** 翻译 */
 	translation: {
@@ -291,7 +303,6 @@ declare const otherState: {
 		play: boolean;
 		progress: number;
 	};
-	supportWorker: boolean;
 	supportUpscaleImage: boolean;
 };
 export type ToolbarButtonList = Component[];
@@ -497,7 +508,7 @@ declare class WakeLock$1 {
 	on: () => Promise<boolean | null>;
 	off: () => Promise<void>;
 }
-declare const getImageData: (img: HTMLImageElement) => ImageData;
+declare const getImageData: (img: HTMLImageElement, maxSize?: number) => ImageData;
 declare const withEventStop: <T extends Event>(handler?: (e: T) => void) => (e: T) => void;
 declare const versionLt: (version1: string, version2: string) => boolean;
 declare const createEqualsSignal: typeof createSignal;
@@ -659,7 +670,6 @@ export declare const initComicReader: {
 				play: boolean;
 				progress: number;
 			};
-			supportWorker: boolean;
 			supportUpscaleImage: boolean;
 			defaultOption: Option$1;
 			option: Option$1;
@@ -742,7 +752,6 @@ export declare const initComicReader: {
 				play: boolean;
 				progress: number;
 			};
-			supportWorker: boolean;
 			supportUpscaleImage: boolean;
 			defaultOption: Option$1;
 			option: Option$1;

@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.9.0
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、再漫画、漫画柜(manhuagui)、动漫屋(dm5)、mangabz、komiic、無限動漫、绅士漫画(wnacg)、禁漫天堂、NoyAcg、熱辣漫畫、hanime1、hitomi、hdoujin、SchaleNetwork、nude-moon、HentaiZap、IMHentai、HentaiEra、HentaiEnvy、MangaDex、welovemanga、kisslove(klz9)、kemono、nekohouse、Pixiv、明日方舟泰拉记事社、Postimages、最前線、芸能ヌード、Tachidesk、LANraragi
-// @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | hdoujin | SchaleNetwork | nude-moon | HentaiZap | IMHentai | HentaiEra | HentaiEnvy | kemono | nekohouse | MangaDex | welovemanga | kisslove(klz9)
+// @version         12.10.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、再漫画、漫画柜(manhuagui)、动漫屋(dm5)、mangabz、komiic、無限動漫、绅士漫画(wnacg)、禁漫天堂、NoyAcg、熱辣漫畫、hanime1、hitomi、hdoujin、SchaleNetwork、nude-moon、HentaiZap、IMHentai、HentaiEra、HentaiEnvy、MangaDex、welovemanga、kisslove(klz9)、Pawchive、kemono、nekohouse、Pixiv、明日方舟泰拉记事社、Postimages、最前線、芸能ヌード、Tachidesk、LANraragi
+// @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | hdoujin | SchaleNetwork | nude-moon | HentaiZap | IMHentai | HentaiEra | HentaiEnvy | Pawchive | kemono | nekohouse | MangaDex | welovemanga | kisslove(klz9)
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
 // @license         AGPL-3.0-or-later
@@ -63,6 +63,7 @@
 // @match           *://weloma.art/*
 // @match           *://love4u.net/*
 // @match           *://klz9.com/*
+// @match           *://pawchive.pw/*
 // @match           *://kemono.cr/*
 // @match           *://kemono.su/*
 // @match           *://kemono.party/*
@@ -88,21 +89,22 @@
 // @connect         self
 // @connect         127.0.0.1
 // @connect         *
-// @connect         mapi.hotmangasg.com
-// @connect         mapi.fgjfghkk.club
-// @connect         mapi.elfgjfghkk.club
-// @connect         www.manga2025.com
-// @connect         api.manga2025.com
-// @connect         mapi.fgjfghkkcenter.club
-// @connect         mapi.hotmangasd.com
-// @connect         www.manga2026.xyz
-// @connect         m.manga2025.com
 // @connect         mapi.hotmangasf.com
 // @connect         api.2024manga.com
-// @connect         api.mangacopy.com
+// @connect         mapi.hotmangasd.com
+// @connect         mapi.fgjfghkk.club
+// @connect         m.manga2025.com
+// @connect         www.manga2025.com
+// @connect         mapi.hotmangasg.com
+// @connect         www.manga2026.xyz
+// @connect         api.manga2025.com
+// @connect         mapi.elfgjfghkk.club
+// @connect         mapi.fgjfghkkcenter.club
 // @connect         mapi.copy20.com
-// @connect         api.2026copy.com
+// @connect         api.mangacopy.com
 // @connect         api.copy3000.com
+// @connect         api.2026copy.com
+// @connect         api.copy4000.com
 // @grant           GM_getValue
 // @grant           GM_setValue
 // @grant           GM_addElement
@@ -403,6 +405,8 @@ var en_default = {
 			"img_recognition": "Image Recognition",
 			"img_recognition_background": "Recognition background color",
 			"img_recognition_pageFill": "Auto switch page fill",
+			"img_recognition_crop": "Edge cropping",
+			"img_recognition_keepMargin": "Keep margin",
 			"img_recognition_warn": "❗ The current browser does not support Web Workers. Enabling this feature may cause page lag. It's recommended to upgrade or switch browsers.",
 			"img_recognition_warn_2": "❗ The current website does not support Web Workers. Enabling this feature may cause page lag.",
 			"paragraph_appearance": "Appearance",
@@ -760,6 +764,8 @@ var ru_default = {
 			"img_recognition": "распознавание изображений",
 			"img_recognition_background": "Определить цвет фона",
 			"img_recognition_pageFill": "Автоматическое переключение заполнения страницы",
+			"img_recognition_crop": "Обрезка краёв",
+			"img_recognition_keepMargin": "Оставить поля",
 			"img_recognition_warn": "❗ Текущий браузер не поддерживает Web Workers. Включение этой функции может вызвать задержку страницы. Рекомендуется обновить или сменить браузер.",
 			"img_recognition_warn_2": "❗ Текущий веб-сайт не поддерживает Web Workers. Включение этой функции может привести к задержке страницы.",
 			"paragraph_appearance": "Внешность",
@@ -1117,6 +1123,8 @@ var zh_default = {
 			"img_recognition": "图像识别",
 			"img_recognition_background": "识别背景色",
 			"img_recognition_pageFill": "自动调整页面填充",
+			"img_recognition_crop": "边缘裁切",
+			"img_recognition_keepMargin": "保留白边",
 			"img_recognition_warn": "❗ 当前浏览器不支持 Web Worker，开启此功能可能导致页面卡顿，建议升级或更换浏览器。",
 			"img_recognition_warn_2": "❗ 当前网站不支持 Web Worker，开启此功能可能导致页面卡顿。",
 			"paragraph_appearance": "外观",
@@ -1737,7 +1745,7 @@ const needDarkMode = (hexColor) => {
 	const b = Number.parseInt(hexColor.slice(5, 7), 16);
 	return (r * 299 + g * 587 + b * 114) / 1e3 < 128;
 };
-async function wait(fn, timeout = Number.POSITIVE_INFINITY, waitTime = 100) {
+async function wait(fn, timeout = Infinity, waitTime = 100) {
 	let res = await fn();
 	let _timeout = timeout;
 	while (_timeout > 0 && !res) {
@@ -2005,11 +2013,21 @@ var WakeLock = class {
 		this.lock = null;
 	};
 };
-const getImageData = (img) => {
+/**
+* 获取图片像素数据
+*
+* 传入 maxSize 时按最长边缩放到该尺寸内
+*/
+const getImageData = (img, maxSize) => {
 	const { naturalWidth: width, naturalHeight: height } = img;
-	const ctx = new OffscreenCanvas(width, height).getContext("2d", { willReadFrequently: true });
-	ctx.drawImage(img, 0, 0);
-	return ctx.getImageData(0, 0, width, height);
+	if (!width || !height) throw new Error(\`图片未加载完成: \${img.src}\`);
+	const scale = maxSize && maxSize > 0 ? Math.min(maxSize / width, maxSize / height) : 1;
+	const w = Math.max(1, Math.floor(width * scale));
+	const h = Math.max(1, Math.floor(height * scale));
+	const ctx = new OffscreenCanvas(w, h).getContext("2d", { willReadFrequently: true });
+	if (scale !== 1) ctx.imageSmoothingEnabled = false;
+	ctx.drawImage(img, 0, 0, w, h);
+	return ctx.getImageData(0, 0, w, h);
 };
 const withEventStop = (handler) => (e) => {
 	e.stopPropagation();
@@ -2797,6 +2815,7 @@ let worker_ImageUpscale = require("worker/ImageUpscale");
 worker_ImageUpscale = __toESM(worker_ImageUpscale, 1);
 let components_IconButton = require("components/IconButton");
 let fflate = require("fflate");
+let userscript_supportWorker = require("userscript/supportWorker");
 //#region src/components/Manga/store/image.ts
 const imgState = {
 	imgMap: {},
@@ -2956,7 +2975,7 @@ const _defaultOption = {
 		adjustToWidth: "disable",
 		abreastMode: false,
 		abreastDuplicate: .1,
-		pageColumns: 2,
+		pageColumns: 1,
 		doubleMode: false,
 		alignEdge: false
 	},
@@ -2969,7 +2988,9 @@ const _defaultOption = {
 		enabled: false,
 		background: false,
 		pageFill: true,
-		upscale: false
+		upscale: false,
+		crop: false,
+		keepMargin: 10
 	},
 	translation: {
 		enabled: false,
@@ -3023,7 +3044,6 @@ const otherState = {
 		play: false,
 		progress: 0
 	},
-	supportWorker: false,
 	supportUpscaleImage: true
 };
 //#endregion
@@ -3176,35 +3196,6 @@ const handleComicData = (imgList, fillEffect, switchFill) => {
 	return pageList;
 };
 //#endregion
-//#region src/components/Manga/actions/memo/options.ts
-/** 当前是否为并排卷轴模式 */
-const isAbreastMode = helper.createRootMemo(() => store.option.scrollMode.enabled && store.option.scrollMode.abreastMode);
-/** 当前是否为双页卷轴模式 */
-const isDoubleMode = helper.createRootMemo(() => store.option.scrollMode.enabled && store.option.scrollMode.doubleMode && !store.option.scrollMode.abreastMode);
-/** 当前是否为单页卷轴模式 */
-const isSingleMode = helper.createRootMemo(() => store.option.scrollMode.enabled && !store.option.scrollMode.doubleMode && !store.option.scrollMode.abreastMode);
-/** 当前是否为普通卷轴模式（包含了双页卷轴模式） */
-const isScrollMode = helper.createRootMemo(() => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode);
-/** 当前是否正在卷轴模式下使用自动缩放值 */
-const isUseAutoScale = helper.createRootMemo(() => isScrollMode() && typeof store.option.scrollMode.adjustToWidth === "number");
-/** 当前是否开启了识别背景色 */
-const isEnableBg = helper.createRootMemo(() => store.option.imgRecognition.enabled && store.option.imgRecognition.background);
-/** 当前是否开启了图像放大 */
-const isUpscale = helper.createRootMemo(() => !store.isMobile && store.option.imgRecognition.enabled && store.option.imgRecognition.upscale);
-/** 根据视区宽高判断单双页模式 */
-const autoPageNum = helper.createThrottleMemo(() => store.rootSize.width >= store.rootSize.height ? 2 : 1);
-/** 当前使用的单双页模式 */
-const pageNum = helper.createRootMemo(() => store.option.pageNum || autoPageNum());
-/** 是否为单页模式 */
-const isOnePageMode = helper.createRootMemo(() => {
-	if (store.isMobile || store.imgList.length <= 1) return true;
-	if (store.option.scrollMode.enabled) {
-		if (store.option.scrollMode.abreastMode) return true;
-		return !store.option.scrollMode.doubleMode;
-	}
-	return pageNum() === 1;
-});
-//#endregion
 //#region src/components/Manga/actions/memo/img.ts
 const imgList = helper.createRootMemo(() => store.imgList.map((url) => store.imgMap[url]));
 /** 图片 url 对应的索引 */
@@ -3245,26 +3236,22 @@ const placeholderSize = helper.createThrottleMemo(() => ({
 	width: getImgMedian((img) => img.width) ?? 800,
 	height: getImgMedian((img) => img.height) ?? 1200
 }), 500);
-/** 卷轴模式下的图片缩放比例 */
-const scrollModeScale = helper.createRootMemo(() => {
-	if (!isUseAutoScale()) return store.option.scrollMode.imgScale;
-	return store.option.scrollMode.adjustToWidth / placeholderSize().width;
-});
 //#endregion
 //#region src/components/Manga/actions/helper.ts
 const getImg = (i, state = store) => state.imgMap[state.imgList[i]];
 /** 找到指定 url 图片在 imgList 里的 index */
 const getImgIndexs = (url) => imgIndexMap().get(url) ?? [];
 /** 找到指定 url 图片的 dom */
-const getImgEle = (target) => {
+const getImgEle = (target, loaded = false) => {
 	const url = typeof target === "number" ? store.imgList[target] : target;
-	return refs.imgEleMap[url]?.values().next().value;
+	for (const element of refs.imgEleMap[url] ?? []) if (!loaded || element.complete) return element;
 };
 /** 触发 onOptionChange */
 const triggerOnOptionChange = helper.throttle(() => store.prop.onOptionChange?.(helper.difference(store.option, store.defaultOption)), 1e3);
 /** 在 option 后手动触发 onOptionChange */
-const setOption = (fn) => {
-	setState((state) => fn(state.option, state));
+const setOption = (...args) => {
+	if (args.length === 1 && typeof args[0] === "function") setState((state) => args[0](state.option, state));
+	else setState("option", ...args);
 	triggerOnOptionChange();
 };
 /** 创建用于将 ref 绑定到对应 state 上的工具函数 */
@@ -3288,6 +3275,7 @@ const resetUI = (state) => {
 	state.show.toolbar = false;
 	state.show.scrollbar = false;
 	state.show.touchArea = false;
+	state.show.pageTip = false;
 };
 const focus = () => requestAnimationFrame(() => {
 	refs.mangaBox?.click();
@@ -3312,7 +3300,36 @@ const openScrollLock = withOptionalState((state) => {
 });
 const bindOption = (...path) => ({
 	value: helper.byPath(store.option, path),
-	onChange: (val) => setOption((draftOption) => helper.byPath(draftOption, path, () => val))
+	onChange: (val) => setOption(...path, val)
+});
+//#endregion
+//#region src/components/Manga/actions/memo/options.ts
+/** 当前是否为并排卷轴模式 */
+const isAbreastMode = helper.createRootMemo(() => store.option.scrollMode.enabled && store.option.scrollMode.abreastMode);
+/** 当前是否为双页卷轴模式 */
+const isDoubleMode = helper.createRootMemo(() => store.option.scrollMode.enabled && store.option.scrollMode.doubleMode && !store.option.scrollMode.abreastMode);
+/** 当前是否为单页卷轴模式 */
+const isSingleMode = helper.createRootMemo(() => store.option.scrollMode.enabled && !store.option.scrollMode.doubleMode && !store.option.scrollMode.abreastMode);
+/** 当前是否为普通卷轴模式（包含了双页卷轴模式） */
+const isScrollMode = helper.createRootMemo(() => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode);
+/** 当前是否正在卷轴模式下使用自动缩放值 */
+const isUseAutoScale = helper.createRootMemo(() => isScrollMode() && typeof store.option.scrollMode.adjustToWidth === "number");
+/** 当前是否开启了识别背景色 */
+const isEnableBg = helper.createRootMemo(() => store.option.imgRecognition.enabled && store.option.imgRecognition.background);
+/** 当前是否开启了图像放大 */
+const isUpscale = helper.createRootMemo(() => !store.isMobile && store.option.imgRecognition.enabled && store.option.imgRecognition.upscale);
+/** 根据视区宽高判断单双页模式 */
+const autoPageNum = helper.createThrottleMemo(() => store.rootSize.width >= store.rootSize.height ? 2 : 1);
+/** 当前使用的单双页模式 */
+const pageNum = helper.createRootMemo(() => store.option.pageNum || autoPageNum());
+/** 是否为单页模式 */
+const isOnePageMode = helper.createRootMemo(() => {
+	if (store.isMobile || store.imgList.length <= 1) return true;
+	if (store.option.scrollMode.enabled) {
+		if (store.option.scrollMode.abreastMode) return true;
+		return !store.option.scrollMode.doubleMode;
+	}
+	return pageNum() === 1;
 });
 //#endregion
 //#region src/components/Manga/actions/memo/abreastScroll.ts
@@ -3692,10 +3709,33 @@ helper.createRootEffect((prevIsWide) => {
 }, false);
 //#endregion
 //#region src/components/Manga/actions/imageSize.ts
-/** 获取指定图片的显示尺寸 */
+/** 计算裁切后的四边比例，没有裁切时返回 null */
+const getCropMargin = ({ blankMargin: margin, width, height }, state = store) => {
+	const { crop, keepMargin } = state.option.imgRecognition;
+	if (!crop || !margin || !width || !height) return null;
+	const left = Math.max(0, margin.left - keepMargin / width);
+	const right = Math.max(0, margin.right - keepMargin / width);
+	const top = Math.max(0, margin.top - keepMargin / height);
+	const bottom = Math.max(0, margin.bottom - keepMargin / height);
+	if (left + right + top + bottom === 0) return null;
+	return {
+		left,
+		right,
+		top,
+		bottom
+	};
+};
+/** 获取指定图片的显示尺寸（会将边缘裁切计算在内） */
 const getImgDisplaySize = (state, img) => {
 	let height = img.height ?? placeholderSize().height;
 	let width = img.width ?? placeholderSize().width;
+	if (state.option.imgRecognition.crop && img.width && img.height) {
+		const crop = getCropMargin(img, state);
+		if (crop) {
+			width = img.width * (1 - crop.left - crop.right);
+			height = img.height * (1 - crop.top - crop.bottom);
+		}
+	}
 	if (!state.option.scrollMode.enabled) return {
 		height,
 		width
@@ -3710,8 +3750,24 @@ const getImgDisplaySize = (state, img) => {
 	};
 	if (isAbreastMode()) return setWidth(abreastColumnWidth());
 	if (state.option.scrollMode.adjustToWidth === "full") return setWidth(state.rootSize.width);
-	height *= scrollModeScale();
-	width *= scrollModeScale();
+	if (typeof state.option.scrollMode.adjustToWidth === "number") {
+		const target = state.option.scrollMode.adjustToWidth;
+		const type = img.type ?? state.defaultImgType;
+		if (isWideType(type)) {
+			const ratio = height / width;
+			width = helper.clamp(Math.min(target, state.rootSize.width), width, state.rootSize.width);
+			height = width * ratio;
+			return {
+				height,
+				width
+			};
+		}
+		return setWidth(Math.min(target, state.rootSize.width));
+	}
+	if (state.option.scrollMode.imgScale !== 1) {
+		height *= state.option.scrollMode.imgScale;
+		width *= state.option.scrollMode.imgScale;
+	}
 	if (width > state.rootSize.width) return setWidth(state.rootSize.width);
 	return {
 		height,
@@ -3721,24 +3777,29 @@ const getImgDisplaySize = (state, img) => {
 /** 更新图片尺寸 */
 const updateImgSize = withOptionalState((url, width, height, state) => {
 	const img = state.imgMap[url];
-	if (img.width === width && img.height === height) return;
-	img.width = width;
-	img.height = height;
-	Object.assign(img.size, getImgDisplaySize(state, img));
-	updateImgType(state, img);
+	if (img.width !== width || img.height !== height) {
+		img.width = width;
+		img.height = height;
+		updateImgType(state, img);
+	}
+	const size = getImgDisplaySize(state, img);
+	if (img.size.width !== size.width || img.size.height !== size.height) Object.assign(img.size, size);
 });
 helper.createEffectOn([
-	imgList,
+	placeholderSize,
+	() => store.rootSize,
 	() => store.option.scrollMode.enabled,
+	() => store.option.scrollMode.imgScale,
 	() => store.option.scrollMode.abreastMode,
 	() => store.option.scrollMode.adjustToWidth,
-	scrollModeScale,
-	() => store.rootSize,
-	placeholderSize
-], ([{ length }]) => {
-	if (length === 0) return;
+	() => store.option.imgRecognition.crop,
+	() => store.option.imgRecognition.keepMargin
+], () => {
 	setState((state) => {
-		for (const url of state.imgList) Object.assign(state.imgMap[url].size, getImgDisplaySize(state, state.imgMap[url]));
+		for (const url of state.imgList) {
+			const img = state.imgMap[url];
+			Object.assign(img.size, getImgDisplaySize(state, img));
+		}
 	});
 });
 //#endregion
@@ -3875,7 +3936,7 @@ const planLoadBatch = () => {
 		}
 		return hasUnloadedImg;
 	};
-	if (store.imgList.length > 0) loadRangeImg() || loadRangeImg(preloadNum().back) || loadRangeImg(-preloadNum().front) || !store.option.alwaysLoadAllImg || loadRangeImg(Number.POSITIVE_INFINITY, 5) || loadRangeImg(Number.NEGATIVE_INFINITY, 5);
+	if (store.imgList.length > 0) loadRangeImg() || loadRangeImg(preloadNum().back) || loadRangeImg(-preloadNum().front) || !store.option.alwaysLoadAllImg || loadRangeImg(Infinity, 5) || loadRangeImg(Number.NEGATIVE_INFINITY, 5);
 	return {
 		loadImgList,
 		waitUrlImgs
@@ -3922,30 +3983,75 @@ const checkImgSize = (url) => {
 };
 //#endregion
 //#region src/components/Manga/actions/imageRecognition.ts
+/**
+* 在「图像识别」相关功能的配置变更后变更
+* 用于在 worker 执行结束后判断数据是否过期
+*/
+let recognitionVersion = 0;
+/** 使所有正在进行的图像识别结果失效 */
+const invalidateRecognition = () => {
+	recognitionVersion += 1;
+	setState((state) => {
+		for (const img of Object.values(state.imgMap)) img.recognitionVersion = void 0;
+	});
+};
+/** 判断图片是否处于当前渲染范围内 */
+const isInRenderRange = (url) => {
+	const renderList = renderImgList();
+	return getImgIndexs(url).some((index) => renderList.has(index));
+};
 const handleImgRecognition = async (url, imgEle) => {
 	const img = store.imgMap[url];
-	if (store.option.imgRecognition.background && img.background === void 0 || store.option.imgRecognition.pageFill && img.blankMargin === void 0) {
-		imgEle ??= await helper.wait(() => getImgEle(url), 1e3);
-		if (!imgEle) return helper.log.warn("获取图片元素失败");
-		const { data, width, height } = helper.getImageData(imgEle);
-		initWorker$1();
-		return worker_ImageRecognition.default.recognitionImg(comlink.default.transfer(data, [data.buffer]), width, height, url, solid_js_store.unwrap(store.option.imgRecognition));
-	}
+	if (!img || img.recognitionVersion !== void 0) return;
+	if (!(store.option.imgRecognition.background && img.background === void 0 || store.option.imgRecognition.pageFill && img.blankMargin === void 0 || store.option.imgRecognition.crop && img.blankMargin === void 0)) return;
+	if (!isInRenderRange(url)) return;
+	imgEle ??= await helper.wait(() => getImgEle(url, true), 1e3);
+	if (!imgEle) return helper.log.warn("获取图片元素失败");
+	setState("imgMap", url, "recognitionVersion", recognitionVersion);
+	const { data, width, height } = helper.getImageData(imgEle, 200);
+	initWorker$1();
+	await worker_ImageRecognition.default.recognitionImg(comlink.default.transfer(data, [data.buffer]), {
+		width,
+		height,
+		url,
+		index: Number(imgEle.alt),
+		option: solid_js_store.unwrap(store.option.imgRecognition),
+		version: recognitionVersion
+	});
 };
 const initWorker$1 = helper.once(() => {
 	const mainFn = {
 		log: helper.log,
 		updatePageData: helper.throttle(() => setState(updatePageData), 1e3),
-		setImg: (url, key, val) => Reflect.has(store.imgMap, url) && setState("imgMap", url, key, val)
+		setImg: ({ url, key, val, version }) => {
+			if (!Reflect.has(store.imgMap, url)) return;
+			if (version !== recognitionVersion) return;
+			setState("imgMap", url, key, val);
+			if (key === "blankMargin" && store.option.imgRecognition.crop) {
+				const { width, height } = store.imgMap[url];
+				if (width && height) updateImgSize(url, width, height);
+			}
+		}
 	};
 	worker_ImageRecognition.default.setMainFn(comlink.default.proxy(mainFn), Object.keys(mainFn));
+});
+helper.createEffectOn([
+	renderImgList,
+	() => store.option.imgRecognition.enabled,
+	() => store.option.imgRecognition.background,
+	() => store.option.imgRecognition.pageFill,
+	() => store.option.imgRecognition.crop
+], ([imgList, enabled]) => {
+	if (!enabled) return;
+	for (const index of imgList) {
+		const img = getImg(index);
+		if (img.loadType === "loaded") handleImgRecognition(img.src);
+	}
 });
 //#endregion
 //#region src/components/Manga/helper.ts
 /** 阻止事件冒泡 */
-const stopPropagation = (e) => {
-	e.stopPropagation();
-};
+const stopPropagation = (e) => e.stopPropagation();
 /** 从头开始播放元素的动画 */
 const playAnimation = (e) => {
 	if (!e) return;
@@ -4331,9 +4437,10 @@ const updateMitTranslators = async (noTip = false) => {
 		helper.log.error(helper.t("translation.tip.get_translator_list_error"), error);
 		setMitTranslators([]);
 	}
-	if (!mitTranslators().some(([val]) => val === store.option.translation.mit.translator.translator)) setOption((draftOption) => {
-		draftOption.translation.mit.translator.translator = mitTranslators()[0]?.[0];
-	});
+	if (!mitTranslators().some(([val]) => val === store.option.translation.mit.translator.translator)) {
+		const translator = mitTranslators()[0]?.[0];
+		setOption("translation", "mit", "translator", "translator", translator);
+	}
 };
 helper.createEffectOn([
 	() => store.option.translation.enabled,
@@ -4519,7 +4626,7 @@ const NumberInput = (props) => {
 	const handleInput = (e) => {
 		const target = e.currentTarget;
 		if (props.maxLength === void 0 || target.textContent.length <= props.maxLength) return;
-		target.textContent = target.textContent.sliceprops.maxLength;
+		target.textContent = target.textContent.slice(0, props.maxLength);
 		target.blur();
 	};
 	const handleKeyDown = (e) => {
@@ -4709,9 +4816,7 @@ const mitSettings = () => [
 			return store.option.translation.mit.localUrl !== void 0;
 		},
 		onChange: (val) => {
-			setOption((draftOption) => {
-				draftOption.translation.mit.localUrl = val ? "" : void 0;
-			});
+			setOption("translation", "mit", "localUrl", val ? "" : void 0);
 		}
 	}),
 	solid_js_web.createComponent(solid_js.Show, {
@@ -4721,10 +4826,8 @@ const mitSettings = () => [
 		get children() {
 			var _el$ = _tmpl$$38();
 			_el$.addEventListener("change", (e) => {
-				setOption((draftOption) => {
-					const url = e.target.value.replace(/\\/$/u, "");
-					draftOption.translation.mit.localUrl = url;
-				});
+				const url = e.target.value.replace(/\\/$/u, "");
+				setOption("translation", "mit", "localUrl", url);
 			});
 			solid_js_web.effect(() => _el$.value = store.option.translation.mit.localUrl);
 			return _el$;
@@ -4856,7 +4959,7 @@ const handleImgLoaded = (url, e) => {
 	}
 	if (!e) return;
 	updateImgSize(url, e.naturalWidth, e.naturalHeight);
-	if (store.option.imgRecognition.enabled && e.src === img.blobUrl) setTimeout(handleImgRecognition, 0, url, e);
+	if (store.option.imgRecognition.enabled && e.src === img.blobUrl && isInRenderRange(url)) setTimeout(handleImgRecognition, 0, url, e);
 	if (store.option.translation.enabled) translationAll();
 };
 /** 图片加载出错的回调 */
@@ -5247,11 +5350,7 @@ const switchOnePageMode = () => {
 	jumpToImg(index);
 };
 /** 切换阅读方向 */
-const switchDir = () => {
-	setOption((draftOption) => {
-		draftOption.dir = draftOption.dir === "rtl" ? "ltr" : "rtl";
-	});
-};
+const switchDir = () => setOption("dir", store.option.dir === "rtl" ? "ltr" : "rtl");
 /** 切换全屏 */
 const switchFullscreen = () => {
 	if (document.fullscreenElement) return document.exitFullscreen();
@@ -5267,19 +5366,17 @@ const stopAutoScroll = () => {
 };
 /** 切换图片识别相关功能 */
 const switchImgRecognition = (...path) => {
+	const onlyUpscale = path.length === 1 && path[0] === "upscale";
 	setOption((draftOption, state) => {
 		const option = draftOption.imgRecognition;
 		if (path.length === 0) path.push("enabled");
 		for (const key of path) option[key] = !option[key];
 		if (!option.enabled) return syncImgLoadState(state);
-		for (const img of Object.values(state.imgMap)) {
-			if (!img.blobUrl) img.loadType = "wait";
-			if (img.loadType !== "loaded") continue;
-			handleImgRecognition(img.src);
-		}
+		for (const img of Object.values(state.imgMap)) if (!img.blobUrl) img.loadType = "wait";
 		syncImgLoadState(state);
 		if (path.includes("enabled")) updateImgLoadType();
 	});
+	if (!onlyUpscale) invalidateRecognition();
 };
 //#endregion
 //#region src/components/Manga/actions/show.ts
@@ -5318,7 +5415,13 @@ const getPageTip = (pageIndex) => {
 };
 helper.createEffectOn(() => store.activePageIndex, () => store.show.endPage && setState("show", "endPage", void 0), { defer: true });
 helper.createEffectOn(activePage, helper.throttle(() => store.isDragMode || store.isTurnAnimating || setState(resetPage)));
-helper.createEffectOn(() => store.show.toolbar, () => store.show.scrollbar && !store.show.toolbar && setState("show", "scrollbar", false), { defer: true });
+helper.createEffectOn(() => store.show.toolbar, () => {
+	if (store.show.toolbar) return;
+	setState((state) => {
+		state.show.scrollbar = false;
+		state.show.pageTip = false;
+	});
+}, { defer: true });
 //#endregion
 //#region src/components/Manga/actions/readProgress.ts
 let cache = void 0;
@@ -5676,9 +5779,7 @@ const handleHotkey = (hotkey, e) => {
 		case "fullscreen": return switchFullscreen();
 		case "jump_next": return store.prop.onNext?.();
 		case "jump_prev": return store.prop.onPrev?.();
-		case "switch_auto_enlarge": return setOption((draftOption) => {
-			draftOption.disableZoom = !draftOption.disableZoom;
-		});
+		case "switch_auto_enlarge": return setOption("disableZoom", !store.option.disableZoom);
 		case "reload_current_error_img":
 			for (const i of showImgList()) reloadImg(getImg(i).src);
 			return;
@@ -5791,7 +5892,7 @@ const findUpscaleImage = async (start, end) => {
 	for (let i = start; i < end; i++) {
 		const img = typeof i === "number" ? getImg(i) : i;
 		if (img.upscaleUrl !== void 0) continue;
-		const imgEle = await helper.wait(() => getImgEle(img.src), 1e3);
+		const imgEle = await helper.wait(() => getImgEle(img.src, true), 1e3);
 		if (imgEle) return [img.src, imgEle];
 	}
 };
@@ -5820,7 +5921,7 @@ const getModel = async () => {
 		if (!base64) {
 			components_Toast.toast(helper.t("upscale.module_downloading"), {
 				id: "upscale",
-				duration: Number.POSITIVE_INFINITY
+				duration: Infinity
 			});
 			const bin = await request.request("https://cdn.jsdelivr.net/npm/@hymbz/comic-read-script@11.12.1/public/realcugan/2x-conservative-128/group1-shard1of1.bin", {
 				responseType: "arraybuffer",
@@ -5847,7 +5948,7 @@ const getModel = async () => {
 		components_Toast.toast.dismiss("upscale");
 		components_Toast.toast.error(helper.t("upscale.module_download_failed"), {
 			id: "upscale",
-			duration: Number.POSITIVE_INFINITY
+			duration: Infinity
 		});
 		setState("supportUpscaleImage", false);
 		setState("option", "imgRecognition", "upscale", false);
@@ -6063,14 +6164,12 @@ const setAdjustToWidth = (val) => {
 	if (typeof val === "function") val = val(store.option.scrollMode.adjustToWidth);
 	if (Number.isNaN(val)) return;
 	const jump = saveScrollProgress();
-	setOption((draftOption) => {
-		const max = Math.ceil(store.rootSize.width);
-		draftOption.scrollMode.adjustToWidth = helper.clamp(200, val, max);
-	});
+	const newVal = helper.clamp(200, val, Math.ceil(store.rootSize.width));
+	setOption("scrollMode", "adjustToWidth", newVal);
 	jump();
 };
 const minImgWidth = helper.createRootMemo(() => {
-	let min = Number.POSITIVE_INFINITY;
+	let min = Infinity;
 	for (const img of Object.values(store.imgMap)) if (img.width && img.width < min) min = img.width;
 	return min;
 });
@@ -6079,14 +6178,13 @@ const setImgScale = (val) => {
 	if (typeof val === "function") val = val(store.option.scrollMode.imgScale);
 	if (Number.isNaN(val)) return;
 	const jump = saveScrollProgress();
-	setOption((draftOption) => {
-		val = helper.clamp(.1, val, 3);
-		if (minImgWidth() > store.rootSize.width && val < draftOption.scrollMode.imgScale) {
-			const maxImgScale = store.rootSize.width / minImgWidth();
-			if (val > maxImgScale) val = maxImgScale;
-		}
-		draftOption.scrollMode.imgScale = helper.clamp(.1, Number(val.toFixed(2)), 3);
-	});
+	let newVal = helper.clamp(.1, val, 3);
+	if (minImgWidth() > store.rootSize.width && newVal < store.option.scrollMode.imgScale) {
+		const maxImgScale = store.rootSize.width / minImgWidth();
+		if (newVal > maxImgScale) newVal = maxImgScale;
+	}
+	newVal = Number(newVal.toFixed(2));
+	setOption("scrollMode", "imgScale", helper.clamp(.1, newVal, 3));
 	jump();
 };
 /** 处理卷轴模式下的放大/缩小操作 */
@@ -6433,18 +6531,54 @@ const ComicImg = (img) => {
 		const imgPosition = abreastArea().position[img.index];
 		return imgPosition ? imgPosition.length - 1 : 0;
 	});
+	/** 打开「边缘裁切」后使用的样式 */
+	const cropStyle = solid_js.createMemo(() => {
+		const crop = getCropMargin(img);
+		if (!crop) return null;
+		const cw = 1 - crop.left - crop.right;
+		const ch = 1 - crop.top - crop.bottom;
+		const picture = { overflow: "clip" };
+		const isDisableZoomNonScroll = store.option.disableZoom && !store.option.scrollMode.enabled;
+		if (isDisableZoomNonScroll || isAbreastMode()) {
+			if (isDisableZoomNonScroll) {
+				const pageIndex = imgPageMap()[img.index];
+				const isFullWidth = (pageIndex === void 0 ? void 0 : store.pageList[pageIndex])?.length === 1;
+				const scale = Math.min(1, store.rootSize.width * (isFullWidth ? 1 : .5) / img.size.width, store.rootSize.height / img.size.height) || 1;
+				picture.width = \`\${img.size.width * scale}px\`;
+				picture.height = \`\${img.size.height * scale}px\`;
+			} else {
+				picture.width = \`\${img.size.width}px\`;
+				picture.height = \`\${img.size.height}px\`;
+			}
+		}
+		return {
+			imgEle: {
+				position: "absolute",
+				left: \`\${-crop.left / cw * 100}%\`,
+				top: \`\${-crop.top / ch * 100}%\`,
+				width: \`\${1 / cw * 100}%\`,
+				height: \`\${1 / ch * 100}%\`,
+				"max-width": "none",
+				"max-height": "none",
+				"object-fit": "fill"
+			},
+			picture
+		};
+	});
 	const styles = solid_js.createMemo(() => ({
 		img: {
 			"grid-area": isAbreastMode() ? "none" : \`_\${img.index}\`,
-			"background-color": isEnableBg() ? img.background : void 0
+			"background-color": isEnableBg() ? img.background ?? void 0 : void 0
 		},
+		imgEle: cropStyle()?.imgEle,
 		picture: {
 			"aspect-ratio": \`\${img.size.width} / \${img.size.height}\`,
 			background: img.progress ? \`linear-gradient(
-            to bottom,
-            var(--secondary-bg) \${img.progress}%,
-            var(--hover-bg-color,#fff3) \${img.progress}%
-          )\` : void 0
+              to bottom,
+              var(--secondary-bg) \${img.progress}%,
+              var(--hover-bg-color,#fff3) \${img.progress}%
+            )\` : void 0,
+			...cropStyle()?.picture
 		}
 	}));
 	const ComicImgBase = (props) => (() => {
@@ -6458,7 +6592,8 @@ const ComicImg = (img) => {
 				_el$3.addEventListener("error", (e) => handleImgError(img.src, e.currentTarget));
 				_el$3.addEventListener("load", (e) => handleImgLoaded(img.src, e.currentTarget));
 				solid_js_web.use((el) => {
-					const set = refs.imgEleMap[img.src] ??= /* @__PURE__ */ new Set();
+					refs.imgEleMap[img.src] ??= /* @__PURE__ */ new Set();
+					const set = refs.imgEleMap[img.src];
 					set.add(el);
 					solid_js.onCleanup(() => {
 						set.delete(el);
@@ -6466,30 +6601,32 @@ const ComicImg = (img) => {
 					});
 				}, _el$3);
 				solid_js_web.effect((_p$) => {
-					var _v$ = src(), _v$2 = \`\${img.index}\`, _v$3 = img.src;
-					_v$ !== _p$.e && solid_js_web.setAttribute(_el$3, "src", _p$.e = _v$);
-					_v$2 !== _p$.t && solid_js_web.setAttribute(_el$3, "alt", _p$.t = _v$2);
-					_v$3 !== _p$.a && solid_js_web.setAttribute(_el$3, "data-src", _p$.a = _v$3);
+					var _v$ = styles().imgEle, _v$2 = src(), _v$3 = \`\${img.index}\`, _v$4 = img.src;
+					_p$.e = solid_js_web.style(_el$3, _v$, _p$.e);
+					_v$2 !== _p$.t && solid_js_web.setAttribute(_el$3, "src", _p$.t = _v$2);
+					_v$3 !== _p$.a && solid_js_web.setAttribute(_el$3, "alt", _p$.a = _v$3);
+					_v$4 !== _p$.o && solid_js_web.setAttribute(_el$3, "data-src", _p$.o = _v$4);
 					return _p$;
 				}, {
 					e: void 0,
 					t: void 0,
-					a: void 0
+					a: void 0,
+					o: void 0
 				});
 				return _el$3;
 			}
 		}), _el$4);
 		solid_js_web.insert(_el$4, () => getImgTip(img.index));
 		solid_js_web.effect((_p$) => {
-			var _v$4 = classes$2.img, _v$5 = \`_\${img.index}_\${props.cloneIndex ?? 0}\`, _v$6 = styles().img, _v$7 = showState(), _v$8 = img.type ?? store.defaultImgType, _v$9 = img.loadType === "loaded" ? void 0 : img.loadType, _v$0 = styles().picture, _v$1 = classes$2.pageTip;
-			_v$4 !== _p$.e && solid_js_web.className(_el$, _p$.e = _v$4);
-			_v$5 !== _p$.t && solid_js_web.setAttribute(_el$, "id", _p$.t = _v$5);
-			_p$.a = solid_js_web.style(_el$, _v$6, _p$.a);
-			_v$7 !== _p$.o && solid_js_web.setAttribute(_el$, "data-show", _p$.o = _v$7);
-			_v$8 !== _p$.i && solid_js_web.setAttribute(_el$, "data-type", _p$.i = _v$8);
-			_v$9 !== _p$.n && solid_js_web.setAttribute(_el$, "data-load-type", _p$.n = _v$9);
-			_p$.s = solid_js_web.style(_el$2, _v$0, _p$.s);
-			_v$1 !== _p$.h && solid_js_web.className(_el$4, _p$.h = _v$1);
+			var _v$5 = classes$2.img, _v$6 = \`_\${img.index}_\${props.cloneIndex ?? 0}\`, _v$7 = styles().img, _v$8 = showState(), _v$9 = img.type ?? store.defaultImgType, _v$0 = img.loadType === "loaded" ? void 0 : img.loadType, _v$1 = styles().picture, _v$10 = classes$2.pageTip;
+			_v$5 !== _p$.e && solid_js_web.className(_el$, _p$.e = _v$5);
+			_v$6 !== _p$.t && solid_js_web.setAttribute(_el$, "id", _p$.t = _v$6);
+			_p$.a = solid_js_web.style(_el$, _v$7, _p$.a);
+			_v$8 !== _p$.o && solid_js_web.setAttribute(_el$, "data-show", _p$.o = _v$8);
+			_v$9 !== _p$.i && solid_js_web.setAttribute(_el$, "data-type", _p$.i = _v$9);
+			_v$0 !== _p$.n && solid_js_web.setAttribute(_el$, "data-load-type", _p$.n = _v$0);
+			_p$.s = solid_js_web.style(_el$2, _v$1, _p$.s);
+			_v$10 !== _p$.h && solid_js_web.className(_el$4, _p$.h = _v$10);
 			return _p$;
 		}, {
 			e: void 0,
@@ -6634,7 +6771,7 @@ const ComicImgFlow = () => {
 		"grid-template-rows"() {
 			if (isScrollMode()) return pageHeightList().map((num) => \`\${num}px\`).join(" ");
 		},
-		"background-color": () => isEnableBg() ? getImg(activeImgIndex())?.background : void 0
+		"background-color": () => isEnableBg() ? getImg(activeImgIndex())?.background ?? void 0 : void 0
 	});
 	css$1(imgAreaStyle);
 	const renderList = solid_js.createMemo(() => {
@@ -7463,6 +7600,7 @@ const DownloadButton = () => {
 			if (img.translationType === "show") url = img.translationUrl;
 			else if (img.upscaleUrl && isUpscale()) url = img.upscaleUrl;
 			else url = img.src;
+			if (!url?.trim()) continue;
 			let data;
 			let fileName;
 			const index = \`\${i}\`.padStart(imgIndexNum, "0");
@@ -7473,7 +7611,9 @@ const DownloadButton = () => {
 				fileName = \`\${index} - \${helper.t("alert.download_failed")}\`;
 				setState("errorNum", (num) => num + 1);
 			}
-			fileData[fileName] = new Uint8Array(await data?.arrayBuffer() ?? []);
+			let name = fileName;
+			for (let duplicate = 1; fileData[name]; duplicate += 1) name = \`\${fileName} (\${duplicate})\`;
+			fileData[name] = new Uint8Array(await data?.arrayBuffer() ?? []);
 		}
 		if (Object.keys(fileData).length === 0) {
 			components_Toast.toast.warn(helper.t("alert.no_img_download"));
@@ -7985,10 +8125,8 @@ const defaultSettingList = () => [
 									step: 5,
 									onChange: (val) => {
 										if (Number.isNaN(val)) return;
-										setOption((draftOption) => {
-											const newVal = helper.clamp(0, val / 100, .95);
-											draftOption.scrollMode.abreastDuplicate = newVal;
-										});
+										const newVal = helper.clamp(0, val / 100, .95);
+										setOption("scrollMode", "abreastDuplicate", newVal);
 									},
 									get value() {
 										return Math.round(store.option.scrollMode.abreastDuplicate * 100);
@@ -8017,10 +8155,10 @@ const defaultSettingList = () => [
 									},
 									onChange: (val) => {
 										const jump = saveScrollProgress();
-										setOption((draftOption, state) => {
-											if (val === "custom") draftOption.scrollMode.adjustToWidth = state.isMobile ? state.rootSize.width : 1280;
-											else draftOption.scrollMode.adjustToWidth = val;
-										});
+										let newVal;
+										if (val === "custom") newVal = store.isMobile ? store.rootSize.width : 1280;
+										else newVal = val;
+										setOption("scrollMode", "adjustToWidth", newVal);
 										jump();
 									}
 								}), solid_js_web.createComponent(solid_js.Show, {
@@ -8069,10 +8207,7 @@ const defaultSettingList = () => [
 							maxLength: 5,
 							onChange: (val) => {
 								if (Number.isNaN(val)) return;
-								const newVal = helper.clamp(0, val, Number.POSITIVE_INFINITY);
-								setOption((draftOption) => {
-									draftOption.scrollMode.spacing = newVal;
-								});
+								setOption("scrollMode", "spacing", helper.clamp(0, val, Infinity));
 							},
 							get value() {
 								return Math.round(store.option.scrollMode.spacing);
@@ -8095,9 +8230,7 @@ const defaultSettingList = () => [
 				get value() {
 					return store.option.pageTip;
 				},
-				onChange: (val) => setOption((draftOption) => {
-					draftOption.pageTip = val;
-				})
+				onChange: (val) => setOption("pageTip", val)
 			}),
 			solid_js_web.createComponent(SettingsItemNumber, {
 				get name() {
@@ -8108,9 +8241,7 @@ const defaultSettingList = () => [
 				step: 5,
 				onChange: (val) => {
 					if (Number.isNaN(val)) return;
-					setOption((draftOption) => {
-						draftOption.imgFilter.brightness = helper.clamp(0, val, 200);
-					});
+					setOption("imgFilter", "brightness", helper.clamp(0, val, 200));
 				},
 				get value() {
 					return store.option.imgFilter.brightness;
@@ -8125,9 +8256,7 @@ const defaultSettingList = () => [
 				step: 5,
 				onChange: (val) => {
 					if (Number.isNaN(val)) return;
-					setOption((draftOption) => {
-						draftOption.imgFilter.contrast = helper.clamp(0, val, 200);
-					});
+					setOption("imgFilter", "contrast", helper.clamp(0, val, 200));
 				},
 				get value() {
 					return store.option.imgFilter.contrast;
@@ -8142,9 +8271,7 @@ const defaultSettingList = () => [
 				step: 5,
 				onChange: (val) => {
 					if (Number.isNaN(val)) return;
-					setOption((draftOption) => {
-						draftOption.imgFilter.saturate = helper.clamp(0, val, 200);
-					});
+					setOption("imgFilter", "saturate", helper.clamp(0, val, 200));
 				},
 				get value() {
 					return store.option.imgFilter.saturate;
@@ -8164,9 +8291,7 @@ const defaultSettingList = () => [
 						onChange: (val) => {
 							if (Number.isNaN(val)) return;
 							const jump = saveScrollProgress();
-							setOption((draftOption) => {
-								draftOption.scrollMode.pageColumns = helper.clamp(1, val, 6);
-							});
+							setOption("scrollMode", "pageColumns", helper.clamp(1, val, 6));
 							jump();
 						},
 						get value() {
@@ -8206,9 +8331,7 @@ const defaultSettingList = () => [
 			step: 50,
 			onChange: (val) => {
 				if (Number.isNaN(val)) return;
-				setOption((draftOption) => {
-					draftOption.turnPageDuration = helper.clamp(0, val, 2e3);
-				});
+				setOption("turnPageDuration", helper.clamp(0, val, 2e3));
 			},
 			get value() {
 				return store.option.turnPageDuration;
@@ -8223,9 +8346,7 @@ const defaultSettingList = () => [
 			step: 50,
 			onChange: (val) => {
 				if (Number.isNaN(val)) return;
-				setOption((draftOption) => {
-					draftOption.scrollDuration = helper.clamp(0, val, 2e3);
-				});
+				setOption("scrollDuration", helper.clamp(0, val, 2e3));
 			},
 			get value() {
 				return store.option.scrollDuration;
@@ -8400,9 +8521,7 @@ const defaultSettingList = () => [
 			}
 		}),
 		solid_js_web.createComponent(solid_js.Show, {
-			get when() {
-				return !store.supportWorker;
-			},
+			when: !userscript_supportWorker.supportWorker,
 			get children() {
 				var _el$4 = _tmpl$2$2(), _el$5 = _el$4.firstChild;
 				solid_js_web.effect(() => _el$5.innerHTML = helper.t("setting.option.img_recognition_warn_2"));
@@ -8432,6 +8551,33 @@ const defaultSettingList = () => [
 				return store.option.imgRecognition.pageFill;
 			},
 			onChange: () => switchImgRecognition("pageFill")
+		}),
+		solid_js_web.createComponent(SettingsItemSwitch, {
+			get name() {
+				return helper.t("setting.option.img_recognition_crop");
+			},
+			get disabled() {
+				return !store.option.imgRecognition.enabled;
+			},
+			get value() {
+				return store.option.imgRecognition.crop;
+			},
+			onChange: () => switchImgRecognition("crop")
+		}),
+		solid_js_web.createComponent(SettingsItemNumber, {
+			get name() {
+				return helper.t("setting.option.img_recognition_keepMargin");
+			},
+			get disabled() {
+				return !store.option.imgRecognition.enabled;
+			},
+			maxLength: 4,
+			suffix: "px",
+			step: 1,
+			onChange: (val) => setOption("imgRecognition", "keepMargin", Math.max(0, Math.round(val))),
+			get value() {
+				return store.option.imgRecognition.keepMargin;
+			}
 		}),
 		solid_js_web.createComponent(solid_js.Show, {
 			get when() {
@@ -8501,9 +8647,7 @@ const defaultSettingList = () => [
 			maxLength: 5,
 			onChange: (val) => {
 				if (Number.isNaN(val)) return;
-				setOption((draftOption) => {
-					draftOption.preloadPageNum = helper.clamp(0, val, 99999);
-				});
+				setOption("preloadPageNum", helper.clamp(0, val, 99999));
 			},
 			get value() {
 				return store.option.preloadPageNum;
@@ -9007,11 +9151,8 @@ const useInit = (props) => {
 				}
 				const imgItem = typeof img === "string" ? { src: url } : img;
 				imgItem.loadType ??= "wait";
-				if (imgItem.width && imgItem.height) {
-					imgItem.size = getImgDisplaySize(state, imgItem);
-					imgItem.type = getImgType(imgItem);
-				}
-				imgItem.size ??= { ...placeholderSize() };
+				if (imgItem.width && imgItem.height) imgItem.type = getImgType(imgItem);
+				imgItem.size = getImgDisplaySize(state, imgItem);
 				if (!imgItem.blobUrl && url.startsWith("blob:")) imgItem.blobUrl = imgItem.src;
 				newImgMap[url] = imgItem;
 			}
@@ -9069,11 +9210,6 @@ const useInit = (props) => {
 		});
 	};
 	helper.createEffectOn(helper.createRootMemo(() => props.imgList), helper.throttle(handleImgList, 500));
-	setTimeout(() => {
-		const codeUrl = URL.createObjectURL(new Blob(["self.close();"], { type: "text/javascript" }));
-		setTimeout(() => URL.revokeObjectURL(codeUrl));
-		setState("supportWorker", Boolean(new Worker(codeUrl)));
-	});
 	refs.root.addEventListener("fullscreenchange", () => {
 		if (!document.fullscreenElement) return setState("fullscreen", false);
 		if (document.fullscreenElement.id === "comicRead" || document.fullscreenElement.classList.contains(classes$2.root)) setState("fullscreen", true);
@@ -9173,6 +9309,7 @@ exports.doubleClickZoom = doubleClickZoom;
 exports.findTopPage = findTopPage;
 exports.finishTurnAnimation = finishTurnAnimation;
 exports.focus = focus;
+exports.getCropMargin = getCropMargin;
 exports.getImg = getImg;
 exports.getImgDisplaySize = getImgDisplaySize;
 exports.getImgEle = getImgEle;
@@ -9218,6 +9355,7 @@ exports.isTranslatingImage = isTranslatingImage;
 exports.isTranslatingToEnd = isTranslatingToEnd;
 exports.isUpscale = isUpscale;
 exports.isUseAutoScale = isUseAutoScale;
+exports.isWideType = isWideType;
 exports.jumpToImg = jumpToImg;
 exports.listenHotkey = listenHotkey;
 exports.loadState = loadState;
@@ -9241,7 +9379,6 @@ exports.saveScrollProgress = saveScrollProgress;
 exports.scrollBy = scrollBy;
 exports.scrollDomLength = scrollDomLength;
 exports.scrollLength = scrollLength;
-exports.scrollModeScale = scrollModeScale;
 exports.scrollPageList = scrollPageList;
 exports.scrollPercentage = scrollPercentage;
 exports.scrollPosition = scrollPosition;
@@ -9601,7 +9738,7 @@ const dismissToast = (id) => setState((state) => {
 const resetToastUpdate = (id) => setState("map", id, "update", void 0);
 const ToastItem = (props) => {
 	/** 是否要显示进度 */
-	const showSchedule = solid_js.createMemo(() => props.duration === Number.POSITIVE_INFINITY && props.schedule ? true : void 0);
+	const showSchedule = solid_js.createMemo(() => props.duration === Infinity && props.schedule ? true : void 0);
 	const triggerDismiss = (e) => {
 		e.stopPropagation();
 		if (showSchedule() && "animationName" in e) return;
@@ -9635,7 +9772,7 @@ const ToastItem = (props) => {
 		})());
 		solid_js_web.insert(_el$, solid_js_web.createComponent(solid_js.Show, {
 			get when() {
-				return props.duration !== Number.POSITIVE_INFINITY || props.schedule !== void 0;
+				return props.duration !== Infinity || props.schedule !== void 0;
 			},
 			get children() {
 				var _el$3 = _tmpl$$1();
@@ -9777,34 +9914,31 @@ exports.toast = toast;
 let helper = require("helper");
 let request = require("request");
 //#region src/userscript/copyApi.ts
-let contentKey = "";
-let decryptKey = "";
+let contentKey;
+let decryptKey;
 const getKeys = async (url) => {
-	if (contentKey && decryptKey) return [contentKey, decryptKey];
+	if (contentKey !== void 0 && decryptKey !== void 0) return [contentKey, decryptKey];
 	if (helper.querySelector(".disData[contentkey]")) {
 		contentKey = helper.querySelector(".disData[contentkey]").getAttribute("contentkey");
 		decryptKey = helper.querySelector(".disPass[contentkey]").getAttribute("contentkey");
 		return [contentKey, decryptKey];
 	}
-	if (unsafeWindow.contentKey && unsafeWindow.cct) {
+	if (unsafeWindow.contentKey !== void 0 && unsafeWindow.cct !== void 0) {
 		contentKey = unsafeWindow.contentKey;
 		decryptKey = unsafeWindow.cct;
 		return [contentKey, decryptKey];
 	}
 	if (url) {
-		const { script } = (await request.request(url, {
+		const html = await request.request(url, {
 			fetch: false,
 			headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36" }
-		})).responseText.match(/(?<=<script>\\s+)(?<script>var .+?contentKey =.+?)(?=<\\/script)/gsu).groups;
-		const res = {};
-		for (const { groups: { key, value } } of script.matchAll(/var (?<key>\\S+) = '(?<value>.+?)';\\n/gu)) res[key] = value;
-		contentKey = res.contentKey;
-		const passKey = Object.keys(res).find((key) => key !== "contentKey");
-		if (!passKey) {
+		});
+		const match = /(?:var\\s+contentKey\\s*=\\s*['"](?<contentKey>[^'"]*)['"])|(?:var\\s+(?!contentKey\\b)[a-zA-Z_][a-zA-Z0-9_]*\\s*=\\s*['"](?<decryptKey>[^'"]*)['"])/gsu.exec(html.responseText)?.groups;
+		if (!match) {
 			core.toast.error(helper.t("site.changed_load_failed"));
 			throw new Error(helper.t("site.changed_load_failed"));
 		}
-		decryptKey = res[passKey];
+		({contentKey, decryptKey} = match);
 		return [contentKey, decryptKey];
 	}
 	core.toast.error(helper.t("site.changed_load_failed"));
@@ -10546,6 +10680,11 @@ const handleVersionUpdate = async () => {
 	if (helper.lang() === "zh") {
 		components_Toast.toast(() => {
 			const changes = Object.entries({
+				"12.10.0": {
+					"date": "2026-09-02",
+					"feat": ["支持 pawchive", "实现边缘裁切功能"],
+					"fix": ["修复在百合会和 ehentai 上无法自动进入阅读模式的 bug"]
+				},
 				"12.9.0": {
 					"date": "2026-08-21",
 					"feat": [
@@ -10611,7 +10750,7 @@ const handleVersionUpdate = async () => {
 		}, {
 			id: "Version Tip",
 			type: "custom",
-			duration: Number.POSITIVE_INFINITY,
+			duration: Infinity,
 			onDismiss: () => GM.setValue("@Version", GM.info.script.version)
 		});
 		const listenerId = await GM.addValueChangeListener("@Version", async (_, __, newVersion) => {
@@ -10839,7 +10978,7 @@ const setupSiteAdapter = async ({ name, options: initOptions, getPageContext, ha
 		for (const cleanup of cleanupFns) await cleanup(newPageCtx);
 		cleanupFns.length = 0;
 		pageCtx = newPageCtx;
-		const isMangePage = newPageCtx?.type === "manga";
+		const isMangePage = newPageCtx?.isManga ?? newPageCtx?.type === "manga";
 		setState((state) => {
 			state.flag.hasPageHandler = Boolean(newPageCtx?.type) && Reflect.has(handlers, newPageCtx.type);
 			state.manga.show = false;
@@ -11055,12 +11194,85 @@ var PlaceholderImgList = class {
 	}
 };
 //#endregion
+//#region src/userscript/autoImageScanner/dwellWatcher.ts
+/** 轮询检查可见元素持续时长的间隔 */
+const DWELL_CHECK_INTERVAL = 100;
+/** 监视元素进入视口后的连续可见时长，并在达到指定时长后触发回调 */
+var DwellWatcher = class {
+	stateMap = /* @__PURE__ */ new WeakMap();
+	visibleSet = /* @__PURE__ */ new Set();
+	checkTimer;
+	observer = new IntersectionObserver((entries) => {
+		for (const entry of entries) {
+			const e = entry.target;
+			const state = this.stateMap.get(e);
+			if (!state) continue;
+			if (entry.isIntersecting) {
+				this.visibleSet.add(e);
+				if (state.enterTime === void 0) state.enterTime = performance.now();
+				this.ensureTimer();
+			} else {
+				this.visibleSet.delete(e);
+				state.enterTime = void 0;
+				this.stopTimerIfNeeded();
+			}
+		}
+	});
+	watch(e, duration, callback) {
+		this.unwatch(e);
+		this.stateMap.set(e, {
+			duration,
+			callback
+		});
+		this.observer.observe(e);
+	}
+	unwatch(e) {
+		this.visibleSet.delete(e);
+		this.stopTimerIfNeeded();
+		if (this.stateMap.delete(e)) this.observer.unobserve(e);
+	}
+	get visibleElements() {
+		return this.visibleSet;
+	}
+	/** 有可见元素时启动轮询，没有可见元素时停止轮询 */
+	ensureTimer() {
+		if (this.checkTimer === void 0 && this.visibleSet.size > 0) this.checkTimer = window.setInterval(() => this.checkVisibleElements(), DWELL_CHECK_INTERVAL);
+	}
+	stopTimerIfNeeded() {
+		if (this.checkTimer !== void 0 && this.visibleSet.size === 0) {
+			window.clearInterval(this.checkTimer);
+			this.checkTimer = void 0;
+		}
+	}
+	checkVisibleElements() {
+		for (const e of this.visibleSet) {
+			const state = this.stateMap.get(e);
+			if (!state) continue;
+			if (state.enterTime === void 0) {
+				state.enterTime = performance.now();
+				continue;
+			}
+			if (performance.now() - state.enterTime >= state.duration) {
+				this.unwatch(e);
+				state.callback();
+			}
+		}
+	}
+};
+//#endregion
 //#region src/userscript/autoImageScanner/triggerLazyLoad.ts
-const createImgData = (oldSrc = "") => ({
-	triggedNum: 0,
-	observerTimeout: 0,
-	oldSrc
-});
+/** 新元素短停留时间 */
+const SHORT_STAY_TIME = 310;
+/** 旧元素长停留时间 */
+const LONG_STAY_TIME = 1010;
+/** 旧元素超过该时间后，即使有新元素也会优先进行长停留 */
+const OLD_TIMEOUT = 5e3;
+/** 每轮之间的间隔 */
+const ROUND_INTERVAL = 100;
+/** 触发网页底部翻页的停留时间 */
+const TURN_PAGE_WAIT_TIME = 600;
+/** 触发网页底部翻页的节流时间 */
+const TURN_PAGE_THROTTLE_TIME = 1e3;
 /** 用于判断是否是图片 url 的正则 */
 const isImgUrlRe = /^(?:(?:(?:https?|ftp|file):)?\\/)?\\/[-\\w+&@#/%?=~|!:,.;]+[-\\w+&@#%=~|]$/u;
 /** 找出格式为图片 url 的元素属性 */
@@ -11081,27 +11293,9 @@ const getDatasetUrl = (e) => {
 		return val;
 	}
 };
-/**
-*
-* 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
-*
-* 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
-*/
-const triggerEleLazyLoad = async ({ e, waitTime, isLazyLoaded, runCondition }) => {
-	const nowScroll = window.scrollY;
-	e.scrollIntoView({ behavior: "instant" });
-	e.dispatchEvent(new Event("scroll", { bubbles: true }));
-	try {
-		if (isLazyLoaded && waitTime) return await helper.wait(isLazyLoaded, waitTime);
-	} finally {
-		if (runCondition()) window.scroll({
-			top: nowScroll,
-			behavior: "instant"
-		});
-	}
-};
 /** 判断一个元素是否已经成功触发完懒加载 */
 const isLazyLoaded = (e, oldSrc) => {
+	if (!e.isConnected || !e.checkVisibility()) return true;
 	if (helper.isImageElement(e)) {
 		if (!e.src) return false;
 		if (!e.offsetParent) return false;
@@ -11114,75 +11308,179 @@ const isLazyLoaded = (e, oldSrc) => {
 	}
 	return false;
 };
-const lazyLoadStateMap = /* @__PURE__ */ new WeakMap();
-const getImg = (e) => lazyLoadStateMap.get(e) ?? createImgData();
-const MAX_TRIGGED_NUM = 5;
-/** 判断元素的触发次数是否还未达到上限 */
-const isUnderTriggerLimit = (e) => (lazyLoadStateMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
-/** 判断元素是否经过多次触发仍未成功加载出图片 */
-const isLazyLoadFailed = (e) => !isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc) && !isUnderTriggerLimit(e);
-/** 判断图片元素是否需要触发懒加载 */
-const needTrigged = (e) => !isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc) && isUnderTriggerLimit(e);
-/** 图片懒加载触发完后调用 */
-const handleTrigged = (e) => {
-	const img = getImg(e);
-	img.observerTimeout = 0;
-	img.triggedNum += 1;
-	if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM) img.triggedNum = MAX_TRIGGED_NUM;
-	lazyLoadStateMap.set(e, img);
-	if (!needTrigged(e)) imgShowObserver.unobserve(e);
-};
-/** 监视图片是否被显示的 Observer */
-const imgShowObserver = new IntersectionObserver((entries) => {
-	for (const img of entries) {
-		const e = img.target;
-		if (img.isIntersecting) lazyLoadStateMap.set(e, {
-			...getImg(e),
-			observerTimeout: window.setTimeout(handleTrigged, 290, e)
+var LazyLoadManager = class {
+	/** 懒加载失败回调 */
+	onFailed;
+	/** 当前是否允许触发懒加载 */
+	runCondition = () => true;
+	/** 记录元素的初始 src */
+	oldSrcMap = /* @__PURE__ */ new WeakMap();
+	/** 未完成短停留的新元素 */
+	newSet = /* @__PURE__ */ new Set();
+	/** 已完成短停留但未完成长停留的旧元素，value 为短停留完成时间 */
+	oldMap = /* @__PURE__ */ new Map();
+	/** 长停留后仍未成功触发懒加载，判定为非图片槽位的元素 */
+	failedSet = /* @__PURE__ */ new WeakSet();
+	dwellWatcher = new DwellWatcher();
+	/** 触发网页底部翻页的节流 */
+	turnPageScheduled = helper.createScheduled((fn) => helper.throttle(fn, TURN_PAGE_THROTTLE_TIME));
+	trigger = helper.singleThreaded(async (_state, targets) => {
+		this.addTargets(targets);
+		await this.runRounds();
+	});
+	/** 判断图片元素是否需要触发懒加载 */
+	needTrigger(e) {
+		return !isLazyLoaded(e, this.oldSrcMap.get(e)) && !this.failedSet.has(e);
+	}
+	/** 判断元素是否已经被判定为不可能是图片槽位 */
+	isLazyLoadFailed(e) {
+		return this.failedSet.has(e);
+	}
+	/** 将目标元素加入待触发集合 */
+	addTargets(targets) {
+		for (const e of targets) {
+			if (this.failedSet.has(e) || !e.isConnected || !e.checkVisibility()) continue;
+			if (helper.isImageElement(e) && !this.oldSrcMap.has(e)) this.oldSrcMap.set(e, e.src);
+			const oldSrc = this.oldSrcMap.get(e);
+			const datasetUrl = getDatasetUrl(e);
+			if (datasetUrl) e.setAttribute("src", datasetUrl);
+			if (isLazyLoaded(e, oldSrc)) continue;
+			if (this.oldMap.has(e) || this.newSet.has(e)) continue;
+			this.newSet.add(e);
+			this.dwellWatcher.watch(e, SHORT_STAY_TIME, () => this.handleShortCompleted(e));
+		}
+	}
+	/** 短停留完成的回调 */
+	handleShortCompleted = (e) => {
+		if (!this.newSet.delete(e)) return;
+		if (isLazyLoaded(e, this.oldSrcMap.get(e))) return;
+		this.oldMap.set(e, Date.now());
+		this.dwellWatcher.watch(e, LONG_STAY_TIME, () => this.handleLongCompleted(e));
+	};
+	/** 长停留完成的回调 */
+	handleLongCompleted = (e) => {
+		if (!this.oldMap.delete(e)) return;
+		if (isLazyLoaded(e, this.oldSrcMap.get(e))) return;
+		this.failedSet.add(e);
+		this.onFailed?.(e);
+	};
+	/** 移除元素并取消观察 */
+	removeElement(e) {
+		this.dwellWatcher.unwatch(e);
+		this.newSet.delete(e);
+		this.oldMap.delete(e);
+	}
+	/** 清理已不在页面上或已经完成懒加载的元素 */
+	prune() {
+		for (const e of this.newSet) if (isLazyLoaded(e, this.oldSrcMap.get(e))) this.removeElement(e);
+		for (const e of this.oldMap.keys()) if (isLazyLoaded(e, this.oldSrcMap.get(e))) this.removeElement(e);
+	}
+	/** 获取超过超时时间的旧元素 */
+	getDueOld() {
+		const now = Date.now();
+		return [...this.oldMap.entries()].filter(([, shortCompletedAt]) => now - shortCompletedAt >= OLD_TIMEOUT).map(([e]) => e);
+	}
+	/** 按 DOM 顺序排序 */
+	sortByDomOrder(list) {
+		return list.toSorted((a, b) => {
+			if (a === b) return 0;
+			return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
 		});
-		else window.clearTimeout(lazyLoadStateMap.get(e)?.observerTimeout);
 	}
-});
-const turnPageScheduled = helper.createScheduled((fn) => helper.throttle(fn, 1e3));
-/** 触发翻页 */
-const triggerTurnPage = async (waitTime, runCondition) => {
-	if (!turnPageScheduled()) return;
-	const nowScroll = window.scrollY;
-	window.scroll({
-		top: document.body.scrollHeight,
-		behavior: "instant"
-	});
-	document.body.dispatchEvent(new Event("scroll", { bubbles: true }));
-	if (waitTime) await helper.sleep(waitTime);
-	if (runCondition()) window.scroll({
-		top: nowScroll,
-		behavior: "instant"
-	});
+	/** 扫描所有新元素，让它们完成短停留 */
+	async sweepNew() {
+		this.prune();
+		const targets = this.sortByDomOrder([...this.newSet]);
+		for (const e of targets) {
+			if (!this.newSet.has(e)) continue;
+			this.scrollToElement(e);
+			await this.waitForBatch((target) => this.newSet.has(target), SHORT_STAY_TIME);
+		}
+	}
+	/** 扫描指定旧元素，让它们完成长停留 */
+	async sweepOld(targets) {
+		this.prune();
+		const sorted = this.sortByDomOrder(targets);
+		for (const e of sorted) {
+			if (!this.oldMap.has(e)) continue;
+			this.scrollToElement(e);
+			await this.waitForBatch((target) => this.oldMap.has(target), LONG_STAY_TIME);
+		}
+	}
+	/**
+	* 等待当前视口内所有待处理元素完成对应停留。
+	*
+	* 如果待处理元素已离开视口或已从对应集合中移除，则提前结束等待。
+	*/
+	async waitForBatch(isPending, duration) {
+		await helper.sleep(20);
+		await helper.wait(() => [...this.dwellWatcher.visibleElements].some(isPending) ? void 0 : true, duration, 50);
+	}
+	/** 滚动到元素顶部并派发 scroll 事件，触发网站懒加载 */
+	scrollToElement(e) {
+		e.scrollIntoView({
+			behavior: "instant",
+			block: "start"
+		});
+		e.dispatchEvent(new Event("scroll", { bubbles: true }));
+	}
+	/** 触发网页底部翻页 */
+	triggerTurnPage = async () => {
+		if (!this.turnPageScheduled()) return;
+		const nowScroll = window.scrollY;
+		window.scroll({
+			top: document.body.scrollHeight,
+			behavior: "instant"
+		});
+		document.body.dispatchEvent(new Event("scroll", { bubbles: true }));
+		await helper.sleep(TURN_PAGE_WAIT_TIME);
+		if (this.runCondition()) window.scroll({
+			top: nowScroll,
+			behavior: "instant"
+		});
+	};
+	/**
+	* 执行完整的懒加载轮次
+	*
+	* 对每个元素执行短停留（初始快速尝试触发）和长停留（保险起见的二次尝试），
+	* 两次停留后都无法触发懒加载的，判定其不是图片槽位
+	*/
+	async runRounds() {
+		const startScroll = window.scrollY;
+		try {
+			while (true) {
+				if (!this.runCondition()) return;
+				this.prune();
+				if (this.newSet.size === 0 && this.oldMap.size === 0) return await this.triggerTurnPage();
+				const hadNew = this.newSet.size > 0;
+				const startNewSize = this.newSet.size;
+				const startOldSize = this.oldMap.size;
+				if (this.newSet.size > 0) await this.sweepNew();
+				if (this.oldMap.size > 0) {
+					const dueOld = this.getDueOld();
+					if (dueOld.length > 0) await this.sweepOld(dueOld);
+				}
+				if (!hadNew && this.oldMap.size > 0) await this.sweepOld([...this.oldMap.keys()]);
+				this.prune();
+				const changed = this.newSet.size < startNewSize || this.oldMap.size < startOldSize;
+				if (this.newSet.size === 0 && this.oldMap.size === 0) return await this.triggerTurnPage();
+				if (!changed) return await this.triggerTurnPage();
+				await this.triggerTurnPage();
+				await helper.sleep(ROUND_INTERVAL);
+			}
+		} finally {
+			if (this.runCondition()) window.scroll({
+				top: startScroll,
+				behavior: "instant"
+			});
+		}
+	}
 };
-/** 触发图片的懒加载时的停留时间 */
-const waitTime = 300;
-/** 触发网页底部翻页的停留时间 */
-const turnPageWaitTime = 600;
-/** 触发页面上图片元素的懒加载 */
-const triggerLazyLoad = helper.singleThreaded(async (_, targetImgList, runCondition) => {
-	for (const e of targetImgList) {
-		imgShowObserver.observe(e);
-		if (!lazyLoadStateMap.has(e)) lazyLoadStateMap.set(e, createImgData(helper.isImageElement(e) ? e.src : ""));
-	}
-	for (const e of targetImgList) {
-		if (!runCondition()) return;
-		if (!needTrigged(e)) continue;
-		const datasetUrl = getDatasetUrl(e);
-		if (datasetUrl) e.setAttribute("src", datasetUrl);
-		if (await triggerEleLazyLoad({
-			e,
-			waitTime,
-			isLazyLoaded: () => isLazyLoaded(e, lazyLoadStateMap.get(e)?.oldSrc),
-			runCondition
-		})) handleTrigged(e);
-	}
-	await triggerTurnPage(turnPageWaitTime, runCondition);
-});
+const lazyLoadTrigger = new LazyLoadManager();
+helper.exposeToGlobal({ lazyLoadTrigger });
+const triggerLazyLoad = lazyLoadTrigger.trigger;
+const needTrigger = (e) => lazyLoadTrigger.needTrigger(e);
+const isLazyLoadFailed = (e) => lazyLoadTrigger.isLazyLoadFailed(e);
 //#endregion
 //#region src/userscript/autoImageScanner/imageSlot.ts
 /** 判断两个元素的 dataset 是否具有相同的键结构 */
@@ -11275,6 +11573,14 @@ const pickBestGroup = (groups) => groups.reduce((best, current) => {
 	if (current.imgNum !== best.imgNum) return current.imgNum > best.imgNum ? current : best;
 	return current.medianArea > best.medianArea ? current : best;
 });
+/** 计算所有图片槽位组，并同时返回当前最优组 */
+const getImageSlotGroupResult = (map) => {
+	const groups = findImageSlotGroups(map);
+	return {
+		groups,
+		bestGroup: groups.length > 0 ? pickBestGroup(groups) : void 0
+	};
+};
 /** 计算组内图片显示面积的中位数 */
 const getGroupMedianArea = (group, map) => {
 	const areas = [...group.coveredImgs].map((img) => {
@@ -11309,6 +11615,200 @@ const buildSlotElementsFromGroup = (group) => {
 	return slotElements;
 };
 //#endregion
+//#region src/userscript/autoImageScanner/imageListBuilder.ts
+/** 根据合格图片集合和最优图片槽位组，维护最终可用的 imgList */
+var ImageListBuilder = class {
+	enableSortImageByTop;
+	filterByContainer;
+	onImgListChange;
+	onEmpty;
+	blobUrlResolver = new BlobUrlResolver();
+	placeholderImgList = new PlaceholderImgList();
+	updatePlaceholderImgList = helper.throttle((imgList) => {
+		this.placeholderImgList.update(imgList);
+	});
+	isUpdatingImgList = false;
+	generation = 0;
+	updateSeq = 0;
+	/** 过滤后真正用于展示的图片槽位列表 */
+	_slotElements = [];
+	/** 找到的所有符合条件的图片 url */
+	_imgList = [];
+	constructor(options) {
+		this.enableSortImageByTop = options.enableSortImageByTop;
+		this.filterByContainer = options.filterByContainer;
+		this.onImgListChange = options.onImgListChange;
+		this.onEmpty = options.onEmpty;
+	}
+	/** 当前过滤后真正用于展示的图片槽位列表 */
+	get slotElements() {
+		return this._slotElements;
+	}
+	/** 当前找到的所有符合条件的图片 url */
+	get imgList() {
+		return this._imgList;
+	}
+	/** 根据最新合格图片集合和最优槽位组，更新 slotElements 与 imgList */
+	async update(qualifiedMap, bestGroup, generation) {
+		const seq = ++this.updateSeq;
+		this.generation = generation;
+		const selectedSlots = this.filterByContainer && bestGroup ? buildSlotElementsFromGroup(bestGroup) : [...qualifiedMap.keys()];
+		this._slotElements = this.enableSortImageByTop ? sortElementsByTop(selectedSlots) : sortElementsByDomOrder(selectedSlots);
+		if (this._slotElements.length === 0) {
+			this.onEmpty?.();
+			return {
+				isEdited: false,
+				isEmpty: true
+			};
+		}
+		if (this._imgList.length < this._slotElements.length) this._imgList = [...this._imgList, ...Array.from({ length: this._slotElements.length - this._imgList.length }, () => "")];
+		else if (this._imgList.length > this._slotElements.length) this._imgList = this._imgList.slice(0, this._slotElements.length);
+		this.onImgListChange?.([...this._imgList]);
+		this.updatePlaceholderImgList(this._imgList);
+		let isEdited = false;
+		this.isUpdatingImgList = true;
+		try {
+			await helper.plimit(this._slotElements.map((e, i) => async () => {
+				if (seq !== this.updateSeq || generation !== this.generation) return;
+				if (!helper.isImageElement(e)) {
+					if (this._imgList[i] === "") return;
+					isEdited ||= true;
+					this._imgList[i] = "";
+					return;
+				}
+				let newUrl = await this.blobUrlResolver.resolve(e);
+				if (seq !== this.updateSeq || generation !== this.generation) return;
+				if (this.placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? "";
+				if (newUrl === this._imgList[i]) return;
+				isEdited ||= true;
+				this._imgList[i] = newUrl;
+			}));
+		} finally {
+			if (seq === this.updateSeq) this.isUpdatingImgList = false;
+		}
+		if (seq !== this.updateSeq || generation !== this.generation) return {
+			isEdited: false,
+			isEmpty: true
+		};
+		this.removeFailedSlots();
+		if (this._slotElements.length === 0) return {
+			isEdited,
+			isEmpty: true
+		};
+		if (seq !== this.updateSeq || generation !== this.generation) return {
+			isEdited: false,
+			isEmpty: true
+		};
+		return {
+			isEdited,
+			isEmpty: false
+		};
+	}
+	/** 在异步 URL 解析完成后，通知外部最终 imgList 变化 */
+	notifyFinalImgListChange(isEdited) {
+		if (!isEdited || this._slotElements.length === 0) return;
+		this.onImgListChange?.([...this._imgList]);
+		this.updatePlaceholderImgList(this._imgList);
+	}
+	/** 懒加载失败后的回调：在非更新期间立即剔除失败槽位 */
+	onLazyLoadFailed() {
+		if (!this.isUpdatingImgList) this.removeFailedSlots();
+	}
+	/** 从当前展示列表中移除多次触发懒加载仍失败的槽位 */
+	removeFailedSlots() {
+		if (this._slotElements.length === 0) return;
+		const keptSlotElements = [];
+		const keptImgList = [];
+		for (let i = 0; i < this._slotElements.length; i++) {
+			const slot = this._slotElements[i];
+			if (isLazyLoadFailed(slot)) continue;
+			keptSlotElements.push(slot);
+			keptImgList.push(this._imgList[i]);
+		}
+		if (keptSlotElements.length === this._slotElements.length) return;
+		this._slotElements = keptSlotElements;
+		this._imgList = keptImgList;
+		if (this._slotElements.length === 0) return this.onEmpty?.();
+		this.onImgListChange?.([...this._imgList]);
+		this.updatePlaceholderImgList(this._imgList);
+	}
+	/** 合格图片集合为空时，清空当前列表状态并通知外部 */
+	clearListState() {
+		this.updateSeq++;
+		this.isUpdatingImgList = false;
+		if (this._slotElements.length === 0 && this._imgList.length === 0) return;
+		this._slotElements = [];
+		this._imgList = [];
+		this.onImgListChange?.([]);
+	}
+	/** 停止扫描时清理资源 */
+	clear() {
+		this.updateSeq++;
+		this.isUpdatingImgList = false;
+		this.blobUrlResolver.clear();
+		this.placeholderImgList.clear();
+		this._slotElements = [];
+		this._imgList = [];
+	}
+};
+//#endregion
+//#region src/userscript/autoImageScanner/lazyLoadController.ts
+var LazyLoadController = class {
+	getImgSelector;
+	getImageSlotGroups;
+	getAllImg;
+	runCondition;
+	onLazyLoadFailed;
+	/** 懒加载触发 promise，用于避免重复触发 */
+	triggerPromise;
+	constructor(options) {
+		this.getImgSelector = options.getImgSelector;
+		this.getImageSlotGroups = options.getImageSlotGroups;
+		this.getAllImg = options.getAllImg;
+		this.runCondition = options.runCondition;
+		this.onLazyLoadFailed = options.onLazyLoadFailed;
+		lazyLoadTrigger.onFailed = () => this.onLazyLoadFailed?.();
+		lazyLoadTrigger.runCondition = this.runCondition;
+	}
+	/** 手动触发一轮完整的懒加载 */
+	trigger() {
+		if (this.triggerPromise) return this.triggerPromise;
+		this.triggerPromise = (async () => {
+			try {
+				if (this.getImgSelector()) {
+					await this.triggerExpectImg(3);
+					await this.triggerExpectImg();
+				}
+				await this.triggerAllRemainingLazyLoad();
+			} finally {
+				this.triggerPromise = void 0;
+			}
+		})();
+		return this.triggerPromise;
+	}
+	/** 停止时清理触发状态 */
+	clear() {
+		this.triggerPromise = void 0;
+	}
+	/** 触发大概率是漫画图片且还未成功触发懒加载的元素的懒加载 */
+	triggerExpectImg = async (num) => {
+		const selector = this.getImgSelector();
+		if (!selector) return;
+		let expectImgList = helper.querySelectorAll(selector).filter(needTrigger);
+		if (num) expectImgList = expectImgList.slice(0, num);
+		await triggerLazyLoad(expectImgList);
+	};
+	/** 触发所有未收敛的 img 和图片容器 */
+	triggerAllRemainingLazyLoad = async () => {
+		if (!this.runCondition()) return;
+		const imgTargets = this.getAllImg().filter(needTrigger);
+		if (imgTargets.length > 0) await triggerLazyLoad(imgTargets);
+		const groupTargets = [];
+		for (const group of this.getImageSlotGroups()) for (const slot of group.slots) if (!helper.isImageElement(slot) && needTrigger(slot)) groupTargets.push(slot);
+		if (groupTargets.length > 0) await triggerLazyLoad(groupTargets);
+	};
+};
+//#endregion
 //#region src/userscript/autoImageScanner/ImageWatcher.ts
 /** 遍历节点及其子树中的所有图片元素 */
 const forEachImage = (nodes, callback) => {
@@ -11320,7 +11820,7 @@ var ImageWatcher = class {
 	options;
 	ro;
 	mo;
-	qualifiedMap = /* @__PURE__ */ new Map();
+	qualifiedMap = new helper.ReactiveMap();
 	targetAttributes = [
 		"src",
 		"srcset",
@@ -11430,18 +11930,55 @@ var ImageWatcher = class {
 		let changed = false;
 		for (const mutation of mutations) switch (mutation.type) {
 			case "childList":
-				changed ||= this.handleAddedNodes(mutation.addedNodes);
-				changed ||= this.handleRemovedNodes(mutation.removedNodes);
+				changed = this.handleAddedNodes(mutation.addedNodes) || changed;
+				changed = this.handleRemovedNodes(mutation.removedNodes) || changed;
 				break;
-			case "attributes": changed ||= this.handleAttributeMutation(mutation.target);
+			case "attributes": changed = this.handleAttributeMutation(mutation.target) || changed;
 		}
 		if (changed) this.options.onChanged(this.qualifiedMap);
 	};
 };
 //#endregion
+//#region src/userscript/autoImageScanner/qualifiedImageWatcher.ts
+const IMG_BLACK_LIST_SELECTOR = ["#pagetual-preload", "noscript"].join(",");
+/** 监听并获取网页上所有符合条件的图片元素 */
+var QualifiedImageWatcher = class {
+	getImgSelector;
+	filterImg;
+	imageWatcher;
+	constructor(options) {
+		this.getImgSelector = options.getImgSelector;
+		this.filterImg = options.filterImg;
+		this.imageWatcher = new ImageWatcher({
+			filterImg: (info, img) => this.filterImage(info, img),
+			onChanged: options.onChanged
+		});
+	}
+	/** 开始监听网页图片 */
+	start() {
+		this.imageWatcher.start();
+	}
+	/** 停止监听并清理资源 */
+	stop() {
+		this.imageWatcher.stop();
+	}
+	/** 获取页面上所有不在黑名单中的图片元素 */
+	getAllImg() {
+		return helper.querySelectorAll(\`:not(\${IMG_BLACK_LIST_SELECTOR}) > img\`);
+	}
+	/** 判断图片是否符合扫描条件 */
+	filterImage = (info, img) => {
+		if (img.closest(IMG_BLACK_LIST_SELECTOR)) return false;
+		const imgSelector = this.getImgSelector();
+		if (imgSelector && isEleSelector(img, imgSelector)) return true;
+		if (this.filterImg) return this.filterImg(info, img);
+		if (info.display.height <= 100 || info.display.width <= 100) return false;
+		return info.natural.height > 500 && info.natural.width > 500;
+	};
+};
+//#endregion
 //#region src/userscript/autoImageScanner/index.ts
 const SELECTOR_FALLBACK_TIMEOUT = 3e3;
-const IMG_BLACK_LIST_SELECTOR = ["#pagetual-preload", "noscript"].join(",");
 /** 自动发现网页上的所有漫画图片的通用扫描器 */
 var AutoImageScanner = class {
 	/** 能获取到所有图片的 selector */
@@ -11468,27 +12005,13 @@ var AutoImageScanner = class {
 	imgSelector;
 	/** 显式 selector 回退定时器 */
 	selectorFallbackTimer;
-	/** 懒加载触发 promise，用于避免重复触发 */
-	triggerPromise;
 	/** 代际标记，用于忽略 stop 后过期的 handleChanged 回调 */
 	generation = 0;
-	/** 处理 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片 */
-	blobUrlResolver = new BlobUrlResolver();
-	placeholderImgList = new PlaceholderImgList();
-	/** 检测重复的加载占位图，用真实地址进行替换 */
-	updatePlaceholderImgList = helper.throttle((imgList) => {
-		this.placeholderImgList.update(imgList);
-	});
-	/** 图片监听器 */
 	imageWatcher;
-	/** 找到的所有符合条件的图片元素 */
-	imgEleList = [];
-	/** 过滤后真正用于展示的图片槽位列表 */
-	slotElements = [];
-	/** 最近一次计算出的图片槽位组 */
+	imageListBuilder;
+	lazyLoadController;
+	/** 所有「相似、成组」的图片槽位组 */
 	imageSlotGroups = [];
-	/** 找到的所有符合条件的图片 url */
-	imgList = [];
 	/** 当前识别到的章节切换按钮 */
 	chapterSwitch = {};
 	/**
@@ -11505,10 +12028,32 @@ var AutoImageScanner = class {
 		this.imgSelector = options.selector ?? "";
 		this.enableSortImageByTop = options.sortImageByTop ?? false;
 		this.filterByContainer = options.filterByContainer ?? true;
-		this.imageWatcher = new ImageWatcher({
-			filterImg: (info, img) => this.filterImage(info, img),
+		this.imageWatcher = new QualifiedImageWatcher({
+			getImgSelector: () => this.imgSelector,
+			filterImg: this.filterImg,
 			onChanged: (map) => this.handleChanged(map, this.generation)
 		});
+		this.imageListBuilder = new ImageListBuilder({
+			enableSortImageByTop: this.enableSortImageByTop,
+			filterByContainer: this.filterByContainer,
+			onImgListChange: (imgList) => this.onImgListChange?.(imgList),
+			onEmpty: () => this.onEmpty?.()
+		});
+		this.lazyLoadController = new LazyLoadController({
+			getImgSelector: () => this.imgSelector,
+			getImageSlotGroups: () => this.imageSlotGroups,
+			getAllImg: () => this.imageWatcher.getAllImg(),
+			runCondition: () => this.shouldTriggerLazyLoad?.() ?? true,
+			onLazyLoadFailed: () => this.imageListBuilder.onLazyLoadFailed()
+		});
+	}
+	/** 最终选中的图片 url */
+	get imgList() {
+		return this.imageListBuilder.imgList;
+	}
+	/** 最终选中的图片槽位 */
+	get slotElements() {
+		return this.imageListBuilder.slotElements;
 	}
 	/** 开始寻找页面图片 */
 	start() {
@@ -11518,7 +12063,7 @@ var AutoImageScanner = class {
 		if (this.initSelector && this.imgSelector === this.initSelector) this.selectorFallbackTimer = window.setTimeout(() => {
 			if (helper.querySelectorAll(this.imgSelector).length > 0) return;
 			this.imgSelector = "";
-			this.triggerAllLazyLoad();
+			this.lazyLoadController.trigger();
 		}, SELECTOR_FALLBACK_TIMEOUT);
 	}
 	/** 停止监听并清理资源 */
@@ -11527,15 +12072,11 @@ var AutoImageScanner = class {
 		this.generation++;
 		this.handleChanged.clear();
 		this.imageWatcher.stop();
+		this.imageListBuilder.clear();
 		if (this.selectorFallbackTimer !== void 0) window.clearTimeout(this.selectorFallbackTimer);
 		this.selectorFallbackTimer = void 0;
-		this.triggerPromise = void 0;
-		this.blobUrlResolver.clear();
-		this.placeholderImgList.clear();
-		this.imgEleList = [];
-		this.slotElements = [];
+		this.lazyLoadController.clear();
 		this.imageSlotGroups = [];
-		this.imgList = [];
 		this.chapterSwitch = {};
 	}
 	/** 等到发现首张图片 */
@@ -11547,39 +12088,8 @@ var AutoImageScanner = class {
 	/** 手动触发一轮懒加载 */
 	triggerLazyLoad() {
 		this.start();
-		return this.triggerAllLazyLoad();
+		return this.lazyLoadController.trigger();
 	}
-	/** 获取页面上所有不在黑名单中的图片元素 */
-	getAllImg = () => helper.querySelectorAll(\`:not(\${IMG_BLACK_LIST_SELECTOR}) > img\`);
-	/** 判断当前是否应该触发懒加载 */
-	runCondition = () => this.shouldTriggerLazyLoad?.() ?? true;
-	/** 触发大概率是漫画图片且还未成功触发懒加载的元素的懒加载 */
-	triggerExpectImg = (num, time) => helper.wait(async () => {
-		let expectImgList = helper.querySelectorAll(this.imgSelector).filter(needTrigged);
-		if (num) expectImgList = expectImgList.slice(0, num);
-		await triggerLazyLoad(expectImgList, this.runCondition);
-		return expectImgList.every((e) => !needTrigged(e));
-	}, time);
-	/** 触发一轮完整的懒加载，并对重复调用去重 */
-	triggerAllLazyLoad = () => {
-		if (this.triggerPromise) return this.triggerPromise;
-		this.triggerPromise = (async () => {
-			try {
-				if (this.imgSelector) {
-					await this.triggerExpectImg(3, 5e3);
-					await this.triggerExpectImg();
-				}
-				await triggerLazyLoad(this.getAllImg().filter(needTrigged), this.runCondition);
-				if (this.imageSlotGroups.length > 0) {
-					const targets = this.imageSlotGroups.flatMap((group) => [...group.slots]).filter((slot) => !helper.isImageElement(slot) && needTrigged(slot));
-					if (targets.length > 0) await triggerLazyLoad(targets, this.runCondition);
-				}
-			} finally {
-				this.triggerPromise = void 0;
-			}
-		})();
-		return this.triggerPromise;
-	};
 	/** 记录传入的图片元素中最常见的那个 selector（仅 initSelector 失效时） */
 	saveImgEleSelector = (list) => {
 		if (list.length < 7 || this.initSelector && this.imgSelector === this.initSelector) return;
@@ -11589,58 +12099,526 @@ var AutoImageScanner = class {
 			this.onSelectorSuggest?.(newSelector);
 		}
 	};
-	/** 判断图片是否符合扫描条件 */
-	filterImage = (info, img) => {
-		if (img.closest(IMG_BLACK_LIST_SELECTOR)) return false;
-		if (this.imgSelector && isEleSelector(img, this.imgSelector)) return true;
-		if (this.filterImg) return this.filterImg(info, img);
-		if (info.display.height <= 100 || info.display.width <= 100) return false;
-		return info.natural.height > 500 && info.natural.width > 500;
-	};
 	/** 图片集合变化时更新图片列表、章节按钮并触发懒加载 */
 	handleChanged = helper.throttle(async (map, generation) => {
 		if (generation !== this.generation) return;
 		if (map.size === 0) {
 			this.imageSlotGroups = [];
+			this.imageListBuilder.clearListState();
 			return this.onEmpty?.();
 		}
-		this.imageSlotGroups = findImageSlotGroups(map);
-		const selectedSlots = this.filterByContainer && this.imageSlotGroups.length > 0 ? buildSlotElementsFromGroup(pickBestGroup(this.imageSlotGroups)) : [...map.keys()];
-		this.slotElements = this.enableSortImageByTop ? sortElementsByTop(selectedSlots) : sortElementsByDomOrder(selectedSlots);
-		this.imgEleList = [...map.keys()];
-		if (this.slotElements.length === 0) return this.onEmpty?.();
-		if (this.imgList.length < this.slotElements.length) this.imgList = [...this.imgList, ...Array.from({ length: this.slotElements.length - this.imgList.length }, () => "")];
-		else if (this.imgList.length > this.slotElements.length) this.imgList = this.imgList.slicethis.slotElements.length;
-		this.onImgListChange?.([...this.imgList]);
-		this.updatePlaceholderImgList(this.imgList);
-		let isEdited = false;
-		await helper.plimit(this.slotElements.map((e, i) => async () => {
-			if (!helper.isImageElement(e)) {
-				if (this.imgList[i] === "") return;
-				isEdited ||= true;
-				this.imgList[i] = "";
-				return;
-			}
-			let newUrl = await this.blobUrlResolver.resolve(e);
-			if (this.placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? "";
-			if (newUrl === this.imgList[i]) return;
-			isEdited ||= true;
-			this.imgList[i] = newUrl;
-		}));
+		const { groups, bestGroup } = getImageSlotGroupResult(map);
+		this.imageSlotGroups = groups;
+		const imgEleList = [...map.keys()];
+		const { isEdited, isEmpty } = await this.imageListBuilder.update(map, bestGroup, generation);
 		if (generation !== this.generation) return;
-		if (isEdited) this.saveImgEleSelector(this.imgEleList);
-		this.triggerAllLazyLoad();
+		if (isEmpty) return;
+		if (isEdited) this.saveImgEleSelector(imgEleList);
+		this.lazyLoadController.trigger();
 		this.chapterSwitch = getChapterSwitch();
 		await this.onChapterSwitchChange?.({ ...this.chapterSwitch });
 		if (generation !== this.generation) return;
-		if (isEdited) {
-			this.onImgListChange?.([...this.imgList]);
-			this.updatePlaceholderImgList(this.imgList);
-		}
+		this.imageListBuilder.notifyFinalImgListChange(isEdited);
 	}, 500);
 };
 //#endregion
 exports.AutoImageScanner = AutoImageScanner;
+`,
+	"userscript/supportWorker": `\n//#region src/userscript/supportWorker.ts
+let supportWorker;
+console.debug(supportWorker);
+new Promise((resolve) => {
+	if (typeof Worker === "undefined") return resolve(false);
+	let worker;
+	let url;
+	const finish = (value) => {
+		worker?.terminate();
+		if (url) URL.revokeObjectURL(url);
+		resolve(value);
+	};
+	try {
+		url = URL.createObjectURL(new Blob(["onmessage=e=>postMessage(e.data)"], { type: "text/javascript" }));
+		worker = new Worker(url);
+		worker.onmessage = () => finish(true);
+		worker.onerror = () => finish(false);
+		worker.postMessage("ping");
+		setTimeout(() => finish(false), 3e3);
+	} catch {
+		finish(false);
+	}
+}).then((val) => supportWorker = val);
+//#endregion
+Object.defineProperty(exports, "supportWorker", {
+	enumerable: true,
+	get: function() {
+		return supportWorker;
+	}
+});
+`,
+	"userscript/multiSelect": `\nlet solid_js_web = require("solid-js/web");
+let helper = require("helper");
+let solid_js = require("solid-js");
+let core = require("core");
+//#region src/userscript/multiSelect/SelectionMask.tsx
+var _tmpl$$1 = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"width=1.5em height=1.5em fill=none opacity=0.4 style=display:inline;vertical-align:-0.15em><rect x=2 y=2 width=20 height=20 rx=5 stroke=currentColor stroke-width=1.3 stroke-dasharray="3 2">\`);
+var _tmpl$2 = /*#__PURE__*/ solid_js_web.template(\`<div class=selection-mask><span class=selection-mask-order>\`);
+const DashedRoundedSquare = () => _tmpl$$1();
+const SelectionMask = (props) => {
+	const id = () => props.registeredItems().get(props.dom);
+	const isSelected = () => props.selection.isSelected(id());
+	helper.css\`
+    \${props.dom}
+    .selection-mask {
+      touch-action: none;
+      cursor: pointer;
+      cursor: cell;
+      user-select: none;
+
+      position: absolute;
+      z-index: 2147483646;
+      top: 0;
+      left: 0;
+
+      container-type: size;
+      overflow: clip;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 100%;
+      height: 100%;
+
+      font-size: 4cqmin;
+
+      background: rgb(0 0 0 / 60%);
+    }
+
+    .selection-mask-order {
+      font-family: sans-serif;
+      font-size: 2em;
+      font-weight: bold;
+      text-shadow: none;
+
+      -webkit-text-stroke: 0;
+    }
+  \`;
+	helper.css(".selection-mask", { color: () => isSelected() ? "#ffffffbf" : "#fffb" }, props.dom);
+	return solid_js_web.createComponent(solid_js.Show, {
+		get when() {
+			return props.isEnabled();
+		},
+		get children() {
+			var _el$2 = _tmpl$2(), _el$3 = _el$2.firstChild;
+			solid_js_web.addEventListener(_el$2, "click", helper.withEventStop(), true);
+			solid_js_web.addEventListener(_el$2, "contextmenu", helper.withEventStop(), true);
+			solid_js_web.addEventListener(_el$2, "mouseover", helper.withEventStop(), true);
+			solid_js_web.addEventListener(_el$2, "pointerover", helper.withEventStop(), true);
+			solid_js_web.addEventListener(_el$2, "pointerenter", helper.withEventStop((e) => props.drag.onPointerEnter(props.dom, e)));
+			solid_js_web.addEventListener(_el$2, "pointerdown", helper.withEventStop((e) => props.drag.onPointerDown(props.dom, e)), true);
+			solid_js_web.insert(_el$3, () => props.selection.getOrder(id()) ?? solid_js_web.createComponent(DashedRoundedSquare, {}));
+			return _el$2;
+		}
+	});
+};
+solid_js_web.delegateEvents([
+	"pointerdown",
+	"pointerover",
+	"mouseover",
+	"contextmenu",
+	"click"
+]);
+//#endregion
+//#region src/userscript/multiSelect/useDragSelect.ts
+const useDragSelect = ({ isEnabled, registeredItems, isSelected, setSession, session, commit, cancel }) => {
+	/** 当前活跃手势的 pointerId，null 表示无活跃手势 */
+	let pointerId = null;
+	/** 锚点在 items 中的索引，固定不变 */
+	let anchorIndex = -1;
+	/** 当前手势是否扩展过范围（用于判断是否应撤销选择） */
+	let hasExpanded = false;
+	return {
+		onPointerDown: (dom, e) => {
+			if (!isEnabled() || !e.isPrimary) return;
+			if (e.pointerType === "mouse" && e.button !== 0) return;
+			const entries = [...registeredItems().entries()];
+			anchorIndex = entries.findIndex(([d]) => d === dom);
+			if (anchorIndex === -1) return;
+			({pointerId} = e);
+			hasExpanded = false;
+			setSession((state) => {
+				state.operationType = isSelected(registeredItems().get(dom)) ? "unselect" : "select";
+				state.items = entries.map(([, id]) => id);
+				state.range = [anchorIndex, anchorIndex];
+			});
+		},
+		onPointerEnter: (dom, e) => {
+			if (!isEnabled() || pointerId === null || e.pointerId !== pointerId) return;
+			if (e.pointerType === "mouse" && (e.buttons & 1) === 0) {
+				pointerId = null;
+				return cancel();
+			}
+			const currentIndex = [...registeredItems().keys()].indexOf(dom);
+			if (currentIndex === -1) return;
+			const newRange = anchorIndex <= currentIndex ? [anchorIndex, currentIndex] : [currentIndex, anchorIndex];
+			setSession((state) => {
+				if (state.range[0] === newRange[0] && state.range[1] === newRange[1]) return;
+				state.range = newRange;
+				if (newRange[0] !== newRange[1]) hasExpanded = true;
+			});
+		},
+		onPointerUp: (e) => {
+			if (e.pointerId !== pointerId) return;
+			pointerId = null;
+			if (session.range[0] === session.range[1] && hasExpanded) cancel();
+			else commit();
+		},
+		onPointerCancel: (e) => {
+			if (e.pointerId !== pointerId) return;
+			pointerId = null;
+			cancel();
+		},
+		/** 取消活跃手势并重置状态 */
+		clear: () => {
+			if (pointerId !== null) cancel();
+			pointerId = null;
+		}
+	};
+};
+//#endregion
+//#region src/userscript/multiSelect/useSelection.ts
+/** 创建选中状态管理器 */
+const createSelectionController = () => {
+	/** 已确认的选中项 */
+	const baselineIds = new helper.ReactiveSet();
+	const { store: session, setState: setSession } = helper.useStore({
+		items: [],
+		range: [-1, -1],
+		operationType: "select"
+	});
+	/** 判断 session 是否处于活跃状态 */
+	const isSessionActive = () => session.range[0] >= 0 && session.range[1] >= 0;
+	/** 当前 range 区间内的 id 集合 */
+	const rangeIds = helper.createRootMemo(() => {
+		if (!isSessionActive()) return /* @__PURE__ */ new Set();
+		return new Set(session.items.slice(session.range[0], session.range[1] + 1));
+	});
+	const selectedIds = helper.createRootMemo(() => {
+		if (!isSessionActive()) return [...baselineIds];
+		return session.operationType === "select" ? [...baselineIds.union(rangeIds())] : [...baselineIds.difference(rangeIds())];
+	});
+	/** 记录每个 id 的选中顺序 */
+	const orderMap = helper.createRootMemo(() => Object.fromEntries(selectedIds().map((id, i) => [id, i + 1])));
+	const cancel = () => setSession((state) => {
+		state.items = [];
+		state.range = [-1, -1];
+		state.operationType = "select";
+	});
+	return {
+		/** 当前会话状态（只读） */
+		session,
+		/** 当前选中项 id 列表 */
+		selectedIds,
+		/** 记录每个 id 的选中顺序 */
+		orderMap,
+		/** 判断指定 id 是否被选中 */
+		isSelected: (id) => id in orderMap(),
+		/** 获取指定 id 的选中顺序，未选中返回 undefined */
+		getOrder: (id) => orderMap()[id],
+		/** 修改会话状态 */
+		setSession,
+		/** 将 session 的修改应用到基线，然后重置 session */
+		commit: () => {
+			if (!isSessionActive()) return;
+			if (session.operationType === "select") for (const id of rangeIds()) baselineIds.add(id);
+			else for (const id of rangeIds()) baselineIds.delete(id);
+			cancel();
+		},
+		/** 重置 session 为初始状态 */
+		cancel,
+		/** 直接设置基线选中项列表 */
+		setBaseline: (ids) => {
+			baselineIds.clear();
+			for (const id of ids) baselineIds.add(id);
+		},
+		/** 清空基线选中项列表 */
+		clearBaseline: () => baselineIds.clear()
+	};
+};
+//#endregion
+//#region src/userscript/multiSelect/useMultiSelect.tsx
+const useMultiSelect = ({ onStart, registeredItems }) => solid_js.createRoot((dispose) => {
+	const [isEnabled, setIsEnabled] = solid_js.createSignal(false);
+	const selectionController = createSelectionController();
+	const drag = useDragSelect({
+		isEnabled,
+		registeredItems,
+		...selectionController
+	});
+	/** 所有需要在 unmount 时执行的清理函数（DOM dispose、事件监听等） */
+	const cleanups = [];
+	let isInitialized = false;
+	let elementIndex = 0;
+	/** 注册一个可选元素：挂载 SelectionMask */
+	const register = (dom) => {
+		if (!registeredItems().get(dom)) return;
+		const index = elementIndex++;
+		const container = document.createElement("div");
+		dom.append(container);
+		const disposeDom = solid_js_web.render(() => solid_js_web.createComponent(SelectionMask, {
+			dom,
+			index,
+			isEnabled,
+			registeredItems,
+			selection: selectionController,
+			drag
+		}), container);
+		cleanups.push(() => {
+			disposeDom();
+			container.remove();
+		});
+	};
+	/** 卸载所有 DOM 注册和事件监听，但保留选中状态（翻页场景） */
+	const unmount = () => {
+		drag.clear();
+		setIsEnabled(false);
+		isInitialized = false;
+		for (let i = cleanups.length - 1; i >= 0; i--) cleanups[i]?.();
+		cleanups.length = 0;
+	};
+	return {
+		/** 当前是否处于多选模式 */
+		isEnabled,
+		/** 开启多选模式并注册元素 */
+		start: () => {
+			if (isEnabled()) return;
+			setIsEnabled(true);
+			if (isInitialized) return;
+			document.addEventListener("pointerup", drag.onPointerUp);
+			document.addEventListener("pointercancel", drag.onPointerCancel);
+			cleanups.push(() => {
+				document.removeEventListener("pointerup", drag.onPointerUp);
+				document.removeEventListener("pointercancel", drag.onPointerCancel);
+			});
+			const cleanup = onStart?.();
+			if (cleanup) cleanups.push(cleanup);
+			for (const dom of registeredItems().keys()) register(dom);
+			isInitialized = true;
+		},
+		/** 结束多选模式，并发处理所有选中项并返回结果列表 */
+		collect: async (process, limit) => {
+			const ids = selectionController.selectedIds();
+			if (ids.length === 0) return [];
+			setIsEnabled(false);
+			return await helper.plimit(ids.map((id) => async () => {
+				try {
+					return await process(id);
+				} catch (error) {
+					return error instanceof Error ? error : new Error(String(error));
+				}
+			}), void 0, limit);
+		},
+		/** 清空选中状态并卸载所有 DOM 注册 */
+		clear: () => {
+			selectionController.clearBaseline();
+			selectionController.cancel();
+			unmount();
+		},
+		unmount,
+		/** 清理所有 SolidJS 响应式资源 */
+		dispose,
+		/** 当前选中项 ID 列表 */
+		selectedIds: selectionController.selectedIds,
+		/** 根据 ID 列表恢复选中状态（翻页后重新注册 DOM 时使用） */
+		setSelectedIds: selectionController.setBaseline
+	};
+});
+//#endregion
+//#region node_modules/.pnpm/@material-design-icons+svg@0.14.15/node_modules/@material-design-icons/svg/round/checklist.svg
+var _tmpl$ = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 8c0-.55-.45-1-1-1h-7c-.55 0-1 .45-1 1s.45 1 1 1h7c.55 0 1-.45 1-1m-9 8c0 .55.45 1 1 1h7c.55 0 1-.45 1-1s-.45-1-1-1h-7c-.55 0-1 .45-1 1M10.47 4.63c.39.39.39 1.02 0 1.41l-4.23 4.25c-.39.39-1.02.39-1.42 0L2.7 8.16a.996.996 0 1 1 1.41-1.41l1.42 1.42 3.54-3.54c.38-.38 1.02-.38 1.4 0m.01 8.01c.39.39.39 1.02 0 1.41L6.25 18.3c-.39.39-1.02.39-1.42 0L2.7 16.16a.996.996 0 1 1 1.41-1.41l1.42 1.42 3.54-3.54c.38-.38 1.02-.38 1.41.01">\`);
+var checklist_default = (props = {}) => (() => {
+	var _el$ = _tmpl$();
+	solid_js_web.spread(_el$, props, true, true);
+	return _el$;
+})();
+//#endregion
+//#region src/userscript/multiSelect/useMultiSelectLoad.tsx
+const createMultiSelectLoadController = (coreCtx, { id: initListId, onStart, allItemIds, getImgList }) => solid_js.createRoot(async (rootDispose) => {
+	const { setState, showComic } = coreCtx;
+	const cache = await helper.useCache({
+		pending: "id",
+		confirmed: "id"
+	}, "MultiSelect");
+	const [listId, setListId] = solid_js.createSignal(initListId);
+	const [registeredItems, setRegisteredItems] = solid_js.createSignal(/* @__PURE__ */ new Map());
+	const controller = useMultiSelect({
+		onStart,
+		registeredItems
+	});
+	helper.createEffectOn([listId], ([currentId], prev) => {
+		const prevId = prev?.[0];
+		if (prevId !== void 0 && prevId !== currentId) controller.clear();
+	});
+	const urlMap = {};
+	const targetIds = helper.createRootMemo(() => {
+		const ids = controller.selectedIds();
+		if (controller.isEnabled() && ids.length > 0) return ids;
+		return allItemIds?.() ?? [];
+	});
+	const computeImgList = () => targetIds().flatMap((id) => urlMap[id] ?? [""]);
+	/** 将 Manga 组件的扁平图片索引转为对应的选中项 ID */
+	const getItemIdsFromIndices = (indices) => {
+		const ids = [];
+		let offset = 0;
+		for (const id of targetIds()) {
+			const len = urlMap[id]?.length ?? 1;
+			for (const idx of indices) if (helper.inRange(offset, idx, offset + len - 1)) {
+				ids.push(id);
+				break;
+			}
+			offset += len;
+		}
+		return ids;
+	};
+	const reSetStore = () => {
+		setState("comicMap", "", { getImgList: Object.assign(async () => {
+			if (coreCtx.store.comicMap[""].imgList?.length) return coreCtx.store.comicMap[""].imgList;
+			await new Promise((resolve) => {
+				const queue = new helper.PQueue(async (id) => {
+					try {
+						urlMap[id] = await getImgList(id);
+					} catch (error) {
+						console.error(error);
+					}
+					setState("comicMap", "", "imgList", computeImgList());
+					resolve();
+				}, 4);
+				setState((state) => {
+					state.comicMap[""].imgList = computeImgList();
+					state.manga.onWaitUrlImgs = (imgs) => {
+						queue.set(...getItemIdsFromIndices(imgs));
+					};
+				});
+				if (targetIds().some((id) => urlMap[id])) resolve();
+			});
+			return coreCtx.store.comicMap[""].imgList;
+		}, allItemIds ? {} : { type: "multiSelect" }) });
+	};
+	reSetStore();
+	const multiSelectLoad = helper.singleThreaded(async () => {
+		if (!controller.isEnabled()) {
+			controller.start();
+			const confirmed = await cache.get("confirmed", listId());
+			if (confirmed) controller.setSelectedIds(confirmed.selecteds);
+			return;
+		}
+		await cache.del("pending", listId());
+		await cache.set("confirmed", {
+			id: listId(),
+			selecteds: controller.selectedIds()
+		});
+		if (controller.selectedIds().length === 0) return;
+		setState("comicMap", "", "imgList", void 0);
+		await showComic("");
+	});
+	let unregisterEscHandler;
+	helper.createEffectOn([controller.isEnabled], ([enabled]) => {
+		if (enabled) {
+			unregisterEscHandler?.();
+			unregisterEscHandler = core.registerEsc(-1, () => controller.isEnabled() && !coreCtx.store.manga.show ? unmount() : "SKIP");
+		}
+	});
+	setState("fab", "extraSpeedDial", [{
+		name: helper.t("hotkeys.multi_select_load"),
+		onClick: multiSelectLoad,
+		icon: checklist_default
+	}]);
+	helper.createEffectOn([
+		controller.isEnabled,
+		() => controller.selectedIds().length,
+		listId
+	], ([enabled, , id]) => {
+		const selecteds = controller.selectedIds();
+		(async () => {
+			await cache.del("pending", id);
+			await (selecteds.length === 0 ? cache.del("confirmed", id) : cache.set(enabled ? "pending" : "confirmed", {
+				id,
+				selecteds
+			}));
+		})();
+	}, { defer: true });
+	core.listenHotkey({
+		multi_select_load: multiSelectLoad,
+		enter_read_mode: () => controller.isEnabled() || !coreCtx.canLoadComic() ? multiSelectLoad() : coreCtx.showComic()
+	}, true);
+	let oldIdSet = [];
+	/** 清理副作用，但保留选中状态（用于翻页） */
+	const unmount = () => {
+		setState("comicMap", "", "imgList", void 0);
+		unregisterEscHandler?.();
+		oldIdSet = [...registeredItems().values()];
+		controller.unmount();
+	};
+	const completeDispose = () => {
+		oldIdSet = [];
+		unmount();
+		controller.dispose();
+		setRegisteredItems(/* @__PURE__ */ new Map());
+		coreCtx.setMultiSelect(void 0);
+		rootDispose();
+	};
+	return {
+		reSetStore,
+		/** 注册新的可选项，并等待至和上次的注册项不同 */
+		registerItems: async (newId, fillItems, maxWaitTime = 5e3) => {
+			setListId(newId);
+			const map = await helper.wait(async () => {
+				const newMap = /* @__PURE__ */ new Map();
+				await fillItems(newMap);
+				if (newMap.size === 0) return;
+				if (helper.isEqual(oldIdSet, [...newMap.values()])) return;
+				return newMap;
+			}, maxWaitTime);
+			if (!map) throw new Error("等待新 DOM 超时");
+			setRegisteredItems(map);
+			const pending = await cache.get("pending", listId());
+			if (pending?.selecteds.length) {
+				controller.start();
+				controller.setSelectedIds(pending.selecteds);
+			}
+		},
+		unmount,
+		/** 完全清理所有状态和副作用 */
+		dispose: completeDispose,
+		/** 页面切换时的清理策略 */
+		createCleanup: (id) => (nextPageCtx) => {
+			unmount();
+			if (nextPageCtx?.type !== "list" || nextPageCtx?.id !== id) {
+				completeDispose();
+				multiSelectLoadController = void 0;
+			}
+		},
+		load: multiSelectLoad,
+		isEnabled: controller.isEnabled,
+		selectedIds: controller.selectedIds,
+		clear: controller.clear,
+		setSelectedIds: controller.setSelectedIds
+	};
+});
+let multiSelectLoadController;
+const useMultiSelectLoad = async (coreCtx, options) => {
+	if (multiSelectLoadController) {
+		multiSelectLoadController.reSetStore();
+		return multiSelectLoadController;
+	}
+	multiSelectLoadController = await createMultiSelectLoadController(coreCtx, options);
+	coreCtx.setMultiSelect(multiSelectLoadController);
+	return multiSelectLoadController;
+};
+//#endregion
+exports.SelectionMask = SelectionMask;
+exports.createMultiSelectLoadController = createMultiSelectLoadController;
+exports.useMultiSelect = useMultiSelect;
+exports.useMultiSelectLoad = useMultiSelectLoad;
 `,
 	"worker/detectAd": `\n//#region \\0rolldown/runtime.js
 var __create = Object.create;
@@ -11758,270 +12736,904 @@ const isAdImg = (imgBitmap) => {
 exports.isAdImg = isAdImg;
 exports.setMainFn = setMainFn;
 `,
-	"worker/ImageRecognition": `\n//#region src/worker/ImageRecognition/workHelper.ts
+	"worker/ImageRecognition": `\n/**
+* 用途：面积小于该比例的 Region 会被删除。
+* 取值范围：0 ~ 1
+*/
+const MIN_REGION_RATIO = .01;
+/**
+* 用途：边缘起点区域占图片长/宽的比例。
+* 取值范围：0 ~ 0.5
+*/
+const EDGE_SEED_RATIO = .05;
+/**
+* 用途：背景色判断时，边缘区域宽度占图片较短边的比例。
+* 取值范围：0 ~ 0.5
+*/
+const EDGE_AREA_RATIO = .07;
+/**
+* 用途：空白边缘扫描时，与参考背景色之间允许的最大 Oklab 色差。
+* 单位：Oklab 空间中的欧氏距离（ΔE），不是百分比。
+* 取值范围：0 ~ 1.51
+*/
+const BLANK_MARGIN_COLOR_TOLERANCE = .2;
+/**
+* 用途：整边累计允许的超色差像素数，占该边长度（左右边=图片高度，上下边=图片宽度）的比例。
+* 单位：比例值，0.01 表示 1%。
+* 取值范围：0 ~ 1
+*/
+const BLANK_MARGIN_MAX_OUTLIER_RATIO = .005;
+/**
+* 用途：桶内分组允许的最大综合距离，也用于相邻色相桶边界组的合并判断。
+* 取值范围：0 ~ 1
+*/
+const HSV_GROUP_THRESHOLD = .12;
+/**
+* 用途：HSV 综合距离中饱和度差 ΔS 的权重。
+* 取值范围：>= 0
+*/
+const SATURATION_WEIGHT = .6;
+//#endregion
+//#region src/worker/ImageRecognition/workHelper.ts
 const mainFn = {};
 const setMainFn = (helper, keys) => {
-	for (const name of keys) Reflect.set(mainFn, name, (...args) => Reflect.apply(helper[name], helper, args));
-};
-const getEdgeScope = (width, height) => Math.min(Math.ceil((width + height) * .01), 10);
-/** 对指定数值取整 */
-const round = (n, int) => {
-	if (int <= 0) return n;
-	const remainder = n % int;
-	return remainder < int / 2 ? n - remainder : n + (int - remainder);
-};
-/** 计算 rgb 的灰度 */
-const toGray = (r, g, b) => Math.round(.299 * r + .587 * g + .114 * b);
-/** 获取图片的灰度表 */
-const toGrayList = (imgData, roundNum) => {
-	const grayList = new Uint8ClampedArray(/* @__PURE__ */ new ArrayBuffer(imgData.length / 4));
-	for (let i = 0, gi = 0; i < imgData.length; i += 4, gi++) {
-		const r = imgData[i];
-		const g = imgData[i + 1];
-		const b = imgData[i + 2];
-		grayList[gi] = round(toGray(r, g, b), roundNum);
+	for (const name of keys) {
+		const fn = helper[name];
+		if (!fn) continue;
+		Reflect.set(mainFn, name, (...args) => Reflect.apply(fn, helper, args));
 	}
-	return grayList;
-};
-/** 遍历图片的指定行 */
-const forEachRows = (width, y, fn, start = 0, end = width) => {
-	for (let i = start; i < end; i++) fn(width * y + i);
-};
-/** 遍历图片的指定列 */
-const forEachCols = (width, height, x, fn, start = 0, end = height) => {
-	for (let i = start; i < end; i++) fn(i * width + x);
-};
-/** 遍历图片的边缘 */
-const forEachEdge = (width, height, scope, fn) => {
-	for (let i = 0; i < scope; i++) {
-		forEachRows(width, i, fn);
-		forEachRows(width, height - i - 1, fn);
-		forEachCols(width, height, i, fn, scope, height - scope);
-		forEachCols(width, height, width - i - 1, fn, scope, height - scope);
-	}
-};
-/** 缩小图像 */
-const resizeImg = (rawImgData, width, height) => {
-	const scale = Math.min(200 / width, 200 / height);
-	const w = Math.floor(width * scale);
-	const h = Math.floor(height * scale);
-	const data = new Uint8ClampedArray(/* @__PURE__ */ new ArrayBuffer(w * h * 4));
-	for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-		const i = (y * w + x) * 4;
-		const tx = Math.floor(x / scale);
-		const target = (width * Math.floor(y / scale) + tx) * 4;
-		data[i] = rawImgData[target];
-		data[i + 1] = rawImgData[target + 1];
-		data[i + 2] = rawImgData[target + 2];
-		data[i + 3] = 255;
-	}
-	return {
-		scale,
-		w,
-		h,
-		data
-	};
-};
-/** 通过互相比较数组项求出最终项 */
-const boil = (array, compareFunc) => {
-	if (!array || (array.length ?? 0) === 0) return null;
-	return array.reduce(compareFunc);
-};
-//#endregion
-//#region src/worker/ImageRecognition/colorArea.ts
-/** 获取颜色区域在边缘区域上的占比 */
-const getAreaEdgeRatio = (pixelList, width, height) => {
-	let size = 0;
-	const edgeScope = getEdgeScope(width, height);
-	const add = (i) => pixelList.has(i) && size++;
-	forEachEdge(width, height, edgeScope, add);
-	return size / (width * edgeScope * 2 + (height - 2 * edgeScope) * edgeScope * 2);
-};
-/** 根据灰度值获取图片边缘相似颜色的区域 */
-const getEdgeArea = (grayList, width, height) => {
-	const maximum = width * height * .4;
-	const areaMap = /* @__PURE__ */ new Map();
-	/** 待检查相邻像素的像素 */
-	const seedPixel = /* @__PURE__ */ new Set();
-	const addSeedPixel = (index) => {
-		const gray = grayList[index];
-		if (gray === void 0) return;
-		seedPixel.add(index);
-		if (!areaMap.has(gray)) areaMap.set(gray, /* @__PURE__ */ new Set());
-		areaMap.get(gray).add(index);
-	};
-	const popSeedPixel = () => {
-		if (seedPixel.size === 0) return;
-		const index = seedPixel.values().next().value;
-		seedPixel.delete(index);
-		return index;
-	};
-	const edgeScope = getEdgeScope(width, height);
-	forEachEdge(width, height, edgeScope, addSeedPixel);
-	/** 获取相邻像素 */
-	const getAdjacentPixel = (i) => {
-		const adjacentPixel = [];
-		const x = i % width;
-		const y = Math.floor(i / width);
-		const left = x !== 0;
-		const up = y >= 1;
-		const right = x < width - 1;
-		const down = y < height - 1;
-		if (left) adjacentPixel.push(i - 1);
-		if (up) adjacentPixel.push(i - width);
-		if (right) adjacentPixel.push(i + 1);
-		if (down) adjacentPixel.push(i + width);
-		if (left && up) adjacentPixel.push(i - width - 1);
-		if (left && down) adjacentPixel.push(i + width - 1);
-		if (right && up) adjacentPixel.push(i - width + 1);
-		if (right && down) adjacentPixel.push(i + width + 1);
-		return adjacentPixel;
-	};
-	for (let i = popSeedPixel(); i !== void 0; i = popSeedPixel()) {
-		const gray = grayList[i];
-		const areaPixelList = areaMap.get(gray);
-		const adjacentPixelList = getAdjacentPixel(i);
-		for (const adjacentPixel of adjacentPixelList) {
-			if (areaPixelList.has(adjacentPixel)) continue;
-			if (grayList[adjacentPixel] !== gray) continue;
-			addSeedPixel(adjacentPixel);
-		}
-		if (areaPixelList.size > maximum) return [areaPixelList];
-	}
-	const areaList = [];
-	for (const pixelList of areaMap.values()) {
-		if (pixelList.size < 100) continue;
-		areaList.push(pixelList);
-	}
-	return areaList;
-};
-/** 获取图像指定区域中的主色 */
-const getAreaColor = (imgData, pixelList) => {
-	const colorMap = /* @__PURE__ */ new Map();
-	const maximum = pixelList.size * .5;
-	let maxColor = "";
-	let maxCount = 0;
-	for (const i of pixelList.values()) {
-		const index = i * 4;
-		const color = \`rgb(\${imgData[index]}, \${imgData[index + 1]}, \${imgData[index + 2]})\`;
-		if (!colorMap.has(color)) colorMap.set(color, 0);
-		const colorCount = colorMap.get(color) + 1;
-		colorMap.set(color, colorCount);
-		if (colorCount > maxCount) {
-			maxColor = color;
-			maxCount = colorCount;
-		}
-		if (colorCount > maximum) break;
-	}
-	return maxColor;
-};
-/** 获取图像指定矩形区域中的主色 */
-const getSquareAreaColor = (imgData, topLeftX, topLeftY, bottomRightX, bottomRightY) => {
-	const startX = Math.floor(topLeftX);
-	const startY = Math.floor(topLeftY);
-	const endX = Math.floor(bottomRightX);
-	const endY = Math.floor(bottomRightY);
-	const colorMap = /* @__PURE__ */ new Map();
-	const maximum = (endX - startX) * (endY - startY) * .5;
-	let maxColor = "";
-	let maxCount = 0;
-	for (let x = startX; x < endX; x++) for (let y = startY; y < endY; y++) {
-		const index = (x + y * endX) * 4;
-		const color = \`rgb(\${imgData[index]}, \${imgData[index + 1]}, \${imgData[index + 2]})\`;
-		if (!colorMap.has(color)) colorMap.set(color, 0);
-		const colorCount = colorMap.get(color) + 1;
-		colorMap.set(color, colorCount);
-		if (colorCount > maxCount) {
-			maxColor = color;
-			maxCount = colorCount;
-		}
-		if (colorCount > maximum) break;
-	}
-	return maxColor;
 };
 //#endregion
 //#region src/worker/ImageRecognition/background.ts
-/** 根据边缘颜色区域获取背景颜色 */
-const byEdgeArea = ({ data, grayList, width, height }) => {
-	const areaList = getEdgeArea(grayList, width, height);
-	if (areaList.length === 0) return;
-	const minimum = width * height * .02;
-	let maxArea;
-	let maxRatio = .1;
-	for (const pixelList of areaList) {
-		if (pixelList.size < minimum) continue;
-		const edgeRatio = getAreaEdgeRatio(pixelList, width, height);
-		if (edgeRatio < maxRatio) continue;
-		maxArea = pixelList;
-		maxRatio = edgeRatio;
-	}
-	if (!maxArea) return;
-	return getAreaColor(data, maxArea);
+const isInEdgeArea = (index, { width, height, edgeX, edgeY }) => {
+	const x = index % width;
+	const y = Math.floor(index / width);
+	return x < edgeX || x >= width - edgeX || y < edgeY || y >= height - edgeY;
 };
-const getPosAreaColor = (pos, { data, blankMargin, width: w, height: h }) => {
-	switch (pos) {
-		case "top": return getSquareAreaColor(data, 0, 0, w, blankMargin.top * h);
-		case "bottom": return getSquareAreaColor(data, 0, h - blankMargin.bottom * h, w, h);
-		case "left": return getSquareAreaColor(data, 0, 0, blankMargin.left * w, h);
-		case "right": return getSquareAreaColor(data, w - blankMargin.right * w, 0, w, h);
+/**
+* 判断图像的背景色。
+*
+* 在图片边缘区域内找到占比最大的背景区域，
+* 如果该区域在边缘区域中的占比达到 EDGE_AREA_REGION_RATIO，
+* 则将该区域的主色视为背景色，否则判定取色失败。
+*/
+const getBackgroundColor = (img) => {
+	const manager = img.backgroundRegions;
+	if (manager.getRegionCount() === 0) return null;
+	const { width, height } = img;
+	const edge = Math.max(1, Math.floor(Math.min(width, height) * EDGE_AREA_RATIO));
+	const edgeArea = {
+		width,
+		height,
+		edgeX: edge,
+		edgeY: edge
+	};
+	const centerWidth = Math.max(0, width - edge * 2);
+	const centerHeight = Math.max(0, height - edge * 2);
+	const totalEdgeAreaPixels = width * height - centerWidth * centerHeight;
+	let maxRegionId;
+	let maxCount = 0;
+	for (const id of manager.getRegionIds()) {
+		let count = 0;
+		manager.forEachPixelOfRegion(id, (index) => {
+			if (isInEdgeArea(index, edgeArea)) count += 1;
+		});
+		if (count > maxCount) {
+			maxCount = count;
+			maxRegionId = id;
+		}
+	}
+	img.logger.mark("背景色区域统计完成");
+	if (maxRegionId === void 0 || maxCount / totalEdgeAreaPixels < .15) return null;
+	const color = manager.getRegion(maxRegionId)?.getMainColor() ?? null;
+	img.logger.mark("背景主色提取完成", color ?? "未检测到");
+	return color;
+};
+/** 获取图片背景色并写入 ImgContext */
+const getBackground = (img) => img.background ??= getBackgroundColor(img);
+//#endregion
+//#region src/worker/ImageRecognition/colorUtils/ColorHistogram.ts
+/** 统计整数 key 的直方图，求出众数 key */
+var ColorHistogram = class {
+	counts = /* @__PURE__ */ new Map();
+	modeKey = 0;
+	modeCount = 0;
+	add(key) {
+		const count = (this.counts.get(key) ?? 0) + 1;
+		this.counts.set(key, count);
+		if (count > this.modeCount) {
+			this.modeCount = count;
+			this.modeKey = key;
+		}
+	}
+	merge(other) {
+		for (const [key, count] of other.counts) {
+			const mergedCount = (this.counts.get(key) ?? 0) + count;
+			this.counts.set(key, mergedCount);
+			if (mergedCount > this.modeCount) {
+				this.modeCount = mergedCount;
+				this.modeKey = key;
+			}
+		}
+	}
+	getModeKey() {
+		if (this.modeCount !== 0) return this.modeKey;
 	}
 };
-/** 从足够大的空白边缘中获取背景颜色 */
-const byBlankMargin = (context) => {
-	const colorMap = {};
-	for (const pos of [
-		"top",
-		"bottom",
-		"left",
-		"right"
-	]) {
-		if (!context.blankMargin[pos]) continue;
-		const color = getPosAreaColor(pos, context);
-		if (!color) continue;
-		colorMap[color] = (colorMap[color] || 0) + context.blankMargin[pos];
-	}
-	const colorList = Object.entries(colorMap).filter(([, v]) => v > .04);
-	if (colorList.length === 0) return;
-	return boil(colorList, (a, b) => a[1] > b[1] ? a : b)?.[0];
+//#endregion
+//#region src/worker/ImageRecognition/colorUtils/hsv.ts
+/** 将 0~255 或 0~1 的 RGB 分量统一到 0~1。 */
+const normalizeChannel = (value) => {
+	const clamped = Math.max(0, Math.min(255, value));
+	return clamped > 1 ? clamped / 255 : clamped;
 };
-/** 判断图像的背景色 */
-const getBackground = (context) => "blankMargin" in context && byBlankMargin(context) || byEdgeArea(context);
+const rgbToHsv = (color) => {
+	const r = normalizeChannel(color.r);
+	const g = normalizeChannel(color.g);
+	const b = normalizeChannel(color.b);
+	const max = Math.max(r, g, b);
+	const delta = max - Math.min(r, g, b);
+	let h = 0;
+	let s = 0;
+	const v = max;
+	if (max !== 0) s = delta / max;
+	if (delta !== 0) {
+		if (max === r) h = 60 * ((g - b) / delta % 6);
+		else if (max === g) h = 60 * ((b - r) / delta + 2);
+		else h = 60 * ((r - g) / delta + 4);
+		if (h < 0) h += 360;
+		if (h >= 360) h -= 360;
+	}
+	return {
+		h,
+		s,
+		v
+	};
+};
+/** HSV 色差距离 */
+const hsvDistanceSquared = (a, b, saturationWeight = SATURATION_WEIGHT) => {
+	const dv = a.v - b.v;
+	const ds = a.s - b.s;
+	return dv * dv + saturationWeight * saturationWeight * ds * ds;
+};
+//#endregion
+//#region src/worker/ImageRecognition/colorUtils/grouping.ts
+const H_BUCKET_WIDTH = 15;
+const HSV_GROUP_THRESHOLD_SQUARED = HSV_GROUP_THRESHOLD ** 2;
+/** 计算一组分组数组的平均 HSV */
+const averageHsvOfGroups = (groupArrays, hsvColors) => {
+	const sum = {
+		h: 0,
+		s: 0,
+		v: 0
+	};
+	let count = 0;
+	for (const group of groupArrays) for (const index of group) {
+		sum.h += hsvColors[index].h;
+		sum.s += hsvColors[index].s;
+		sum.v += hsvColors[index].v;
+		count += 1;
+	}
+	if (count === 0) return {
+		h: 0,
+		s: 0,
+		v: 0
+	};
+	return {
+		h: sum.h / count,
+		s: sum.s / count,
+		v: sum.v / count
+	};
+};
+/**
+* 无彩桶：按 V 从小到大排序，贪心分段。
+* 因为只比较亮度，排序后区间最大亮度差就是首尾亮度差。
+*/
+const groupAchromatic = (indices, hsvColors) => {
+	if (indices.length === 0) return [];
+	const ordered = indices.toSorted((a, b) => hsvColors[a].v - hsvColors[b].v);
+	const groups = [];
+	let start = 0;
+	for (let end = 1; end <= ordered.length; end++) if (end === ordered.length || hsvColors[ordered[end]].v - hsvColors[ordered[start]].v > .12) {
+		groups.push(ordered.slice(start, end));
+		start = end;
+	}
+	return groups;
+};
+/**
+* 彩色桶：桶内 H 已相近，按 V 从小到大排序后贪心分组。
+* 每次扩展新点时检查它与当前组内所有点的综合距离。
+*/
+const groupChromatic = (indices, hsvColors) => {
+	if (indices.length === 0) return [];
+	const ordered = indices.toSorted((a, b) => hsvColors[a].v - hsvColors[b].v);
+	const groups = [];
+	let current = [ordered[0]];
+	for (let i = 1; i < ordered.length; i++) {
+		const index = ordered[i];
+		let maxDistSquared = 0;
+		for (const existing of current) maxDistSquared = Math.max(maxDistSquared, hsvDistanceSquared(hsvColors[index], hsvColors[existing]));
+		if (maxDistSquared <= HSV_GROUP_THRESHOLD_SQUARED) current.push(index);
+		else {
+			groups.push(current);
+			current = [index];
+		}
+	}
+	groups.push(current);
+	return groups;
+};
+/** 对代表色执行 HSV 分桶分组 */
+const groupColorsByHsv = (colors) => {
+	if (colors.length === 0) return [];
+	const hsvColors = colors.map(rgbToHsv);
+	const grayIndices = [];
+	const buckets = Array.from({ length: 24 }, () => []);
+	for (let i = 0; i < hsvColors.length; i++) {
+		const { h, s } = hsvColors[i];
+		if (s < .03) grayIndices.push(i);
+		else buckets[Math.min(23, Math.floor(h / H_BUCKET_WIDTH))].push(i);
+	}
+	const groups = [...groupAchromatic(grayIndices, hsvColors)];
+	const chromaticGroupsByBucket = buckets.map((bucket) => groupChromatic(bucket, hsvColors));
+	const flatGroups = [];
+	const boundaries = [];
+	for (const bucketGroups of chromaticGroupsByBucket) {
+		if (bucketGroups.length === 0) {
+			boundaries.push({
+				first: -1,
+				last: -1
+			});
+			continue;
+		}
+		const boundary = {
+			first: flatGroups.length,
+			last: -1
+		};
+		boundaries.push(boundary);
+		flatGroups.push(...bucketGroups);
+		boundary.last = flatGroups.length - 1;
+	}
+	groups.push(...mergeAdjacentBuckets(flatGroups, boundaries, hsvColors));
+	return groups;
+};
+/**
+* 相邻彩色桶边界合并
+*
+* 检查桶 i 的最后一组与桶 i+1 的第一组，若两组代表色的综合距离不超过阈值，
+* 则将它们所在的组件合并。
+* 使用并查集是为了支持多个相邻边界连续合并。
+* 不处理色相环首尾合并。
+*/
+const mergeAdjacentBuckets = (groups, boundaries, hsvColors) => {
+	const parent = Array.from({ length: groups.length }, (_, i) => i);
+	const components = /* @__PURE__ */ new Map();
+	for (let i = 0; i < groups.length; i++) components.set(i, [[...groups[i]]]);
+	const find = (x) => {
+		while (parent[x] !== x) {
+			parent[x] = parent[parent[x]];
+			x = parent[x];
+		}
+		return x;
+	};
+	const union = (a, b) => {
+		const rootA = find(a);
+		const rootB = find(b);
+		if (rootA === rootB) return;
+		parent[rootB] = rootA;
+		components.get(rootA).push(...components.get(rootB));
+		components.delete(rootB);
+	};
+	for (let i = 0; i < 23; i++) {
+		const lastIndex = boundaries[i].last;
+		const firstIndex = boundaries[i + 1].first;
+		if (lastIndex === -1 || firstIndex === -1) continue;
+		const rootA = find(lastIndex);
+		const rootB = find(firstIndex);
+		if (rootA === rootB) continue;
+		const repA = averageHsvOfGroups(components.get(rootA), hsvColors);
+		const repB = averageHsvOfGroups(components.get(rootB), hsvColors);
+		if (hsvDistanceSquared(repA, repB) <= HSV_GROUP_THRESHOLD_SQUARED) union(rootA, rootB);
+	}
+	const result = [];
+	for (const groupArrays of components.values()) {
+		const merged = [];
+		for (const group of groupArrays) merged.push(...group);
+		result.push(merged);
+	}
+	return result;
+};
+//#endregion
+//#region src/worker/ImageRecognition/colorUtils/lab.ts
+/** Oklab 中 a/b 的跨度（约 -0.4 ~ 0.4）。 */
+const LAB_AB_RANGE = .8;
+/** 预计算 0~255 的 sRGB 线性化值，避免每次转换都执行指数运算 */
+const LINEAR_RGB = /* @__PURE__ */ new Float32Array(256);
+for (let i = 0; i < 256; i++) {
+	const s = i / 255;
+	LINEAR_RGB[i] = s <= .04045 ? s / 12.92 : ((s + .055) / 1.055) ** 2.4;
+}
+const rgbToOklab = (r, g, b) => {
+	const rl = LINEAR_RGB[r];
+	const gl = LINEAR_RGB[g];
+	const bl = LINEAR_RGB[b];
+	const l = .4122214708 * rl + .5363325363 * gl + .0514459929 * bl;
+	const m = .2119034982 * rl + .6806995451 * gl + .1073969566 * bl;
+	const s = .0883024619 * rl + .2817188376 * gl + .6299787005 * bl;
+	const l_ = Math.cbrt(l);
+	const m_ = Math.cbrt(m);
+	const s_ = Math.cbrt(s);
+	return [
+		.2104542553 * l_ + .793617785 * m_ - .0040720468 * s_,
+		1.9779984951 * l_ - 2.428592205 * m_ + .4505937099 * s_,
+		.0259040371 * l_ + .7827717662 * m_ - .808675766 * s_
+	];
+};
+/** 通过 Oklab 数据获取图片的灰度表 */
+const toGrayListByLab = (lab) => {
+	const { groupList, groupToLab } = lab;
+	const grayList = new Uint8ClampedArray(groupList.length);
+	for (let i = 0; i < groupList.length; i++) {
+		const group = groupList[i];
+		if (group < 0) continue;
+		grayList[i] = groupToLab[group * 3] * 255;
+	}
+	return grayList;
+};
+//#endregion
+//#region src/worker/ImageRecognition/colorUtils/quantization.ts
+/**
+* 构建统一的 Oklab 像素量化数据。
+*
+* @param forEachPixel 指定需要参与量化的像素遍历方式（例如只遍历中心区域外）
+*/
+const buildLabQuantizedData = (img, levels = 42, forEachPixel) => {
+	const { width, height } = img;
+	const groupCount = levels ** 3;
+	const groupList = new Int32Array(width * height);
+	groupList.fill(-1);
+	const lStep = 1 / levels;
+	const abStep = LAB_AB_RANGE / levels;
+	const labSums = new Float64Array(groupCount * 3);
+	const rgbSums = new Float64Array(groupCount * 3);
+	const counts = new Uint32Array(groupCount);
+	(forEachPixel ?? ((fn) => {
+		for (let i = 0; i < width * height; i++) fn(i);
+	}))((index) => {
+		const i = index * 4;
+		const r = img.data[i];
+		const g = img.data[i + 1];
+		const b = img.data[i + 2];
+		const [L, a, bLab] = rgbToOklab(r, g, b);
+		const lGroup = Math.min(levels - 1, Math.max(0, Math.floor(L / lStep)));
+		const aGroup = Math.min(levels - 1, Math.max(0, Math.floor((a + LAB_AB_RANGE / 2) / abStep)));
+		const bGroup = Math.min(levels - 1, Math.max(0, Math.floor((bLab + LAB_AB_RANGE / 2) / abStep)));
+		const group = (lGroup * levels + aGroup) * levels + bGroup;
+		groupList[index] = group;
+		const labOffset = group * 3;
+		labSums[labOffset] += L;
+		labSums[labOffset + 1] += a;
+		labSums[labOffset + 2] += bLab;
+		const rgbOffset = group * 3;
+		rgbSums[rgbOffset] += r;
+		rgbSums[rgbOffset + 1] += g;
+		rgbSums[rgbOffset + 2] += b;
+		counts[group] += 1;
+	});
+	const groupToLab = new Float32Array(groupCount * 3);
+	const groupToRgb = new Uint8ClampedArray(groupCount * 3);
+	for (let group = 0; group < groupCount; group++) {
+		const count = counts[group];
+		if (count === 0) continue;
+		const offset = group * 3;
+		groupToLab[offset] = labSums[offset] / count;
+		groupToLab[offset + 1] = labSums[offset + 1] / count;
+		groupToLab[offset + 2] = labSums[offset + 2] / count;
+		groupToRgb[offset] = Math.round(rgbSums[offset] / count);
+		groupToRgb[offset + 1] = Math.round(rgbSums[offset + 1] / count);
+		groupToRgb[offset + 2] = Math.round(rgbSums[offset + 2] / count);
+	}
+	return {
+		groupList,
+		levels,
+		groupToLab,
+		groupToRgb
+	};
+};
+//#endregion
+//#region src/worker/ImageRecognition/colorUtils/rgb.ts
+/** 将 rgb 转换为大写 16 进制颜色值 */
+const rgbToHex = (r, g, b) => \`#\${[
+	r,
+	g,
+	b
+].map((n) => n.toString(16).padStart(2, "0").toUpperCase()).join("")}\`;
+//#endregion
+//#region src/worker/ImageRecognition/backgroundDetection/Region.ts
+/** 4-连通的相邻像素位置偏移 */
+const NEIGHBOR_OFFSETS = [
+	[-1, 0],
+	[1, 0],
+	[0, -1],
+	[0, 1]
+];
+var Region = class {
+	id;
+	/** 该区域包含的所有像素索引 */
+	pixelIndexes = [];
+	/** 所属的区域管理器 */
+	manager;
+	/** 区域颜色直方图 */
+	colorHistogram = new ColorHistogram();
+	constructor(manager, id) {
+		this.manager = manager;
+		this.id = id;
+	}
+	/** 当前区域的像素数量 */
+	get pixelCount() {
+		return this.pixelIndexes.length;
+	}
+	/** 将像素添加到区域里来，返回是否成功添加 */
+	addPixel(index) {
+		if (this.manager.getOwner(index) !== 0) return false;
+		if (!this.checkPixel(index)) return false;
+		if (this.manager.claimPixel(index, this.id)) {
+			this.pixelIndexes.push(index);
+			this.updateColorHistogram(index);
+			this.onPixelAdded(index);
+			return true;
+		}
+		return false;
+	}
+	/** 将像素的 Oklab 量化分组码加入区域的颜色直方图 */
+	updateColorHistogram(index) {
+		const group = this.manager.labQuantized.groupList[index];
+		if (group >= 0) this.colorHistogram.add(group);
+	}
+	/**
+	* 从种子像素开始，以 4-连通方式将满足 checkPixel 的相邻像素加入当前区域。
+	*
+	* 如果种子像素无法加入，自动释放当前区域。
+	*/
+	growFromSeed(seedIndex) {
+		if (!this.addPixel(seedIndex)) return this.manager.releaseRegion(this.id);
+		const { width, height } = this.manager;
+		const queue = [seedIndex];
+		let head = 0;
+		while (head < queue.length) {
+			const current = queue[head];
+			head += 1;
+			const currentX = current % width;
+			const currentY = Math.floor(current / width);
+			for (const [dx, dy] of NEIGHBOR_OFFSETS) {
+				const nextX = currentX + dx;
+				const nextY = currentY + dy;
+				if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height) continue;
+				const nextIndex = nextY * width + nextX;
+				if (this.manager.getOwner(nextIndex) !== 0) continue;
+				if (this.addPixel(nextIndex)) queue.push(nextIndex);
+			}
+		}
+	}
+	/** 当另一个区域合并到当前区域时调用，用于合并子类维护的派生状态 */
+	onMerged(source) {
+		this.colorHistogram.merge(source.colorHistogram);
+	}
+	/** 遍历该区域包含的所有像素索引 */
+	forEachPixel(callback) {
+		for (const index of this.pixelIndexes) callback(index);
+	}
+	/** 获取区域的众数 Oklab */
+	getModeLab() {
+		const group = this.colorHistogram.getModeKey();
+		if (group === void 0) return;
+		const lab = this.manager.labQuantized.groupToLab;
+		const offset = group * 3;
+		return {
+			l: lab[offset],
+			a: lab[offset + 1],
+			b: lab[offset + 2]
+		};
+	}
+	/** 获取区域众数色对应的 Oklab 量化分组 id */
+	getQuantizedGroup() {
+		return this.colorHistogram.getModeKey();
+	}
+	/** 获取区域的量化 RGB（Oklab 量化分组对应的平均 RGB，仅用于 HSV 分组） */
+	getQuantizedRgb() {
+		const group = this.getQuantizedGroup();
+		if (group === void 0) return;
+		const rgb = this.manager.labQuantized.groupToRgb;
+		const offset = group * 3;
+		return {
+			r: rgb[offset],
+			g: rgb[offset + 1],
+			b: rgb[offset + 2]
+		};
+	}
+	/**
+	* 获取该区域在原图中的主色
+	*
+	* 从众数 Oklab 分组内取原图 RGB 的精确众数
+	*/
+	getMainColor() {
+		const group = this.colorHistogram.getModeKey();
+		if (group === void 0) throw new Error("区域没有像素，无法获取主色");
+		const counts = /* @__PURE__ */ new Map();
+		let maxKey = 0;
+		let maxCount = 0;
+		this.forEachPixel((index) => {
+			if (this.manager.labQuantized.groupList[index] !== group) return;
+			const i = index * 4;
+			const r = this.manager.data[i];
+			const g = this.manager.data[i + 1];
+			const b = this.manager.data[i + 2];
+			const key = r << 16 | g << 8 | b;
+			const item = counts.get(key);
+			if (item) item.count += 1;
+			else counts.set(key, {
+				count: 1,
+				r,
+				g,
+				b
+			});
+			const count = item ? item.count : 1;
+			if (count > maxCount) {
+				maxKey = key;
+				maxCount = count;
+			}
+		});
+		const rgb = counts.get(maxKey);
+		if (!rgb) throw new Error("区域中不存在主色分组对应的像素");
+		return rgbToHex(rgb.r, rgb.g, rgb.b);
+	}
+};
+/**
+* 区域管理器
+*
+* 负责像素归属的统一管理，以及区域实例的注册与查询。
+*/
+var RegionManager = class {
+	/** 图片宽度 */
+	width;
+	/** 图片高度 */
+	height;
+	/** 图片像素数据 */
+	data;
+	/** 统一的 Oklab 像素量化数据 */
+	labQuantized;
+	/**
+	* 记录像素归属情况
+	*
+	* 值为区域 id：0 表示无归属，>0 表示归属对应 id 的区域，<0 表示保留区域
+	*/
+	ownership;
+	/** 已注册的区域实例，键为区域 id，值为区域对象 */
+	regions = /* @__PURE__ */ new Map();
+	/** 下一个可分配的区域 id */
+	nextId = 1;
+	constructor(img) {
+		this.width = img.width;
+		this.height = img.height;
+		this.ownership = new Int32Array(img.width * img.height);
+		this.data = img.data;
+		this.labQuantized = img.labQuantized;
+		this.reserveCenter(img);
+	}
+	/** 将图片的中间区域标记为保留区域，不参与识别 */
+	reserveCenter(img) {
+		for (let y = img.bounds.startY; y < img.bounds.endY; y++) for (let x = img.bounds.startX; x < img.bounds.endX; x++) this.claimPixel(y * img.width + x, -1);
+	}
+	/** 创建并注册一个区域实例 */
+	createRegion(RegionClass, ...args) {
+		const id = this.nextId;
+		this.nextId += 1;
+		const region = new RegionClass(this, id, ...args);
+		this.regions.set(id, region);
+		return region;
+	}
+	/** 根据 id 获取区域实例 */
+	getRegion(id) {
+		return this.regions.get(id);
+	}
+	/** 获取当前所有已注册区域的 id 列表 */
+	getRegionIds() {
+		return this.regions.keys();
+	}
+	/** 获取当前已注册区域的数量 */
+	getRegionCount() {
+		return this.regions.size;
+	}
+	/** 获取指定像素的归属区域 id */
+	getOwner(index) {
+		return this.ownership[index];
+	}
+	/** 将指定像素认领给指定区域，返回是否认领成功 */
+	claimPixel(index, regionId) {
+		if (this.ownership[index] !== 0) return false;
+		this.ownership[index] = regionId;
+		return true;
+	}
+	/** 释放指定像素的归属，返回是否释放成功 */
+	releasePixel(index, regionId) {
+		if (this.ownership[index] !== regionId) return false;
+		this.ownership[index] = 0;
+		return true;
+	}
+	/** 注销区域，释放所属像素 */
+	releaseRegion(regionId) {
+		const region = this.regions.get(regionId);
+		if (!region) return;
+		for (const index of region.pixelIndexes) this.ownership[index] = 0;
+		region.pixelIndexes.length = 0;
+		this.regions.delete(regionId);
+	}
+	/** 删除所有面积过小的区域，并返回被删除的区域 id 列表 */
+	removeSmallRegions() {
+		const minPixelCount = Math.max(1, Math.floor(this.width * this.height * MIN_REGION_RATIO));
+		for (const id of this.regions.keys()) {
+			const region = this.regions.get(id);
+			if (region && region.pixelCount < minPixelCount) this.releaseRegion(id);
+		}
+	}
+	/** 合并颜色相似的区域 */
+	mergeSimilarRegions() {
+		if (this.regions.size <= 1) return;
+		const idsByGroup = /* @__PURE__ */ new Map();
+		for (const region of this.regions.values()) {
+			const group = region.getQuantizedGroup();
+			if (group === void 0) continue;
+			const ids = idsByGroup.get(group);
+			if (ids) ids.push(region.id);
+			else idsByGroup.set(group, [region.id]);
+		}
+		if (idsByGroup.size === 0) return;
+		const representativeRgbs = [];
+		const representativeGroups = [];
+		for (const [group, ids] of idsByGroup) {
+			const rgb = this.regions.get(ids[0])?.getQuantizedRgb();
+			if (!rgb) continue;
+			representativeRgbs.push(rgb);
+			representativeGroups.push(group);
+		}
+		if (representativeRgbs.length === 0) return;
+		const groups = groupColorsByHsv(representativeRgbs);
+		for (const group of groups) {
+			if (group.length === 0) continue;
+			let targetId = -1;
+			let maxCount = -1;
+			for (const representativeIndex of group) {
+				const ids = idsByGroup.get(representativeGroups[representativeIndex]);
+				if (!ids) continue;
+				for (const id of ids) {
+					const count = this.regions.get(id)?.pixelCount ?? 0;
+					if (count > maxCount) {
+						maxCount = count;
+						targetId = id;
+					}
+				}
+			}
+			for (const representativeIndex of group) {
+				const ids = idsByGroup.get(representativeGroups[representativeIndex]);
+				if (!ids) continue;
+				for (const id of ids) if (id !== targetId) this.mergeRegions(targetId, id);
+			}
+		}
+	}
+	/**
+	* 将一个区域的所有像素合并到另一个区域，并注销源区域，返回是否合并成功
+	*
+	* 合并后，源区域的 id 不再有效，目标区域的 pixelCount 会增加源区域的像素数量
+	*/
+	mergeRegions(targetId, sourceId) {
+		const target = this.regions.get(targetId);
+		const source = this.regions.get(sourceId);
+		if (!target || !source) return false;
+		const sourcePixels = source.pixelIndexes;
+		const targetPixels = target.pixelIndexes;
+		const sourceLength = sourcePixels.length;
+		const targetStart = targetPixels.length;
+		targetPixels.length = targetStart + sourceLength;
+		for (let i = 0; i < sourceLength; i++) {
+			const index = sourcePixels[i];
+			this.ownership[index] = targetId;
+			targetPixels[targetStart + i] = index;
+		}
+		sourcePixels.length = 0;
+		target.onMerged(source);
+		this.regions.delete(sourceId);
+		return true;
+	}
+	/** 遍历指定区域的所有像素索引 */
+	forEachPixelOfRegion(regionId, callback) {
+		this.regions.get(regionId)?.forEachPixel(callback);
+	}
+};
+//#endregion
+//#region src/worker/ImageRecognition/backgroundDetection/quantizedEdgeGrow.ts
+/** 基于 Oklab 分组的 Region */
+var QuantizedRegion = class extends Region {
+	group;
+	groupList;
+	constructor(manager, id, { group, groupList }) {
+		super(manager, id);
+		this.group = group;
+		this.groupList = groupList;
+	}
+	checkPixel(index) {
+		return this.groupList[index] === this.group;
+	}
+	onPixelAdded() {}
+};
+/** 从边缘起点区域中未占用的像素开始生长。 */
+const growEdgeSeeds = (manager, img, groupList) => {
+	const { width, height } = img;
+	const edgeX = Math.max(1, Math.floor(width * EDGE_SEED_RATIO));
+	const edgeY = Math.max(1, Math.floor(height * EDGE_SEED_RATIO));
+	const isInSeedArea = (x, y) => x < edgeX || x >= width - edgeX || y < edgeY || y >= height - edgeY;
+	for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+		if (!isInSeedArea(x, y)) continue;
+		const index = y * width + x;
+		if (manager.getOwner(index) !== 0) continue;
+		const group = groupList[index];
+		manager.createRegion(QuantizedRegion, {
+			group,
+			groupList
+		}).growFromSeed(index);
+	}
+};
+/**
+* 基于 Oklab 量化与边缘种子生长的背景识别：
+*
+* 1. 使用 ImgContext 上统一的 Oklab 量化数据；
+* 2. 从边缘起点区域中未占用的像素出发，以 4-连通的方式遍历，
+*    将同一 Oklab 分组的像素合并成一个 Region；
+* 3. 生长完成后，合并代表色相似的区域。
+*/
+const quantizedEdgeGrow = (img, manager) => {
+	const { width, height } = img;
+	if (width <= 0 || height <= 0) return manager;
+	growEdgeSeeds(manager, img, img.labQuantized.groupList);
+	img.logger.mark("边缘种子生长完成");
+	if (manager.getRegionCount() === 0) return manager;
+	manager.mergeSimilarRegions();
+	img.logger.mark("相似区域合并完成");
+	manager.removeSmallRegions();
+	img.logger.mark("小区域清理完成");
+	return manager;
+};
+//#endregion
+//#region src/worker/ImageRecognition/backgroundDetection/index.ts
+/** 识别出图片的背景区域 */
+const detectBackgroundRegions = (img) => {
+	if (img.backgroundRegions) return img.backgroundRegions;
+	const manager = new RegionManager(img);
+	img.logger.mark("区域管理器初始化完成");
+	quantizedEdgeGrow(img, manager);
+	img.logger.mark("背景区域识别完成");
+	img.backgroundRegions = manager;
+	return manager;
+};
 //#endregion
 //#region src/worker/ImageRecognition/blankMargin.ts
-/** 获取图片空白边缘的长度 */
-const getBlankMargin = ({ grayList, width, height }) => {
-	let blankColor;
-	const isBlankLine = (x, y) => {
-		const colorMap = /* @__PURE__ */ new Map();
-		const eachFn = (i) => {
-			const gray = grayList[i];
-			colorMap.set(gray, (colorMap.get(gray) || 0) + 1);
-		};
-		if (x < 0) forEachRows(width, y, eachFn);
-		else forEachCols(width, height, x, eachFn);
-		let maxColor;
-		let maxNum = height * .9;
-		for (const [gray, num] of colorMap.entries()) {
-			if (num < maxNum) continue;
-			maxColor = gray;
-			maxNum = num;
-		}
-		if (maxColor === void 0) return false;
-		blankColor ||= maxColor;
-		if (maxColor !== blankColor) return false;
-		return true;
+/**
+* 根据参考背景色计算图片四边的空白边缘距离（像素单位）。
+*
+* 每条边先以最外层行/列的主色作为参考背景色，然后从边缘向内逐行/列扫描。
+* 累计与参考色差超过阈值的像素数，一旦超过整边预算就停止。
+*/
+const getRawBlankMargin = (img) => {
+	const { width, height } = img;
+	const { groupList, groupToLab, levels } = img.labQuantized;
+	const counts = new Uint32Array(levels ** 3);
+	const touched = [];
+	const resetCounts = () => {
+		for (const group of touched) counts[group] = 0;
+		touched.length = 0;
 	};
-	let left = 0;
-	for (let x = 0, end = width * .4; x < end; x++, left++) if (!isBlankLine(x, -1)) break;
-	blankColor = void 0;
-	let right = 0;
-	for (let x = width - 1, end = width * .6; x >= end; x--, right++) if (!isBlankLine(x, -1)) break;
-	blankColor = void 0;
-	let top = 0;
-	for (let y = 0, end = height * .4; y < end; y++, top++) if (!isBlankLine(-1, y)) break;
-	blankColor = void 0;
-	let bottom = 0;
-	for (let y = height - 1, end = height * .6; y >= end; y--, bottom++) if (!isBlankLine(-1, y)) break;
+	/**
+	* 扫描一条边。
+	*
+	* @param lineLength 行/列长度：左右边用高度，上下边用宽度
+	* @param limit 最多扫描多少行/列（由中心保留区边界决定）
+	* @param startPos 起始位置：列用 x，行用 y
+	* @param step 扫描方向：向内为 1，从右/下边缘向内为 -1
+	* @param isColumn true 表示扫描列，false 表示扫描行
+	*/
+	const scanSide = ({ lineLength, limit, startPos, step, isColumn }) => {
+		if (limit <= 0) return 0;
+		const maxOutlier = lineLength * BLANK_MARGIN_MAX_OUTLIER_RATIO;
+		resetCounts();
+		let refGroup = -1;
+		let maxCount = 0;
+		const firstPos = startPos;
+		if (isColumn) for (let offset = 0; offset < lineLength; offset++) {
+			const group = groupList[offset * width + firstPos];
+			if (group < 0) continue;
+			if (counts[group] === 0) touched.push(group);
+			const count = ++counts[group];
+			if (count > maxCount) {
+				maxCount = count;
+				refGroup = group;
+			}
+		}
+		else for (let offset = 0; offset < lineLength; offset++) {
+			const group = groupList[firstPos * width + offset];
+			if (group < 0) continue;
+			if (counts[group] === 0) touched.push(group);
+			const count = ++counts[group];
+			if (count > maxCount) {
+				maxCount = count;
+				refGroup = group;
+			}
+		}
+		resetCounts();
+		if (refGroup < 0) return 0;
+		const refOffset = refGroup * 3;
+		const refL = groupToLab[refOffset];
+		const refA = groupToLab[refOffset + 1];
+		const refB = groupToLab[refOffset + 2];
+		const toleranceSq = BLANK_MARGIN_COLOR_TOLERANCE ** 2;
+		const isOutOfTolerance = (group) => {
+			if (group < 0) return true;
+			const offset = group * 3;
+			const dl = groupToLab[offset] - refL;
+			const da = groupToLab[offset + 1] - refA;
+			const db = groupToLab[offset + 2] - refB;
+			return dl * dl + da * da + db * db > toleranceSq;
+		};
+		let outlierCount = 0;
+		const scanLineAt = (pos) => {
+			if (isColumn) for (let offset = 0; offset < lineLength; offset++) {
+				const group = groupList[offset * width + pos];
+				if (!isOutOfTolerance(group)) continue;
+				outlierCount += 1;
+				if (outlierCount > maxOutlier) return false;
+			}
+			else for (let offset = 0; offset < lineLength; offset++) {
+				const group = groupList[pos * width + offset];
+				if (!isOutOfTolerance(group)) continue;
+				outlierCount += 1;
+				if (outlierCount > maxOutlier) return false;
+			}
+			return true;
+		};
+		if (!scanLineAt(firstPos)) return 0;
+		let margin = 1;
+		for (let i = 1; i < limit; i++) {
+			if (!scanLineAt(startPos + step * i)) return margin;
+			margin += 1;
+		}
+		return margin;
+	};
+	const { startX, endX, startY, endY } = img.bounds;
+	const left = scanSide({
+		lineLength: height,
+		limit: startX,
+		startPos: 0,
+		step: 1,
+		isColumn: true
+	});
+	const right = scanSide({
+		lineLength: height,
+		limit: width - endX,
+		startPos: width - 1,
+		step: -1,
+		isColumn: true
+	});
+	const top = scanSide({
+		lineLength: width,
+		limit: startY,
+		startPos: 0,
+		step: 1,
+		isColumn: false
+	});
+	const bottom = scanSide({
+		lineLength: width,
+		limit: height - endY,
+		startPos: height - 1,
+		step: -1,
+		isColumn: false
+	});
 	if (left || right || top || bottom) return {
 		left,
 		right,
@@ -12029,49 +13641,203 @@ const getBlankMargin = ({ grayList, width, height }) => {
 		bottom
 	};
 };
-//#endregion
-//#region src/worker/ImageRecognition/index.ts
-const recognitionImg = (imgData, width, height, url, option) => {
-	const startTime = Date.now();
-	const { w, h, data } = resizeImg(imgData, width, height);
-	const context = {
-		data,
-		grayList: toGrayList(data, 5),
-		width: w,
-		height: h
-	};
-	let blankMargin;
-	if (option.pageFill || option.background) {
-		blankMargin = getBlankMargin(context);
-		if (blankMargin) {
-			for (const key of [
-				"top",
-				"bottom",
-				"left",
-				"right"
-			]) blankMargin[key] &&= blankMargin[key] / w;
-			mainFn.setImg(url, "blankMargin", {
-				left: blankMargin.left,
-				right: blankMargin.right
-			});
-			mainFn.updatePageData();
-			context.blankMargin = blankMargin;
-		} else mainFn.setImg(url, "blankMargin", null);
+/** 获取图片的空白边缘 */
+const getBlankMargin = (img) => {
+	if (img.blankMargin !== void 0) return img.blankMargin;
+	const blankMargin = getRawBlankMargin(img);
+	if (!blankMargin) {
+		img.logger.mark("空白边缘扫描完成", "未检测到");
+		return null;
 	}
-	let bgColor;
-	if (option.background) {
-		bgColor = getBackground(context);
-		if (bgColor) mainFn.setImg(url, "background", bgColor);
+	blankMargin.left /= img.width;
+	blankMargin.right /= img.width;
+	blankMargin.top /= img.height;
+	blankMargin.bottom /= img.height;
+	img.blankMargin = blankMargin;
+	img.logger.mark("空白边缘扫描完成", Object.entries(blankMargin).filter(([, v]) => v).map(([k, v]) => \`\${k}:\${v && (v * 100).toFixed(2)}%\`).join(" "));
+	return img.blankMargin;
+};
+/** 计算字符串在等宽终端中的显示宽度，CJK/全角字符按 2 列计算 */
+const displayWidth = (text) => {
+	let width = 0;
+	for (const ch of text) width += ch.codePointAt(0) > 255 ? 2 : 1;
+	return width;
+};
+/** 将日志按列对齐：第一列（时间）右对齐，其余列左对齐 */
+const formatLogs = (logs) => {
+	if (logs.length === 0) return [];
+	const columnCount = Math.max(...logs.map((row) => row.length));
+	const columnWidths = Array.from({ length: columnCount }, (_, col) => Math.max(0, ...logs.filter((row) => row[col] !== void 0).map((row) => displayWidth(row[col]))));
+	return logs.map((row) => {
+		const parts = [];
+		for (let col = 0; col < row.length; col++) {
+			const value = row[col];
+			if (col === row.length - 1) {
+				parts.push(value);
+				continue;
+			}
+			if (col === 0 && value === "" && columnWidths[0] === 0) continue;
+			const padding = Math.max(0, columnWidths[col] - displayWidth(value));
+			parts.push(col === 0 ? " ".repeat(padding) + value : value + " ".repeat(padding));
+		}
+		return parts.join(" ".repeat(4));
+	});
+};
+var Log = class {
+	logs = [];
+	startTime = performance.now();
+	lastMarkTime = this.startTime;
+	/** 记录普通日志，消息会在时间列之后左对齐输出 */
+	log(message) {
+		this.logs.push(["", message]);
 	}
-	let logText = \`\${url}\\n耗时 \${Date.now() - startTime}ms 处理完成\`;
-	const resList = [];
-	if (blankMargin) resList.push(\`空白边缘：\${Object.entries(blankMargin).filter(([, v]) => v).map(([k, v]) => \`\${k}:\${v && (v * 100).toFixed(2)}%\`).join(" ")}\`);
-	if (bgColor) resList.push(\`背景色: \${bgColor}\`);
-	if (resList.length > 0) logText += \`\\n\${resList.join("\\n")}\`;
-	mainFn.log?.(logText);
+	/**
+	* 记录从上一次 mark 到当前时刻的耗时。
+	*
+	* 第一项为耗时（右对齐），后续字符串参数在时间后依次左对齐输出。
+	*/
+	mark(label, ...args) {
+		const now = performance.now();
+		const elapsed = now - this.lastMarkTime;
+		this.lastMarkTime = now;
+		this.logs.push([
+			\`\${elapsed.toFixed(2)}ms\`,
+			label,
+			...args
+		]);
+	}
+	/** 从图片开始处理到当前时刻的总耗时 */
+	get totalTime() {
+		return performance.now() - this.startTime;
+	}
+	/** 格式化所有日志为对齐后的完整字符串 */
+	format() {
+		return formatLogs(this.logs).join("\\n");
+	}
 };
 //#endregion
-exports.getAreaEdgeRatio = getAreaEdgeRatio;
+//#region src/worker/ImageRecognition/imgContext.ts
+/** 图片处理过程中需要共享/累积的状态和工具方法 */
+var ImgContext = class {
+	data;
+	width;
+	height;
+	url;
+	index;
+	option;
+	version;
+	/** 中心保留区域的边界范围 */
+	bounds;
+	logger = new Log();
+	backgroundRegions;
+	/**
+	* - undefined = 尚未计算
+	* - null = 没有空白边缘
+	* - 对象 = 计算出的的空白边缘
+	*/
+	blankMargin;
+	/**
+	* - undefined = 尚未计算
+	* - null = 没有背景色
+	*/
+	background;
+	constructor({ imgData, width, height, url, index, option, version }) {
+		this.data = imgData;
+		this.width = width;
+		this.height = height;
+		this.url = url;
+		this.index = index;
+		this.option = option;
+		this.version = version;
+		const edgeScanRatio = .6 / 2;
+		this.bounds = {
+			startX: Math.floor(width * edgeScanRatio),
+			endX: Math.ceil(width * .7),
+			startY: Math.floor(height * edgeScanRatio),
+			endY: Math.ceil(height * .7)
+		};
+	}
+	/** 灰度表 */
+	get grayList() {
+		if (!this._grayList) {
+			this._grayList = this.computeGrayList();
+			this.logger.mark("灰度图生成完成");
+		}
+		return this._grayList;
+	}
+	_grayList;
+	/** Oklab 量化数据 */
+	get labQuantized() {
+		if (!this._labQuantized) {
+			this._labQuantized = buildLabQuantizedData(this, 42, (fn) => this.forEachOutsideCenter(fn));
+			this.logger.mark("Oklab 量化完成");
+		}
+		return this._labQuantized;
+	}
+	_labQuantized;
+	/** 遍历中心区域外的所有像素，按上下左右四个带状区域迭代，避免逐像素判断中心区域 */
+	forEachOutsideCenter(fn) {
+		const { startX, endX, startY, endY } = this.bounds;
+		const { width, height } = this;
+		for (let y = 0; y < startY; y++) {
+			let index = y * width;
+			for (let x = 0; x < width; x++, index++) fn(index);
+		}
+		for (let y = endY; y < height; y++) {
+			let index = y * width;
+			for (let x = 0; x < width; x++, index++) fn(index);
+		}
+		for (let y = startY; y < endY; y++) {
+			let index = y * width;
+			for (let x = 0; x < startX; x++, index++) fn(index);
+			index = y * width + endX;
+			for (let x = endX; x < width; x++, index++) fn(index);
+		}
+	}
+	computeGrayList() {
+		return toGrayListByLab(this.labQuantized);
+	}
+	/** 遍历图片的指定行 */
+	forEachRows(y, fn, { start = 0, end = this.width } = {}) {
+		for (let i = start; i < end; i++) fn(this.width * y + i);
+	}
+	/** 遍历图片的指定列 */
+	forEachCols(x, fn, { start = 0, end = this.height } = {}) {
+		for (let i = start; i < end; i++) fn(i * this.width + x);
+	}
+};
+//#endregion
+//#region src/worker/ImageRecognition/index.ts
+const recognitionImg = async (imgData, data) => {
+	await Promise.resolve();
+	const img = new ImgContext({
+		imgData,
+		...data
+	});
+	if (data.option.pageFill || data.option.crop) {
+		const blankMargin = getBlankMargin(img);
+		mainFn.setImg({
+			url: img.url,
+			key: "blankMargin",
+			val: blankMargin,
+			version: img.version
+		});
+		if (blankMargin) mainFn.updatePageData();
+	}
+	if (data.option.background) {
+		detectBackgroundRegions(img);
+		const background = getBackground(img);
+		mainFn.setImg({
+			url: img.url,
+			key: "background",
+			val: background,
+			version: img.version
+		});
+	}
+	img.logger.logs.push([\`\${img.logger.totalTime.toFixed(2)}ms\`, "总耗时"]);
+	mainFn.log?.(\`\${img.url}\\n\${img.logger.format()}\`);
+};
+//#endregion
 exports.recognitionImg = recognitionImg;
 exports.setMainFn = setMainFn;
 `,
@@ -12329,6 +14095,7 @@ const otherSite = async () => {
 		shouldTriggerLazyLoad: () => store.manga.show || !timeout && store.manga.imgList.length === 0,
 		sortImageByTop: true
 	});
+	helper.exposeToGlobal({ scanner });
 	setState("comicMap", "", { async getImgList() {
 		if (scanner.imgList.length === 0) {
 			scanner.start();
@@ -12337,7 +14104,7 @@ const otherSite = async () => {
 				if (store.manga.imgList.length > 0) return;
 				core.toast.warn(helper.t("site.simple.no_img"), {
 					id: "no_img",
-					duration: Number.POSITIVE_INFINITY,
+					duration: Infinity,
 					onClick() {
 						setOptions({ remember_current_site: false });
 						location.reload();
@@ -12345,7 +14112,7 @@ const otherSite = async () => {
 				});
 			}, 3e3);
 		}
-		await scanner.waitFirstImage(Number.POSITIVE_INFINITY);
+		await scanner.waitFirstImage(Infinity);
 		core.toast.dismiss("no_img");
 		return scanner.imgList;
 	} });
@@ -12743,10 +14510,11 @@ const mobileApi = new class {
 		...details
 	}, ...args);
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://api.mangacopy.com",
 		"https://mapi.copy20.com",
+		"https://api.mangacopy.com",
+		"https://api.copy3000.com",
 		"https://api.2026copy.com",
-		"https://api.copy3000.com"
+		"https://api.copy4000.com"
 	], {
 		responseType: "json",
 		headers: {
@@ -12769,17 +14537,17 @@ const pcApi = new class {
 		Authorization: token ? \`Token \${token}\` : ""
 	};
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://mapi.hotmangasg.com",
-		"https://mapi.fgjfghkk.club",
-		"https://mapi.elfgjfghkk.club",
-		"https://www.manga2025.com",
-		"https://api.manga2025.com",
-		"https://mapi.fgjfghkkcenter.club",
-		"https://mapi.hotmangasd.com",
-		"https://www.manga2026.xyz",
-		"https://m.manga2025.com",
 		"https://mapi.hotmangasf.com",
-		"https://api.2024manga.com"
+		"https://api.2024manga.com",
+		"https://mapi.hotmangasd.com",
+		"https://mapi.fgjfghkk.club",
+		"https://m.manga2025.com",
+		"https://www.manga2025.com",
+		"https://mapi.hotmangasg.com",
+		"https://www.manga2026.xyz",
+		"https://api.manga2025.com",
+		"https://mapi.elfgjfghkk.club",
+		"https://mapi.fgjfghkkcenter.club"
 	], {
 		responseType: "json",
 		headers: this.headers,
@@ -13122,7 +14890,7 @@ core.setupSiteAdapter({
 				} catch (error) {
 					helper.log.error(error);
 					if (titleDom) titleDom.textContent = "ComicRead 提示您：目錄生成失敗😢";
-					core.toast.error("目錄生成失敗😢", { duration: Number.POSITIVE_INFINITY });
+					core.toast.error("目錄生成失敗😢", { duration: Infinity });
 				}
 			}
 			if (!isMobile && token) handleLastChapter(comicName);
@@ -13139,6 +14907,7 @@ let solid_js = require("solid-js");
 let solid_js_store = require("solid-js/store");
 let components_Toast = require("components/Toast");
 let request = require("request");
+let userscript_multiSelect = require("userscript/multiSelect");
 let userscript_detectAd = require("userscript/detectAd");
 let userscript_ehTagRules = require("userscript/ehTagRules");
 //#region src/site/ehentai/myTags.ts
@@ -13369,7 +15138,10 @@ const featureOptions = {
 };
 const getPageContext = async () => {
 	if (location.pathname === "/mytags") return { type: "mytags" };
-	if (Reflect.has(unsafeWindow, "mpvkey")) return { type: "mpv" };
+	if (Reflect.has(unsafeWindow, "mpvkey")) return {
+		type: "mpv",
+		isManga: true
+	};
 	if (!Reflect.has(unsafeWindow, "display_comment_field")) {
 		const type = (helper.querySelector("option[value=\\"t\\"]")?.parentElement)?.value;
 		if (type) return { type };
@@ -13383,6 +15155,7 @@ const getPageContext = async () => {
 	}
 	return {
 		type: "gallery",
+		isManga: true,
 		galleryId: location.pathname.split("/")[2],
 		galleryTitle: helper.querySelector("#gn")?.textContent || void 0,
 		japanTitle: helper.querySelector("#gj")?.textContent || void 0,
@@ -13399,7 +15172,7 @@ const getPageContext = async () => {
 };
 //#endregion
 //#region src/site/ehentai/helper/LoadButton.tsx
-var _tmpl$$9 = /*#__PURE__*/ solid_js_web.template(\`<a href=javascript:;>\`);
+var _tmpl$$7 = /*#__PURE__*/ solid_js_web.template(\`<a href=javascript:;>\`);
 /** 放在原生右侧工具栏和标签选项里的漫画加载按钮 */
 const LoadButton = (props) => {
 	const tip = solid_js.createMemo(() => {
@@ -13413,7 +15186,7 @@ const LoadButton = (props) => {
 		}
 	});
 	return (() => {
-		var _el$ = _tmpl$$9();
+		var _el$ = _tmpl$$7();
 		_el$.$$click = (e) => {
 			props.onClick?.(e);
 			props.context.showComic(props.id);
@@ -13505,8 +15278,8 @@ const setNl = (pageCtx, i, nl) => {
 };
 //#endregion
 //#region src/site/ehentai/crossSiteLink.tsx
-var _tmpl$$8 = /*#__PURE__*/ solid_js_web.template(\`<div style=opacity:1.0><a>\`);
-var _tmpl$2$6 = /*#__PURE__*/ solid_js_web.template(\`<td>\`);
+var _tmpl$$6 = /*#__PURE__*/ solid_js_web.template(\`<div style=opacity:1.0><a>\`);
+var _tmpl$2$5 = /*#__PURE__*/ solid_js_web.template(\`<td>\`);
 var _tmpl$3$3 = /*#__PURE__*/ solid_js_web.template(\`<tr><td class=tc>:\`);
 var _tmpl$4$3 = /*#__PURE__*/ solid_js_web.template(\`<td class=tc style=text-align:left>\`);
 var _tmpl$5$1 = /*#__PURE__*/ solid_js_web.template(\`<img src=https://ehgt.org/g/mr.gif class=mr alt=">">\`);
@@ -13605,7 +15378,7 @@ const crossSiteLink = async (coreCtx, pageCtx) => {
 	if (siteList.length === 0) return;
 	const [comicMap, setComicMap] = solid_js_store.createStore({});
 	const ItemTag = (props) => (() => {
-		var _el$ = _tmpl$$8(), _el$2 = _el$.firstChild;
+		var _el$ = _tmpl$$6(), _el$2 = _el$.firstChild;
 		solid_js_web.effect((_p$) => {
 			var _v$ = \`td_\${props.id}\`, _v$2 = props.class, _v$3 = props.title, _v$4 = props.id, _v$5 = props.href, _v$6 = \`return toggle_tagmenu(1, '\${props.id}',this)\`, _v$7 = props.title, _v$8 = props.showText;
 			_v$ !== _p$.e && solid_js_web.setAttribute(_el$, "id", _p$.e = _v$);
@@ -13647,7 +15420,7 @@ const crossSiteLink = async (coreCtx, pageCtx) => {
 					})();
 				},
 				get children() {
-					var _el$6 = _tmpl$2$6();
+					var _el$6 = _tmpl$2$5();
 					solid_js_web.insert(_el$6, solid_js_web.createComponent(solid_js.For, {
 						each: itemList,
 						children: ItemTag
@@ -14116,7 +15889,7 @@ const checkMpvKey = async (pageCtx) => {
 /** 检查 IP 是否被封禁 */
 const checkIpBanned = (text) => text.includes("IP address has been temporarily banned") && components_Toast.toast.error(helper.t("site.ehentai.ip_banned"), {
 	throw: true,
-	duration: Number.POSITIVE_INFINITY
+	duration: Infinity
 });
 /** 从图片页获取图片地址 */
 const getImgUrl = async (pageCtx, i) => {
@@ -14181,462 +15954,6 @@ const addHotkeysActions = (_, pageCtx) => {
 		scroll_right: () => helper.querySelector(".ptt td:last-child:not(.ptdd)")?.click(),
 		scroll_left: () => helper.querySelector(".ptt td:first-child:not(.ptdd)")?.click()
 	});
-};
-//#endregion
-//#region src/userscript/multiSelect/SelectionMask.tsx
-var _tmpl$$7 = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"width=1.5em height=1.5em fill=none opacity=0.4 style=display:inline;vertical-align:-0.15em><rect x=2 y=2 width=20 height=20 rx=5 stroke=currentColor stroke-width=1.3 stroke-dasharray="3 2">\`);
-var _tmpl$2$5 = /*#__PURE__*/ solid_js_web.template(\`<div class=selection-mask><span class=selection-mask-order>\`);
-const DashedRoundedSquare = () => _tmpl$$7();
-const SelectionMask = (props) => {
-	const id = () => props.registeredItems().get(props.dom);
-	const isSelected = () => props.selection.isSelected(id());
-	helper.css\`
-    \${props.dom}
-    .selection-mask {
-      touch-action: none;
-      cursor: pointer;
-      cursor: cell;
-      user-select: none;
-
-      position: absolute;
-      z-index: 2147483646;
-      top: 0;
-      left: 0;
-
-      container-type: size;
-      overflow: clip;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      width: 100%;
-      height: 100%;
-
-      font-size: 4cqmin;
-
-      background: rgb(0 0 0 / 60%);
-    }
-
-    .selection-mask-order {
-      font-family: sans-serif;
-      font-size: 2em;
-      font-weight: bold;
-      text-shadow: none;
-
-      -webkit-text-stroke: 0;
-    }
-  \`;
-	helper.css(".selection-mask", { color: () => isSelected() ? "#ffffffbf" : "#fffb" }, props.dom);
-	return solid_js_web.createComponent(solid_js.Show, {
-		get when() {
-			return props.isEnabled();
-		},
-		get children() {
-			var _el$2 = _tmpl$2$5(), _el$3 = _el$2.firstChild;
-			solid_js_web.addEventListener(_el$2, "click", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "contextmenu", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "mouseover", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "pointerover", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "pointerenter", helper.withEventStop((e) => props.drag.onPointerEnter(props.dom, e)));
-			solid_js_web.addEventListener(_el$2, "pointerdown", helper.withEventStop((e) => props.drag.onPointerDown(props.dom, e)), true);
-			solid_js_web.insert(_el$3, () => props.selection.getOrder(id()) ?? solid_js_web.createComponent(DashedRoundedSquare, {}));
-			return _el$2;
-		}
-	});
-};
-solid_js_web.delegateEvents([
-	"pointerdown",
-	"pointerover",
-	"mouseover",
-	"contextmenu",
-	"click"
-]);
-//#endregion
-//#region src/userscript/multiSelect/useDragSelect.ts
-const useDragSelect = ({ isEnabled, registeredItems, isSelected, setSession, session, commit, cancel }) => {
-	/** 当前活跃手势的 pointerId，null 表示无活跃手势 */
-	let pointerId = null;
-	/** 锚点在 items 中的索引，固定不变 */
-	let anchorIndex = -1;
-	/** 当前手势是否扩展过范围（用于判断是否应撤销选择） */
-	let hasExpanded = false;
-	return {
-		onPointerDown: (dom, e) => {
-			if (!isEnabled() || !e.isPrimary) return;
-			if (e.pointerType === "mouse" && e.button !== 0) return;
-			const entries = [...registeredItems().entries()];
-			anchorIndex = entries.findIndex(([d]) => d === dom);
-			if (anchorIndex === -1) return;
-			({pointerId} = e);
-			hasExpanded = false;
-			setSession((state) => {
-				state.operationType = isSelected(registeredItems().get(dom)) ? "unselect" : "select";
-				state.items = entries.map(([, id]) => id);
-				state.range = [anchorIndex, anchorIndex];
-			});
-		},
-		onPointerEnter: (dom, e) => {
-			if (!isEnabled() || pointerId === null || e.pointerId !== pointerId) return;
-			if (e.pointerType === "mouse" && (e.buttons & 1) === 0) {
-				pointerId = null;
-				return cancel();
-			}
-			const currentIndex = [...registeredItems().keys()].indexOf(dom);
-			if (currentIndex === -1) return;
-			const newRange = anchorIndex <= currentIndex ? [anchorIndex, currentIndex] : [currentIndex, anchorIndex];
-			setSession((state) => {
-				if (state.range[0] === newRange[0] && state.range[1] === newRange[1]) return;
-				state.range = newRange;
-				if (newRange[0] !== newRange[1]) hasExpanded = true;
-			});
-		},
-		onPointerUp: (e) => {
-			if (e.pointerId !== pointerId) return;
-			pointerId = null;
-			if (session.range[0] === session.range[1] && hasExpanded) cancel();
-			else commit();
-		},
-		onPointerCancel: (e) => {
-			if (e.pointerId !== pointerId) return;
-			pointerId = null;
-			cancel();
-		},
-		/** 取消活跃手势并重置状态 */
-		clear: () => {
-			if (pointerId !== null) cancel();
-			pointerId = null;
-		}
-	};
-};
-//#endregion
-//#region src/userscript/multiSelect/useSelection.ts
-/** 创建选中状态管理器 */
-const createSelectionController = () => {
-	/** 已确认的选中项 */
-	const baselineIds = new helper.ReactiveSet();
-	const { store: session, setState: setSession } = helper.useStore({
-		items: [],
-		range: [-1, -1],
-		operationType: "select"
-	});
-	/** 判断 session 是否处于活跃状态 */
-	const isSessionActive = () => session.range[0] >= 0 && session.range[1] >= 0;
-	/** 当前 range 区间内的 id 集合 */
-	const rangeIds = helper.createRootMemo(() => {
-		if (!isSessionActive()) return /* @__PURE__ */ new Set();
-		return new Set(session.items.slice(session.range[0], session.range[1] + 1));
-	});
-	const selectedIds = helper.createRootMemo(() => {
-		if (!isSessionActive()) return [...baselineIds];
-		return session.operationType === "select" ? [...baselineIds.union(rangeIds())] : [...baselineIds.difference(rangeIds())];
-	});
-	/** 记录每个 id 的选中顺序 */
-	const orderMap = helper.createRootMemo(() => Object.fromEntries(selectedIds().map((id, i) => [id, i + 1])));
-	const cancel = () => setSession((state) => {
-		state.items = [];
-		state.range = [-1, -1];
-		state.operationType = "select";
-	});
-	return {
-		/** 当前会话状态（只读） */
-		session,
-		/** 当前选中项 id 列表 */
-		selectedIds,
-		/** 记录每个 id 的选中顺序 */
-		orderMap,
-		/** 判断指定 id 是否被选中 */
-		isSelected: (id) => id in orderMap(),
-		/** 获取指定 id 的选中顺序，未选中返回 undefined */
-		getOrder: (id) => orderMap()[id],
-		/** 修改会话状态 */
-		setSession,
-		/** 将 session 的修改应用到基线，然后重置 session */
-		commit: () => {
-			if (!isSessionActive()) return;
-			if (session.operationType === "select") for (const id of rangeIds()) baselineIds.add(id);
-			else for (const id of rangeIds()) baselineIds.delete(id);
-			cancel();
-		},
-		/** 重置 session 为初始状态 */
-		cancel,
-		/** 直接设置基线选中项列表 */
-		setBaseline: (ids) => {
-			baselineIds.clear();
-			for (const id of ids) baselineIds.add(id);
-		},
-		/** 清空基线选中项列表 */
-		clearBaseline: () => baselineIds.clear()
-	};
-};
-//#endregion
-//#region src/userscript/multiSelect/useMultiSelect.tsx
-const useMultiSelect = ({ onStart, registeredItems }) => solid_js.createRoot((dispose) => {
-	const [isEnabled, setIsEnabled] = solid_js.createSignal(false);
-	const selectionController = createSelectionController();
-	const drag = useDragSelect({
-		isEnabled,
-		registeredItems,
-		...selectionController
-	});
-	/** 所有需要在 unmount 时执行的清理函数（DOM dispose、事件监听等） */
-	const cleanups = [];
-	let isInitialized = false;
-	let elementIndex = 0;
-	/** 注册一个可选元素：挂载 SelectionMask */
-	const register = (dom) => {
-		if (!registeredItems().get(dom)) return;
-		const index = elementIndex++;
-		const container = document.createElement("div");
-		dom.append(container);
-		const disposeDom = solid_js_web.render(() => solid_js_web.createComponent(SelectionMask, {
-			dom,
-			index,
-			isEnabled,
-			registeredItems,
-			selection: selectionController,
-			drag
-		}), container);
-		cleanups.push(() => {
-			disposeDom();
-			container.remove();
-		});
-	};
-	/** 卸载所有 DOM 注册和事件监听，但保留选中状态（翻页场景） */
-	const unmount = () => {
-		drag.clear();
-		setIsEnabled(false);
-		isInitialized = false;
-		for (let i = cleanups.length - 1; i >= 0; i--) cleanups[i]?.();
-		cleanups.length = 0;
-	};
-	return {
-		/** 当前是否处于多选模式 */
-		isEnabled,
-		/** 开启多选模式并注册元素 */
-		start: () => {
-			if (isEnabled()) return;
-			setIsEnabled(true);
-			if (isInitialized) return;
-			document.addEventListener("pointerup", drag.onPointerUp);
-			document.addEventListener("pointercancel", drag.onPointerCancel);
-			cleanups.push(() => {
-				document.removeEventListener("pointerup", drag.onPointerUp);
-				document.removeEventListener("pointercancel", drag.onPointerCancel);
-			});
-			const cleanup = onStart?.();
-			if (cleanup) cleanups.push(cleanup);
-			for (const dom of registeredItems().keys()) register(dom);
-			isInitialized = true;
-		},
-		/** 结束多选模式，并发处理所有选中项并返回结果列表 */
-		collect: async (process, limit) => {
-			const ids = selectionController.selectedIds();
-			if (ids.length === 0) return [];
-			setIsEnabled(false);
-			return await helper.plimit(ids.map((id) => async () => {
-				try {
-					return await process(id);
-				} catch (error) {
-					return error instanceof Error ? error : new Error(String(error));
-				}
-			}), void 0, limit);
-		},
-		/** 清空选中状态并卸载所有 DOM 注册 */
-		clear: () => {
-			selectionController.clearBaseline();
-			selectionController.cancel();
-			unmount();
-		},
-		unmount,
-		/** 清理所有 SolidJS 响应式资源 */
-		dispose,
-		/** 当前选中项 ID 列表 */
-		selectedIds: selectionController.selectedIds,
-		/** 根据 ID 列表恢复选中状态（翻页后重新注册 DOM 时使用） */
-		setSelectedIds: selectionController.setBaseline
-	};
-});
-//#endregion
-//#region node_modules/.pnpm/@material-design-icons+svg@0.14.15/node_modules/@material-design-icons/svg/round/checklist.svg
-var _tmpl$$6 = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 8c0-.55-.45-1-1-1h-7c-.55 0-1 .45-1 1s.45 1 1 1h7c.55 0 1-.45 1-1m-9 8c0 .55.45 1 1 1h7c.55 0 1-.45 1-1s-.45-1-1-1h-7c-.55 0-1 .45-1 1M10.47 4.63c.39.39.39 1.02 0 1.41l-4.23 4.25c-.39.39-1.02.39-1.42 0L2.7 8.16a.996.996 0 1 1 1.41-1.41l1.42 1.42 3.54-3.54c.38-.38 1.02-.38 1.4 0m.01 8.01c.39.39.39 1.02 0 1.41L6.25 18.3c-.39.39-1.02.39-1.42 0L2.7 16.16a.996.996 0 1 1 1.41-1.41l1.42 1.42 3.54-3.54c.38-.38 1.02-.38 1.41.01">\`);
-var checklist_default = (props = {}) => (() => {
-	var _el$ = _tmpl$$6();
-	solid_js_web.spread(_el$, props, true, true);
-	return _el$;
-})();
-//#endregion
-//#region src/userscript/multiSelect/useMultiSelectLoad.tsx
-const createMultiSelectLoadController = (coreCtx, { id: initListId, onStart, allItemIds, getImgList }) => solid_js.createRoot(async (rootDispose) => {
-	const { setState, showComic } = coreCtx;
-	const cache = await helper.useCache({
-		pending: "id",
-		confirmed: "id"
-	}, "MultiSelect");
-	const [listId, setListId] = solid_js.createSignal(initListId);
-	const [registeredItems, setRegisteredItems] = solid_js.createSignal(/* @__PURE__ */ new Map());
-	const controller = useMultiSelect({
-		onStart,
-		registeredItems
-	});
-	helper.createEffectOn([listId], ([currentId], prev) => {
-		const prevId = prev?.[0];
-		if (prevId !== void 0 && prevId !== currentId) controller.clear();
-	});
-	const urlMap = {};
-	const targetIds = helper.createRootMemo(() => {
-		const ids = controller.selectedIds();
-		if (controller.isEnabled() && ids.length > 0) return ids;
-		return allItemIds?.() ?? [];
-	});
-	const computeImgList = () => targetIds().flatMap((id) => urlMap[id] ?? [""]);
-	/** 将 Manga 组件的扁平图片索引转为对应的选中项 ID */
-	const getItemIdsFromIndices = (indices) => {
-		const ids = [];
-		let offset = 0;
-		for (const id of targetIds()) {
-			const len = urlMap[id]?.length ?? 1;
-			for (const idx of indices) if (helper.inRange(offset, idx, offset + len - 1)) {
-				ids.push(id);
-				break;
-			}
-			offset += len;
-		}
-		return ids;
-	};
-	const reSetStore = () => {
-		setState("comicMap", "", { getImgList: Object.assign(async () => {
-			if (coreCtx.store.comicMap[""].imgList?.length) return coreCtx.store.comicMap[""].imgList;
-			await new Promise((resolve) => {
-				const queue = new helper.PQueue(async (id) => {
-					try {
-						urlMap[id] = await getImgList(id);
-					} catch (error) {
-						console.error(error);
-					}
-					setState("comicMap", "", "imgList", computeImgList());
-					resolve();
-				}, 4);
-				setState((state) => {
-					state.comicMap[""].imgList = computeImgList();
-					state.manga.onWaitUrlImgs = (imgs) => {
-						queue.set(...getItemIdsFromIndices(imgs));
-					};
-				});
-				if (targetIds().some((id) => urlMap[id])) resolve();
-			});
-			return coreCtx.store.comicMap[""].imgList;
-		}, allItemIds ? {} : { type: "multiSelect" }) });
-	};
-	reSetStore();
-	const multiSelectLoad = helper.singleThreaded(async () => {
-		if (!controller.isEnabled()) {
-			controller.start();
-			const confirmed = await cache.get("confirmed", listId());
-			if (confirmed) controller.setSelectedIds(confirmed.selecteds);
-			return;
-		}
-		await cache.del("pending", listId());
-		await cache.set("confirmed", {
-			id: listId(),
-			selecteds: controller.selectedIds()
-		});
-		if (controller.selectedIds().length === 0) return;
-		setState("comicMap", "", "imgList", void 0);
-		await showComic("");
-	});
-	let unregisterEscHandler;
-	helper.createEffectOn([controller.isEnabled], ([enabled]) => {
-		if (enabled) {
-			unregisterEscHandler?.();
-			unregisterEscHandler = core.registerEsc(-1, () => controller.isEnabled() && !coreCtx.store.manga.show ? unmount() : "SKIP");
-		}
-	});
-	setState("fab", "extraSpeedDial", [{
-		name: helper.t("hotkeys.multi_select_load"),
-		onClick: multiSelectLoad,
-		icon: checklist_default
-	}]);
-	helper.createEffectOn([
-		controller.isEnabled,
-		() => controller.selectedIds().length,
-		listId
-	], ([enabled, , id]) => {
-		const selecteds = controller.selectedIds();
-		(async () => {
-			await cache.del("pending", id);
-			await (selecteds.length === 0 ? cache.del("confirmed", id) : cache.set(enabled ? "pending" : "confirmed", {
-				id,
-				selecteds
-			}));
-		})();
-	}, { defer: true });
-	core.listenHotkey({
-		multi_select_load: multiSelectLoad,
-		enter_read_mode: () => controller.isEnabled() || !coreCtx.canLoadComic() ? multiSelectLoad() : coreCtx.showComic()
-	}, true);
-	let oldIdSet = [];
-	/** 清理副作用，但保留选中状态（用于翻页） */
-	const unmount = () => {
-		setState("comicMap", "", "imgList", void 0);
-		unregisterEscHandler?.();
-		oldIdSet = [...registeredItems().values()];
-		controller.unmount();
-	};
-	const completeDispose = () => {
-		oldIdSet = [];
-		unmount();
-		controller.dispose();
-		setRegisteredItems(/* @__PURE__ */ new Map());
-		coreCtx.setMultiSelect(void 0);
-		rootDispose();
-	};
-	return {
-		reSetStore,
-		/** 注册新的可选项，并等待至和上次的注册项不同 */
-		registerItems: async (newId, fillItems, maxWaitTime = 5e3) => {
-			setListId(newId);
-			const map = await helper.wait(async () => {
-				const newMap = /* @__PURE__ */ new Map();
-				await fillItems(newMap);
-				if (newMap.size === 0) return;
-				if (helper.isEqual(oldIdSet, [...newMap.values()])) return;
-				return newMap;
-			}, maxWaitTime);
-			if (!map) throw new Error("等待新 DOM 超时");
-			setRegisteredItems(map);
-			const pending = await cache.get("pending", listId());
-			if (pending?.selecteds.length) {
-				controller.start();
-				controller.setSelectedIds(pending.selecteds);
-			}
-		},
-		unmount,
-		/** 完全清理所有状态和副作用 */
-		dispose: completeDispose,
-		/** 页面切换时的清理策略 */
-		createCleanup: (id) => (nextPageCtx) => {
-			unmount();
-			if (nextPageCtx?.type !== "list" || nextPageCtx?.id !== id) {
-				completeDispose();
-				multiSelectLoadController = void 0;
-			}
-		},
-		load: multiSelectLoad,
-		isEnabled: controller.isEnabled,
-		selectedIds: controller.selectedIds,
-		clear: controller.clear,
-		setSelectedIds: controller.setSelectedIds
-	};
-});
-let multiSelectLoadController;
-const useMultiSelectLoad = async (coreCtx, options) => {
-	if (multiSelectLoadController) {
-		multiSelectLoadController.reSetStore();
-		return multiSelectLoadController;
-	}
-	multiSelectLoadController = await createMultiSelectLoadController(coreCtx, options);
-	coreCtx.setMultiSelect(multiSelectLoadController);
-	return multiSelectLoadController;
 };
 //#endregion
 //#region src/site/ehentai/detectAd.ts
@@ -14722,7 +16039,7 @@ const multiSelectLoad = async (coreCtx, pageCtx) => {
 			helper.log.warn("checkKey failed", error);
 		}
 	});
-	await (await useMultiSelectLoad(coreCtx, {
+	await (await userscript_multiSelect.useMultiSelectLoad(coreCtx, {
 		id: pageCtx.galleryId,
 		allItemIds: () => helper.range(pageCtx.imgNum).map(String),
 		getImgList: async (id) => {
@@ -15687,7 +17004,7 @@ core.setupSiteAdapter({
 	},
 	handlers: { manga: async ({ setState }) => {
 		if (!await helper.wait(() => unsafeWindow?.onImageLoaded, 5e3)) {
-			core.toast.error("无法获取图片", { duration: Number.POSITIVE_INFINITY });
+			core.toast.error("无法获取图片", { duration: Infinity });
 			return;
 		}
 		setState("manga", {
@@ -15765,467 +17082,10 @@ core.setupSiteAdapter({
 `,
 	"site/kemono": `\nlet core = require("core");
 let helper = require("helper");
-let solid_js_web = require("solid-js/web");
-let solid_js = require("solid-js");
-//#region src/userscript/multiSelect/SelectionMask.tsx
-var _tmpl$$1 = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"width=1.5em height=1.5em fill=none opacity=0.4 style=display:inline;vertical-align:-0.15em><rect x=2 y=2 width=20 height=20 rx=5 stroke=currentColor stroke-width=1.3 stroke-dasharray="3 2">\`);
-var _tmpl$2 = /*#__PURE__*/ solid_js_web.template(\`<div class=selection-mask><span class=selection-mask-order>\`);
-const DashedRoundedSquare = () => _tmpl$$1();
-const SelectionMask = (props) => {
-	const id = () => props.registeredItems().get(props.dom);
-	const isSelected = () => props.selection.isSelected(id());
-	helper.css\`
-    \${props.dom}
-    .selection-mask {
-      touch-action: none;
-      cursor: pointer;
-      cursor: cell;
-      user-select: none;
-
-      position: absolute;
-      z-index: 2147483646;
-      top: 0;
-      left: 0;
-
-      container-type: size;
-      overflow: clip;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      width: 100%;
-      height: 100%;
-
-      font-size: 4cqmin;
-
-      background: rgb(0 0 0 / 60%);
-    }
-
-    .selection-mask-order {
-      font-family: sans-serif;
-      font-size: 2em;
-      font-weight: bold;
-      text-shadow: none;
-
-      -webkit-text-stroke: 0;
-    }
-  \`;
-	helper.css(".selection-mask", { color: () => isSelected() ? "#ffffffbf" : "#fffb" }, props.dom);
-	return solid_js_web.createComponent(solid_js.Show, {
-		get when() {
-			return props.isEnabled();
-		},
-		get children() {
-			var _el$2 = _tmpl$2(), _el$3 = _el$2.firstChild;
-			solid_js_web.addEventListener(_el$2, "click", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "contextmenu", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "mouseover", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "pointerover", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "pointerenter", helper.withEventStop((e) => props.drag.onPointerEnter(props.dom, e)));
-			solid_js_web.addEventListener(_el$2, "pointerdown", helper.withEventStop((e) => props.drag.onPointerDown(props.dom, e)), true);
-			solid_js_web.insert(_el$3, () => props.selection.getOrder(id()) ?? solid_js_web.createComponent(DashedRoundedSquare, {}));
-			return _el$2;
-		}
-	});
-};
-solid_js_web.delegateEvents([
-	"pointerdown",
-	"pointerover",
-	"mouseover",
-	"contextmenu",
-	"click"
-]);
-//#endregion
-//#region src/userscript/multiSelect/useDragSelect.ts
-const useDragSelect = ({ isEnabled, registeredItems, isSelected, setSession, session, commit, cancel }) => {
-	/** 当前活跃手势的 pointerId，null 表示无活跃手势 */
-	let pointerId = null;
-	/** 锚点在 items 中的索引，固定不变 */
-	let anchorIndex = -1;
-	/** 当前手势是否扩展过范围（用于判断是否应撤销选择） */
-	let hasExpanded = false;
-	return {
-		onPointerDown: (dom, e) => {
-			if (!isEnabled() || !e.isPrimary) return;
-			if (e.pointerType === "mouse" && e.button !== 0) return;
-			const entries = [...registeredItems().entries()];
-			anchorIndex = entries.findIndex(([d]) => d === dom);
-			if (anchorIndex === -1) return;
-			({pointerId} = e);
-			hasExpanded = false;
-			setSession((state) => {
-				state.operationType = isSelected(registeredItems().get(dom)) ? "unselect" : "select";
-				state.items = entries.map(([, id]) => id);
-				state.range = [anchorIndex, anchorIndex];
-			});
-		},
-		onPointerEnter: (dom, e) => {
-			if (!isEnabled() || pointerId === null || e.pointerId !== pointerId) return;
-			if (e.pointerType === "mouse" && (e.buttons & 1) === 0) {
-				pointerId = null;
-				return cancel();
-			}
-			const currentIndex = [...registeredItems().keys()].indexOf(dom);
-			if (currentIndex === -1) return;
-			const newRange = anchorIndex <= currentIndex ? [anchorIndex, currentIndex] : [currentIndex, anchorIndex];
-			setSession((state) => {
-				if (state.range[0] === newRange[0] && state.range[1] === newRange[1]) return;
-				state.range = newRange;
-				if (newRange[0] !== newRange[1]) hasExpanded = true;
-			});
-		},
-		onPointerUp: (e) => {
-			if (e.pointerId !== pointerId) return;
-			pointerId = null;
-			if (session.range[0] === session.range[1] && hasExpanded) cancel();
-			else commit();
-		},
-		onPointerCancel: (e) => {
-			if (e.pointerId !== pointerId) return;
-			pointerId = null;
-			cancel();
-		},
-		/** 取消活跃手势并重置状态 */
-		clear: () => {
-			if (pointerId !== null) cancel();
-			pointerId = null;
-		}
-	};
-};
-//#endregion
-//#region src/userscript/multiSelect/useSelection.ts
-/** 创建选中状态管理器 */
-const createSelectionController = () => {
-	/** 已确认的选中项 */
-	const baselineIds = new helper.ReactiveSet();
-	const { store: session, setState: setSession } = helper.useStore({
-		items: [],
-		range: [-1, -1],
-		operationType: "select"
-	});
-	/** 判断 session 是否处于活跃状态 */
-	const isSessionActive = () => session.range[0] >= 0 && session.range[1] >= 0;
-	/** 当前 range 区间内的 id 集合 */
-	const rangeIds = helper.createRootMemo(() => {
-		if (!isSessionActive()) return /* @__PURE__ */ new Set();
-		return new Set(session.items.slice(session.range[0], session.range[1] + 1));
-	});
-	const selectedIds = helper.createRootMemo(() => {
-		if (!isSessionActive()) return [...baselineIds];
-		return session.operationType === "select" ? [...baselineIds.union(rangeIds())] : [...baselineIds.difference(rangeIds())];
-	});
-	/** 记录每个 id 的选中顺序 */
-	const orderMap = helper.createRootMemo(() => Object.fromEntries(selectedIds().map((id, i) => [id, i + 1])));
-	const cancel = () => setSession((state) => {
-		state.items = [];
-		state.range = [-1, -1];
-		state.operationType = "select";
-	});
-	return {
-		/** 当前会话状态（只读） */
-		session,
-		/** 当前选中项 id 列表 */
-		selectedIds,
-		/** 记录每个 id 的选中顺序 */
-		orderMap,
-		/** 判断指定 id 是否被选中 */
-		isSelected: (id) => id in orderMap(),
-		/** 获取指定 id 的选中顺序，未选中返回 undefined */
-		getOrder: (id) => orderMap()[id],
-		/** 修改会话状态 */
-		setSession,
-		/** 将 session 的修改应用到基线，然后重置 session */
-		commit: () => {
-			if (!isSessionActive()) return;
-			if (session.operationType === "select") for (const id of rangeIds()) baselineIds.add(id);
-			else for (const id of rangeIds()) baselineIds.delete(id);
-			cancel();
-		},
-		/** 重置 session 为初始状态 */
-		cancel,
-		/** 直接设置基线选中项列表 */
-		setBaseline: (ids) => {
-			baselineIds.clear();
-			for (const id of ids) baselineIds.add(id);
-		},
-		/** 清空基线选中项列表 */
-		clearBaseline: () => baselineIds.clear()
-	};
-};
-//#endregion
-//#region src/userscript/multiSelect/useMultiSelect.tsx
-const useMultiSelect = ({ onStart, registeredItems }) => solid_js.createRoot((dispose) => {
-	const [isEnabled, setIsEnabled] = solid_js.createSignal(false);
-	const selectionController = createSelectionController();
-	const drag = useDragSelect({
-		isEnabled,
-		registeredItems,
-		...selectionController
-	});
-	/** 所有需要在 unmount 时执行的清理函数（DOM dispose、事件监听等） */
-	const cleanups = [];
-	let isInitialized = false;
-	let elementIndex = 0;
-	/** 注册一个可选元素：挂载 SelectionMask */
-	const register = (dom) => {
-		if (!registeredItems().get(dom)) return;
-		const index = elementIndex++;
-		const container = document.createElement("div");
-		dom.append(container);
-		const disposeDom = solid_js_web.render(() => solid_js_web.createComponent(SelectionMask, {
-			dom,
-			index,
-			isEnabled,
-			registeredItems,
-			selection: selectionController,
-			drag
-		}), container);
-		cleanups.push(() => {
-			disposeDom();
-			container.remove();
-		});
-	};
-	/** 卸载所有 DOM 注册和事件监听，但保留选中状态（翻页场景） */
-	const unmount = () => {
-		drag.clear();
-		setIsEnabled(false);
-		isInitialized = false;
-		for (let i = cleanups.length - 1; i >= 0; i--) cleanups[i]?.();
-		cleanups.length = 0;
-	};
-	return {
-		/** 当前是否处于多选模式 */
-		isEnabled,
-		/** 开启多选模式并注册元素 */
-		start: () => {
-			if (isEnabled()) return;
-			setIsEnabled(true);
-			if (isInitialized) return;
-			document.addEventListener("pointerup", drag.onPointerUp);
-			document.addEventListener("pointercancel", drag.onPointerCancel);
-			cleanups.push(() => {
-				document.removeEventListener("pointerup", drag.onPointerUp);
-				document.removeEventListener("pointercancel", drag.onPointerCancel);
-			});
-			const cleanup = onStart?.();
-			if (cleanup) cleanups.push(cleanup);
-			for (const dom of registeredItems().keys()) register(dom);
-			isInitialized = true;
-		},
-		/** 结束多选模式，并发处理所有选中项并返回结果列表 */
-		collect: async (process, limit) => {
-			const ids = selectionController.selectedIds();
-			if (ids.length === 0) return [];
-			setIsEnabled(false);
-			return await helper.plimit(ids.map((id) => async () => {
-				try {
-					return await process(id);
-				} catch (error) {
-					return error instanceof Error ? error : new Error(String(error));
-				}
-			}), void 0, limit);
-		},
-		/** 清空选中状态并卸载所有 DOM 注册 */
-		clear: () => {
-			selectionController.clearBaseline();
-			selectionController.cancel();
-			unmount();
-		},
-		unmount,
-		/** 清理所有 SolidJS 响应式资源 */
-		dispose,
-		/** 当前选中项 ID 列表 */
-		selectedIds: selectionController.selectedIds,
-		/** 根据 ID 列表恢复选中状态（翻页后重新注册 DOM 时使用） */
-		setSelectedIds: selectionController.setBaseline
-	};
-});
-//#endregion
-//#region node_modules/.pnpm/@material-design-icons+svg@0.14.15/node_modules/@material-design-icons/svg/round/checklist.svg
-var _tmpl$ = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 8c0-.55-.45-1-1-1h-7c-.55 0-1 .45-1 1s.45 1 1 1h7c.55 0 1-.45 1-1m-9 8c0 .55.45 1 1 1h7c.55 0 1-.45 1-1s-.45-1-1-1h-7c-.55 0-1 .45-1 1M10.47 4.63c.39.39.39 1.02 0 1.41l-4.23 4.25c-.39.39-1.02.39-1.42 0L2.7 8.16a.996.996 0 1 1 1.41-1.41l1.42 1.42 3.54-3.54c.38-.38 1.02-.38 1.4 0m.01 8.01c.39.39.39 1.02 0 1.41L6.25 18.3c-.39.39-1.02.39-1.42 0L2.7 16.16a.996.996 0 1 1 1.41-1.41l1.42 1.42 3.54-3.54c.38-.38 1.02-.38 1.41.01">\`);
-var checklist_default = (props = {}) => (() => {
-	var _el$ = _tmpl$();
-	solid_js_web.spread(_el$, props, true, true);
-	return _el$;
-})();
-//#endregion
-//#region src/userscript/multiSelect/useMultiSelectLoad.tsx
-const createMultiSelectLoadController = (coreCtx, { id: initListId, onStart, allItemIds, getImgList }) => solid_js.createRoot(async (rootDispose) => {
-	const { setState, showComic } = coreCtx;
-	const cache = await helper.useCache({
-		pending: "id",
-		confirmed: "id"
-	}, "MultiSelect");
-	const [listId, setListId] = solid_js.createSignal(initListId);
-	const [registeredItems, setRegisteredItems] = solid_js.createSignal(/* @__PURE__ */ new Map());
-	const controller = useMultiSelect({
-		onStart,
-		registeredItems
-	});
-	helper.createEffectOn([listId], ([currentId], prev) => {
-		const prevId = prev?.[0];
-		if (prevId !== void 0 && prevId !== currentId) controller.clear();
-	});
-	const urlMap = {};
-	const targetIds = helper.createRootMemo(() => {
-		const ids = controller.selectedIds();
-		if (controller.isEnabled() && ids.length > 0) return ids;
-		return allItemIds?.() ?? [];
-	});
-	const computeImgList = () => targetIds().flatMap((id) => urlMap[id] ?? [""]);
-	/** 将 Manga 组件的扁平图片索引转为对应的选中项 ID */
-	const getItemIdsFromIndices = (indices) => {
-		const ids = [];
-		let offset = 0;
-		for (const id of targetIds()) {
-			const len = urlMap[id]?.length ?? 1;
-			for (const idx of indices) if (helper.inRange(offset, idx, offset + len - 1)) {
-				ids.push(id);
-				break;
-			}
-			offset += len;
-		}
-		return ids;
-	};
-	const reSetStore = () => {
-		setState("comicMap", "", { getImgList: Object.assign(async () => {
-			if (coreCtx.store.comicMap[""].imgList?.length) return coreCtx.store.comicMap[""].imgList;
-			await new Promise((resolve) => {
-				const queue = new helper.PQueue(async (id) => {
-					try {
-						urlMap[id] = await getImgList(id);
-					} catch (error) {
-						console.error(error);
-					}
-					setState("comicMap", "", "imgList", computeImgList());
-					resolve();
-				}, 4);
-				setState((state) => {
-					state.comicMap[""].imgList = computeImgList();
-					state.manga.onWaitUrlImgs = (imgs) => {
-						queue.set(...getItemIdsFromIndices(imgs));
-					};
-				});
-				if (targetIds().some((id) => urlMap[id])) resolve();
-			});
-			return coreCtx.store.comicMap[""].imgList;
-		}, allItemIds ? {} : { type: "multiSelect" }) });
-	};
-	reSetStore();
-	const multiSelectLoad = helper.singleThreaded(async () => {
-		if (!controller.isEnabled()) {
-			controller.start();
-			const confirmed = await cache.get("confirmed", listId());
-			if (confirmed) controller.setSelectedIds(confirmed.selecteds);
-			return;
-		}
-		await cache.del("pending", listId());
-		await cache.set("confirmed", {
-			id: listId(),
-			selecteds: controller.selectedIds()
-		});
-		if (controller.selectedIds().length === 0) return;
-		setState("comicMap", "", "imgList", void 0);
-		await showComic("");
-	});
-	let unregisterEscHandler;
-	helper.createEffectOn([controller.isEnabled], ([enabled]) => {
-		if (enabled) {
-			unregisterEscHandler?.();
-			unregisterEscHandler = core.registerEsc(-1, () => controller.isEnabled() && !coreCtx.store.manga.show ? unmount() : "SKIP");
-		}
-	});
-	setState("fab", "extraSpeedDial", [{
-		name: helper.t("hotkeys.multi_select_load"),
-		onClick: multiSelectLoad,
-		icon: checklist_default
-	}]);
-	helper.createEffectOn([
-		controller.isEnabled,
-		() => controller.selectedIds().length,
-		listId
-	], ([enabled, , id]) => {
-		const selecteds = controller.selectedIds();
-		(async () => {
-			await cache.del("pending", id);
-			await (selecteds.length === 0 ? cache.del("confirmed", id) : cache.set(enabled ? "pending" : "confirmed", {
-				id,
-				selecteds
-			}));
-		})();
-	}, { defer: true });
-	core.listenHotkey({
-		multi_select_load: multiSelectLoad,
-		enter_read_mode: () => controller.isEnabled() || !coreCtx.canLoadComic() ? multiSelectLoad() : coreCtx.showComic()
-	}, true);
-	let oldIdSet = [];
-	/** 清理副作用，但保留选中状态（用于翻页） */
-	const unmount = () => {
-		setState("comicMap", "", "imgList", void 0);
-		unregisterEscHandler?.();
-		oldIdSet = [...registeredItems().values()];
-		controller.unmount();
-	};
-	const completeDispose = () => {
-		oldIdSet = [];
-		unmount();
-		controller.dispose();
-		setRegisteredItems(/* @__PURE__ */ new Map());
-		coreCtx.setMultiSelect(void 0);
-		rootDispose();
-	};
-	return {
-		reSetStore,
-		/** 注册新的可选项，并等待至和上次的注册项不同 */
-		registerItems: async (newId, fillItems, maxWaitTime = 5e3) => {
-			setListId(newId);
-			const map = await helper.wait(async () => {
-				const newMap = /* @__PURE__ */ new Map();
-				await fillItems(newMap);
-				if (newMap.size === 0) return;
-				if (helper.isEqual(oldIdSet, [...newMap.values()])) return;
-				return newMap;
-			}, maxWaitTime);
-			if (!map) throw new Error("等待新 DOM 超时");
-			setRegisteredItems(map);
-			const pending = await cache.get("pending", listId());
-			if (pending?.selecteds.length) {
-				controller.start();
-				controller.setSelectedIds(pending.selecteds);
-			}
-		},
-		unmount,
-		/** 完全清理所有状态和副作用 */
-		dispose: completeDispose,
-		/** 页面切换时的清理策略 */
-		createCleanup: (id) => (nextPageCtx) => {
-			unmount();
-			if (nextPageCtx?.type !== "list" || nextPageCtx?.id !== id) {
-				completeDispose();
-				multiSelectLoadController = void 0;
-			}
-		},
-		load: multiSelectLoad,
-		isEnabled: controller.isEnabled,
-		selectedIds: controller.selectedIds,
-		clear: controller.clear,
-		setSelectedIds: controller.setSelectedIds
-	};
-});
-let multiSelectLoadController;
-const useMultiSelectLoad = async (coreCtx, options) => {
-	if (multiSelectLoadController) {
-		multiSelectLoadController.reSetStore();
-		return multiSelectLoadController;
-	}
-	multiSelectLoadController = await createMultiSelectLoadController(coreCtx, options);
-	coreCtx.setMultiSelect(multiSelectLoadController);
-	return multiSelectLoadController;
-};
-//#endregion
+let userscript_multiSelect = require("userscript/multiSelect");
 //#region src/site/kemono.tsx
-const original = () => helper.querySelectorAll(".post__thumbnail a").map((e) => e.href);
-const thumbnail = () => helper.querySelectorAll(".post__thumbnail img").map((e) => e.src);
+const original = (root = document) => [...root.querySelectorAll(".post__thumbnail a")].map((e) => e.href);
+const thumbnail = (root = document) => [...root.querySelectorAll(".post__thumbnail img")].map((e) => e.src);
 const handlePwa = () => {
 	const zipExtension = /* @__PURE__ */ new Set([
 		"zip",
@@ -16254,15 +17114,15 @@ core.setupSiteAdapter({
 		load_original_image: true
 	},
 	getPageContext: () => {
-		const { listId, postId } = /\\/fanbox\\/user\\/(?<listId>\\w+)|\\/post\\/(?<postId>\\w+)/u.exec(location.pathname)?.groups ?? {};
+		const { listId, postId } = /\\/user\\/(?<listId>[^/]+)(?:\\/post\\/(?<postId>[^/]+))?/u.exec(location.pathname)?.groups ?? {};
+		if (postId) return {
+			type: "manga",
+			id: postId
+		};
 		if (listId) return {
 			type: "list",
 			id: listId,
 			offset: Number(new URLSearchParams(location.search).get("o")) || 0
-		};
-		if (postId) return {
-			type: "manga",
-			id: postId
 		};
 	},
 	handlers: {
@@ -16274,26 +17134,22 @@ core.setupSiteAdapter({
 				if (prev) showComic();
 			});
 			setState((state) => {
-				state.comicMap.original = { getImgList: original };
-				state.comicMap.thumbnail = { getImgList: thumbnail };
+				state.comicMap.original = { getImgList: () => original() };
+				state.comicMap.thumbnail = { getImgList: () => thumbnail() };
 				state.manga.onNext = helper.querySelectorClick(".post__nav-link.next");
 				state.manga.onPrev = helper.querySelectorClick(".post__nav-link.prev");
 			});
 		},
 		list: async (coreCtx, { id }) => {
-			const { options } = coreCtx;
-			const ms = await useMultiSelectLoad(coreCtx, {
+			const ms = await userscript_multiSelect.useMultiSelectLoad(coreCtx, {
 				id,
 				onStart: () => {
 					for (const item of helper.querySelectorAll(".post-card")) item.style.position = "relative";
 				},
 				getImgList: async (postId) => {
-					const res = await core.request(\`/api/v1\${location.pathname}/post/\${postId}\`, {
-						responseType: "json",
-						headers: { Accept: "text/css" }
-					});
-					if (options.load_original_image) return res.response.previews.map(({ serer, path, name }) => \`\${serer}/data\${path}?f=\${name}\`);
-					return res.response.previews.map(({ path }) => \`https://img.\${location.host}/thumbnail/data\${path}\`);
+					const res = await core.request(\`\${location.pathname}/post/\${postId}\`);
+					const doc = helper.domParse(res.responseText);
+					return coreCtx.options.load_original_image ? original(doc) : thumbnail(doc);
 				}
 			});
 			await ms.registerItems(id, async (map) => {
@@ -16469,464 +17325,7 @@ solid_js_web.delegateEvents(["click"]);
 `,
 	"site/pixiv": `\nlet core = require("core");
 let helper = require("helper");
-let solid_js_web = require("solid-js/web");
-let solid_js = require("solid-js");
-//#region src/userscript/multiSelect/SelectionMask.tsx
-var _tmpl$$1 = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"width=1.5em height=1.5em fill=none opacity=0.4 style=display:inline;vertical-align:-0.15em><rect x=2 y=2 width=20 height=20 rx=5 stroke=currentColor stroke-width=1.3 stroke-dasharray="3 2">\`);
-var _tmpl$2 = /*#__PURE__*/ solid_js_web.template(\`<div class=selection-mask><span class=selection-mask-order>\`);
-const DashedRoundedSquare = () => _tmpl$$1();
-const SelectionMask = (props) => {
-	const id = () => props.registeredItems().get(props.dom);
-	const isSelected = () => props.selection.isSelected(id());
-	helper.css\`
-    \${props.dom}
-    .selection-mask {
-      touch-action: none;
-      cursor: pointer;
-      cursor: cell;
-      user-select: none;
-
-      position: absolute;
-      z-index: 2147483646;
-      top: 0;
-      left: 0;
-
-      container-type: size;
-      overflow: clip;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      width: 100%;
-      height: 100%;
-
-      font-size: 4cqmin;
-
-      background: rgb(0 0 0 / 60%);
-    }
-
-    .selection-mask-order {
-      font-family: sans-serif;
-      font-size: 2em;
-      font-weight: bold;
-      text-shadow: none;
-
-      -webkit-text-stroke: 0;
-    }
-  \`;
-	helper.css(".selection-mask", { color: () => isSelected() ? "#ffffffbf" : "#fffb" }, props.dom);
-	return solid_js_web.createComponent(solid_js.Show, {
-		get when() {
-			return props.isEnabled();
-		},
-		get children() {
-			var _el$2 = _tmpl$2(), _el$3 = _el$2.firstChild;
-			solid_js_web.addEventListener(_el$2, "click", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "contextmenu", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "mouseover", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "pointerover", helper.withEventStop(), true);
-			solid_js_web.addEventListener(_el$2, "pointerenter", helper.withEventStop((e) => props.drag.onPointerEnter(props.dom, e)));
-			solid_js_web.addEventListener(_el$2, "pointerdown", helper.withEventStop((e) => props.drag.onPointerDown(props.dom, e)), true);
-			solid_js_web.insert(_el$3, () => props.selection.getOrder(id()) ?? solid_js_web.createComponent(DashedRoundedSquare, {}));
-			return _el$2;
-		}
-	});
-};
-solid_js_web.delegateEvents([
-	"pointerdown",
-	"pointerover",
-	"mouseover",
-	"contextmenu",
-	"click"
-]);
-//#endregion
-//#region src/userscript/multiSelect/useDragSelect.ts
-const useDragSelect = ({ isEnabled, registeredItems, isSelected, setSession, session, commit, cancel }) => {
-	/** 当前活跃手势的 pointerId，null 表示无活跃手势 */
-	let pointerId = null;
-	/** 锚点在 items 中的索引，固定不变 */
-	let anchorIndex = -1;
-	/** 当前手势是否扩展过范围（用于判断是否应撤销选择） */
-	let hasExpanded = false;
-	return {
-		onPointerDown: (dom, e) => {
-			if (!isEnabled() || !e.isPrimary) return;
-			if (e.pointerType === "mouse" && e.button !== 0) return;
-			const entries = [...registeredItems().entries()];
-			anchorIndex = entries.findIndex(([d]) => d === dom);
-			if (anchorIndex === -1) return;
-			({pointerId} = e);
-			hasExpanded = false;
-			setSession((state) => {
-				state.operationType = isSelected(registeredItems().get(dom)) ? "unselect" : "select";
-				state.items = entries.map(([, id]) => id);
-				state.range = [anchorIndex, anchorIndex];
-			});
-		},
-		onPointerEnter: (dom, e) => {
-			if (!isEnabled() || pointerId === null || e.pointerId !== pointerId) return;
-			if (e.pointerType === "mouse" && (e.buttons & 1) === 0) {
-				pointerId = null;
-				return cancel();
-			}
-			const currentIndex = [...registeredItems().keys()].indexOf(dom);
-			if (currentIndex === -1) return;
-			const newRange = anchorIndex <= currentIndex ? [anchorIndex, currentIndex] : [currentIndex, anchorIndex];
-			setSession((state) => {
-				if (state.range[0] === newRange[0] && state.range[1] === newRange[1]) return;
-				state.range = newRange;
-				if (newRange[0] !== newRange[1]) hasExpanded = true;
-			});
-		},
-		onPointerUp: (e) => {
-			if (e.pointerId !== pointerId) return;
-			pointerId = null;
-			if (session.range[0] === session.range[1] && hasExpanded) cancel();
-			else commit();
-		},
-		onPointerCancel: (e) => {
-			if (e.pointerId !== pointerId) return;
-			pointerId = null;
-			cancel();
-		},
-		/** 取消活跃手势并重置状态 */
-		clear: () => {
-			if (pointerId !== null) cancel();
-			pointerId = null;
-		}
-	};
-};
-//#endregion
-//#region src/userscript/multiSelect/useSelection.ts
-/** 创建选中状态管理器 */
-const createSelectionController = () => {
-	/** 已确认的选中项 */
-	const baselineIds = new helper.ReactiveSet();
-	const { store: session, setState: setSession } = helper.useStore({
-		items: [],
-		range: [-1, -1],
-		operationType: "select"
-	});
-	/** 判断 session 是否处于活跃状态 */
-	const isSessionActive = () => session.range[0] >= 0 && session.range[1] >= 0;
-	/** 当前 range 区间内的 id 集合 */
-	const rangeIds = helper.createRootMemo(() => {
-		if (!isSessionActive()) return /* @__PURE__ */ new Set();
-		return new Set(session.items.slice(session.range[0], session.range[1] + 1));
-	});
-	const selectedIds = helper.createRootMemo(() => {
-		if (!isSessionActive()) return [...baselineIds];
-		return session.operationType === "select" ? [...baselineIds.union(rangeIds())] : [...baselineIds.difference(rangeIds())];
-	});
-	/** 记录每个 id 的选中顺序 */
-	const orderMap = helper.createRootMemo(() => Object.fromEntries(selectedIds().map((id, i) => [id, i + 1])));
-	const cancel = () => setSession((state) => {
-		state.items = [];
-		state.range = [-1, -1];
-		state.operationType = "select";
-	});
-	return {
-		/** 当前会话状态（只读） */
-		session,
-		/** 当前选中项 id 列表 */
-		selectedIds,
-		/** 记录每个 id 的选中顺序 */
-		orderMap,
-		/** 判断指定 id 是否被选中 */
-		isSelected: (id) => id in orderMap(),
-		/** 获取指定 id 的选中顺序，未选中返回 undefined */
-		getOrder: (id) => orderMap()[id],
-		/** 修改会话状态 */
-		setSession,
-		/** 将 session 的修改应用到基线，然后重置 session */
-		commit: () => {
-			if (!isSessionActive()) return;
-			if (session.operationType === "select") for (const id of rangeIds()) baselineIds.add(id);
-			else for (const id of rangeIds()) baselineIds.delete(id);
-			cancel();
-		},
-		/** 重置 session 为初始状态 */
-		cancel,
-		/** 直接设置基线选中项列表 */
-		setBaseline: (ids) => {
-			baselineIds.clear();
-			for (const id of ids) baselineIds.add(id);
-		},
-		/** 清空基线选中项列表 */
-		clearBaseline: () => baselineIds.clear()
-	};
-};
-//#endregion
-//#region src/userscript/multiSelect/useMultiSelect.tsx
-const useMultiSelect = ({ onStart, registeredItems }) => solid_js.createRoot((dispose) => {
-	const [isEnabled, setIsEnabled] = solid_js.createSignal(false);
-	const selectionController = createSelectionController();
-	const drag = useDragSelect({
-		isEnabled,
-		registeredItems,
-		...selectionController
-	});
-	/** 所有需要在 unmount 时执行的清理函数（DOM dispose、事件监听等） */
-	const cleanups = [];
-	let isInitialized = false;
-	let elementIndex = 0;
-	/** 注册一个可选元素：挂载 SelectionMask */
-	const register = (dom) => {
-		if (!registeredItems().get(dom)) return;
-		const index = elementIndex++;
-		const container = document.createElement("div");
-		dom.append(container);
-		const disposeDom = solid_js_web.render(() => solid_js_web.createComponent(SelectionMask, {
-			dom,
-			index,
-			isEnabled,
-			registeredItems,
-			selection: selectionController,
-			drag
-		}), container);
-		cleanups.push(() => {
-			disposeDom();
-			container.remove();
-		});
-	};
-	/** 卸载所有 DOM 注册和事件监听，但保留选中状态（翻页场景） */
-	const unmount = () => {
-		drag.clear();
-		setIsEnabled(false);
-		isInitialized = false;
-		for (let i = cleanups.length - 1; i >= 0; i--) cleanups[i]?.();
-		cleanups.length = 0;
-	};
-	return {
-		/** 当前是否处于多选模式 */
-		isEnabled,
-		/** 开启多选模式并注册元素 */
-		start: () => {
-			if (isEnabled()) return;
-			setIsEnabled(true);
-			if (isInitialized) return;
-			document.addEventListener("pointerup", drag.onPointerUp);
-			document.addEventListener("pointercancel", drag.onPointerCancel);
-			cleanups.push(() => {
-				document.removeEventListener("pointerup", drag.onPointerUp);
-				document.removeEventListener("pointercancel", drag.onPointerCancel);
-			});
-			const cleanup = onStart?.();
-			if (cleanup) cleanups.push(cleanup);
-			for (const dom of registeredItems().keys()) register(dom);
-			isInitialized = true;
-		},
-		/** 结束多选模式，并发处理所有选中项并返回结果列表 */
-		collect: async (process, limit) => {
-			const ids = selectionController.selectedIds();
-			if (ids.length === 0) return [];
-			setIsEnabled(false);
-			return await helper.plimit(ids.map((id) => async () => {
-				try {
-					return await process(id);
-				} catch (error) {
-					return error instanceof Error ? error : new Error(String(error));
-				}
-			}), void 0, limit);
-		},
-		/** 清空选中状态并卸载所有 DOM 注册 */
-		clear: () => {
-			selectionController.clearBaseline();
-			selectionController.cancel();
-			unmount();
-		},
-		unmount,
-		/** 清理所有 SolidJS 响应式资源 */
-		dispose,
-		/** 当前选中项 ID 列表 */
-		selectedIds: selectionController.selectedIds,
-		/** 根据 ID 列表恢复选中状态（翻页后重新注册 DOM 时使用） */
-		setSelectedIds: selectionController.setBaseline
-	};
-});
-//#endregion
-//#region node_modules/.pnpm/@material-design-icons+svg@0.14.15/node_modules/@material-design-icons/svg/round/checklist.svg
-var _tmpl$ = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 8c0-.55-.45-1-1-1h-7c-.55 0-1 .45-1 1s.45 1 1 1h7c.55 0 1-.45 1-1m-9 8c0 .55.45 1 1 1h7c.55 0 1-.45 1-1s-.45-1-1-1h-7c-.55 0-1 .45-1 1M10.47 4.63c.39.39.39 1.02 0 1.41l-4.23 4.25c-.39.39-1.02.39-1.42 0L2.7 8.16a.996.996 0 1 1 1.41-1.41l1.42 1.42 3.54-3.54c.38-.38 1.02-.38 1.4 0m.01 8.01c.39.39.39 1.02 0 1.41L6.25 18.3c-.39.39-1.02.39-1.42 0L2.7 16.16a.996.996 0 1 1 1.41-1.41l1.42 1.42 3.54-3.54c.38-.38 1.02-.38 1.41.01">\`);
-var checklist_default = (props = {}) => (() => {
-	var _el$ = _tmpl$();
-	solid_js_web.spread(_el$, props, true, true);
-	return _el$;
-})();
-//#endregion
-//#region src/userscript/multiSelect/useMultiSelectLoad.tsx
-const createMultiSelectLoadController = (coreCtx, { id: initListId, onStart, allItemIds, getImgList }) => solid_js.createRoot(async (rootDispose) => {
-	const { setState, showComic } = coreCtx;
-	const cache = await helper.useCache({
-		pending: "id",
-		confirmed: "id"
-	}, "MultiSelect");
-	const [listId, setListId] = solid_js.createSignal(initListId);
-	const [registeredItems, setRegisteredItems] = solid_js.createSignal(/* @__PURE__ */ new Map());
-	const controller = useMultiSelect({
-		onStart,
-		registeredItems
-	});
-	helper.createEffectOn([listId], ([currentId], prev) => {
-		const prevId = prev?.[0];
-		if (prevId !== void 0 && prevId !== currentId) controller.clear();
-	});
-	const urlMap = {};
-	const targetIds = helper.createRootMemo(() => {
-		const ids = controller.selectedIds();
-		if (controller.isEnabled() && ids.length > 0) return ids;
-		return allItemIds?.() ?? [];
-	});
-	const computeImgList = () => targetIds().flatMap((id) => urlMap[id] ?? [""]);
-	/** 将 Manga 组件的扁平图片索引转为对应的选中项 ID */
-	const getItemIdsFromIndices = (indices) => {
-		const ids = [];
-		let offset = 0;
-		for (const id of targetIds()) {
-			const len = urlMap[id]?.length ?? 1;
-			for (const idx of indices) if (helper.inRange(offset, idx, offset + len - 1)) {
-				ids.push(id);
-				break;
-			}
-			offset += len;
-		}
-		return ids;
-	};
-	const reSetStore = () => {
-		setState("comicMap", "", { getImgList: Object.assign(async () => {
-			if (coreCtx.store.comicMap[""].imgList?.length) return coreCtx.store.comicMap[""].imgList;
-			await new Promise((resolve) => {
-				const queue = new helper.PQueue(async (id) => {
-					try {
-						urlMap[id] = await getImgList(id);
-					} catch (error) {
-						console.error(error);
-					}
-					setState("comicMap", "", "imgList", computeImgList());
-					resolve();
-				}, 4);
-				setState((state) => {
-					state.comicMap[""].imgList = computeImgList();
-					state.manga.onWaitUrlImgs = (imgs) => {
-						queue.set(...getItemIdsFromIndices(imgs));
-					};
-				});
-				if (targetIds().some((id) => urlMap[id])) resolve();
-			});
-			return coreCtx.store.comicMap[""].imgList;
-		}, allItemIds ? {} : { type: "multiSelect" }) });
-	};
-	reSetStore();
-	const multiSelectLoad = helper.singleThreaded(async () => {
-		if (!controller.isEnabled()) {
-			controller.start();
-			const confirmed = await cache.get("confirmed", listId());
-			if (confirmed) controller.setSelectedIds(confirmed.selecteds);
-			return;
-		}
-		await cache.del("pending", listId());
-		await cache.set("confirmed", {
-			id: listId(),
-			selecteds: controller.selectedIds()
-		});
-		if (controller.selectedIds().length === 0) return;
-		setState("comicMap", "", "imgList", void 0);
-		await showComic("");
-	});
-	let unregisterEscHandler;
-	helper.createEffectOn([controller.isEnabled], ([enabled]) => {
-		if (enabled) {
-			unregisterEscHandler?.();
-			unregisterEscHandler = core.registerEsc(-1, () => controller.isEnabled() && !coreCtx.store.manga.show ? unmount() : "SKIP");
-		}
-	});
-	setState("fab", "extraSpeedDial", [{
-		name: helper.t("hotkeys.multi_select_load"),
-		onClick: multiSelectLoad,
-		icon: checklist_default
-	}]);
-	helper.createEffectOn([
-		controller.isEnabled,
-		() => controller.selectedIds().length,
-		listId
-	], ([enabled, , id]) => {
-		const selecteds = controller.selectedIds();
-		(async () => {
-			await cache.del("pending", id);
-			await (selecteds.length === 0 ? cache.del("confirmed", id) : cache.set(enabled ? "pending" : "confirmed", {
-				id,
-				selecteds
-			}));
-		})();
-	}, { defer: true });
-	core.listenHotkey({
-		multi_select_load: multiSelectLoad,
-		enter_read_mode: () => controller.isEnabled() || !coreCtx.canLoadComic() ? multiSelectLoad() : coreCtx.showComic()
-	}, true);
-	let oldIdSet = [];
-	/** 清理副作用，但保留选中状态（用于翻页） */
-	const unmount = () => {
-		setState("comicMap", "", "imgList", void 0);
-		unregisterEscHandler?.();
-		oldIdSet = [...registeredItems().values()];
-		controller.unmount();
-	};
-	const completeDispose = () => {
-		oldIdSet = [];
-		unmount();
-		controller.dispose();
-		setRegisteredItems(/* @__PURE__ */ new Map());
-		coreCtx.setMultiSelect(void 0);
-		rootDispose();
-	};
-	return {
-		reSetStore,
-		/** 注册新的可选项，并等待至和上次的注册项不同 */
-		registerItems: async (newId, fillItems, maxWaitTime = 5e3) => {
-			setListId(newId);
-			const map = await helper.wait(async () => {
-				const newMap = /* @__PURE__ */ new Map();
-				await fillItems(newMap);
-				if (newMap.size === 0) return;
-				if (helper.isEqual(oldIdSet, [...newMap.values()])) return;
-				return newMap;
-			}, maxWaitTime);
-			if (!map) throw new Error("等待新 DOM 超时");
-			setRegisteredItems(map);
-			const pending = await cache.get("pending", listId());
-			if (pending?.selecteds.length) {
-				controller.start();
-				controller.setSelectedIds(pending.selecteds);
-			}
-		},
-		unmount,
-		/** 完全清理所有状态和副作用 */
-		dispose: completeDispose,
-		/** 页面切换时的清理策略 */
-		createCleanup: (id) => (nextPageCtx) => {
-			unmount();
-			if (nextPageCtx?.type !== "list" || nextPageCtx?.id !== id) {
-				completeDispose();
-				multiSelectLoadController = void 0;
-			}
-		},
-		load: multiSelectLoad,
-		isEnabled: controller.isEnabled,
-		selectedIds: controller.selectedIds,
-		clear: controller.clear,
-		setSelectedIds: controller.setSelectedIds
-	};
-});
-let multiSelectLoadController;
-const useMultiSelectLoad = async (coreCtx, options) => {
-	if (multiSelectLoadController) {
-		multiSelectLoadController.reSetStore();
-		return multiSelectLoadController;
-	}
-	multiSelectLoadController = await createMultiSelectLoadController(coreCtx, options);
-	coreCtx.setMultiSelect(multiSelectLoadController);
-	return multiSelectLoadController;
-};
-//#endregion
+let userscript_multiSelect = require("userscript/multiSelect");
 //#region src/site/pixiv.tsx
 let imgs = [];
 core.setupSiteAdapter({
@@ -16977,7 +17376,7 @@ core.setupSiteAdapter({
 		},
 		list: async (coreCtx, { id }) => {
 			const { options } = coreCtx;
-			const ms = await useMultiSelectLoad(coreCtx, {
+			const ms = await userscript_multiSelect.useMultiSelectLoad(coreCtx, {
 				id,
 				getImgList: async (workId) => {
 					const res = await core.request(\`/ajax/illust/\${workId}/pages\`, { responseType: "json" });
@@ -17152,7 +17551,7 @@ core.setupSiteAdapter({
 				type: "thread",
 				tid,
 				fid,
-				isMangaForum: fid === 30 || fid === 37
+				isManga: fid === 30 || fid === 37
 			};
 		}
 		if (/forum(?:-\\d+){2}|mod=forumdisplay/u.test(document.URL)) return {
@@ -17207,7 +17606,7 @@ core.setupSiteAdapter({
         }
       \`;
 		},
-		thread: ({ setState, options, showComic, loadComic }, { isMangaForum }) => {
+		thread: ({ setState, options, showComic, loadComic }, { isManga }) => {
 			for (const e of helper.querySelectorAll("img[file*=\\"sinaimg.cn\\"]")) e.setAttribute("referrerpolicy", "no-referrer");
 			const readMode = () => {
 				if (!!helper.querySelector(".pg > .prev")) setState("flag", "needAutoShow", false);
@@ -17263,7 +17662,7 @@ core.setupSiteAdapter({
 					setTimeout(setPrevNext);
 				}
 			};
-			if (isMangaForum) readMode();
+			if (isManga) readMode();
 			else {
 				helper.querySelector("div.pti > div.authi").insertAdjacentHTML("beforeend", "<span class=\\"pipe show\\">|</span><a id=\\"comicReadMode\\" class=\\"show\\" href=\\"javascript:;\\">漫画阅读</a>");
 				const button = document.getElementById("comicReadMode");
@@ -17517,7 +17916,7 @@ core.setupSiteAdapter({
 };
 //#endregion
 //#region src/userscript/import.ts
-let supportWorker = typeof Worker !== "undefined";
+let supportWorker;
 const gmApi = {
 	GM: typeof GM === "undefined" ? void 0 : GM,
 	GM_addElement: typeof GM_addElement === "undefined" ? void 0 : GM_addElement,
@@ -17570,9 +17969,7 @@ moduleMap['Comlink'].expose(exports);`;
 		const worker = new Worker(codeUrl);
 		crsLib[name] = require("comlink").wrap(worker);
 		return;
-	} catch {
-		supportWorker = false;
-	}
+	} catch {}
 	let runCode = `
     (function (process, require, exports, module, ${gmApiList.join(", ")}) {
       ${libCode}
@@ -17632,6 +18029,7 @@ const require = (name) => {
 	return selfDefault;
 };
 crsLib.require = require;
+({supportWorker} = require("userscript/supportWorker"));
 //#endregion
 let components_Manga = require("components/Manga");
 let core = require("core");
@@ -18010,6 +18408,9 @@ try {
 		case "18comic.ink":
 		case "jmcomic-zzz.one":
 		case "jmcomic-zzz.org":
+		case "comic18j-rita.net":
+		case "comic18j-rita.club":
+		case "comic18j-bibi.cc":
 		case "18comic.org":
 		case "18comic.vip":
 			selfImport("site/jm");
@@ -18267,6 +18668,7 @@ try {
 			});
 			break;
 		}
+		case "pawchive.pw":
 		case "kemono.cr":
 		case "kemono.su":
 		case "kemono.party":
