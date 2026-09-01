@@ -11,32 +11,24 @@ jobs:
     name: Deploy to Cloudflare Pages
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        id: pnpm-install
+        uses: actions/checkout@v7
         with:
-          version: 9
-          run_install: false
+          fetch-depth: 1
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
+      - name: Setup pnpm
+        uses: pnpm/setup@v2
         with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+          version: 11
+          runtime: node@24
+          cache: true
 
       - name: Build
         run: pnpm run pwa:build
 
       - name: Publish
-        uses: cloudflare/pages-action@1
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'comic-read'
-          directory: 'src/pwa/dist'
-          branch: main
+          command: pages deploy src/pwa/dist --project-name=comic-read --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
