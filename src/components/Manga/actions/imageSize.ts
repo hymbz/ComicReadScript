@@ -1,18 +1,15 @@
-import { createEffectOn } from 'helper';
+import { clamp, createEffectOn } from 'helper';
 
 import { type State, setState, store } from '../store';
 import { type BlankMargin, type ComicImg } from '../store/image';
 import { withOptionalState } from './helper';
-import { updateImgType } from './imageType';
-import {
-  abreastColumnWidth,
-  imgList,
-  isAbreastMode,
-  placeholderSize,
-  scrollModeScale,
-} from './memo';
+import { isWideType, updateImgType } from './imageType';
+import { abreastColumnWidth, isAbreastMode, placeholderSize } from './memo';
 
-type ImgSizeSource = Pick<ComicImg, 'width' | 'height' | 'blankMargin'>;
+type ImgSizeSource = Pick<
+  ComicImg,
+  'width' | 'height' | 'blankMargin' | 'type'
+>;
 
 /** 计算裁切后的四边比例，没有裁切时返回 null */
 export const getCropMargin = (
@@ -55,8 +52,30 @@ export const getImgDisplaySize = (state: State, img: ImgSizeSource) => {
   if (state.option.scrollMode.adjustToWidth === 'full')
     return setWidth(state.rootSize.width);
 
-  height *= scrollModeScale();
-  width *= scrollModeScale();
+  if (typeof state.option.scrollMode.adjustToWidth === 'number') {
+    const target = state.option.scrollMode.adjustToWidth;
+    const type = img.type ?? state.defaultImgType;
+
+    // 跨页/宽图只放大不缩小，且不超过视口宽度
+    if (isWideType(type)) {
+      const ratio = height / width;
+      width = clamp(
+        Math.min(target, state.rootSize.width),
+        width,
+        state.rootSize.width,
+      );
+      height = width * ratio;
+      return { height, width };
+    }
+
+    // 普通图和条漫图精确适配用户设置的宽度
+    return setWidth(Math.min(target, state.rootSize.width));
+  }
+
+  if (state.option.scrollMode.imgScale !== 1) {
+    height *= state.option.scrollMode.imgScale;
+    width *= state.option.scrollMode.imgScale;
+  }
 
   if (width > state.rootSize.width) return setWidth(state.rootSize.width);
 
@@ -83,18 +102,16 @@ export const updateImgSize = withOptionalState(
 
 createEffectOn(
   [
-    imgList,
-    scrollModeScale,
     placeholderSize,
     () => store.rootSize,
     () => store.option.scrollMode.enabled,
+    () => store.option.scrollMode.imgScale,
     () => store.option.scrollMode.abreastMode,
     () => store.option.scrollMode.adjustToWidth,
     () => store.option.imgRecognition.crop,
     () => store.option.imgRecognition.keepMargin,
   ],
-  ([{ length }]) => {
-    if (length === 0) return;
+  () => {
     setState((state) => {
       for (const url of state.imgList) {
         const img = state.imgMap[url];

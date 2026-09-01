@@ -89,11 +89,11 @@ export type Option = {
      *
      * - 'disable': 禁用
      * - 'full': 全部图片缩放适应页宽
-     * - number: 通过调整图片缩放比例，让**大多数**图片的宽度接近指定值
+     * - number: 将图片宽度限定至指定值，但宽图只会放大不缩小
      */
     adjustToWidth: 'disable' | 'full' | number;
     // 虽然放在同一个选项里，但 'full' 和 number 其实是毫无关联的两套实现
-    // number 之所以是作用于大多数而不是全部，是为了避免跨页大图被缩小得看不清字
+    // number 对跨页/宽图只放大不缩小，是为了避免跨页大图被缩小得看不清字
     // https://github.com/hymbz/ComicReadScript/issues/285
 
     /** 并排模式 */

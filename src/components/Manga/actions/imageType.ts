@@ -5,7 +5,7 @@ import { type ComicImg } from '../store/image';
 import { updatePageData } from './image';
 import { placeholderSize } from './memo';
 
-const isWideType = (type: ComicImg['type']) =>
+export const isWideType = (type: ComicImg['type']) =>
   type === 'wide' || type === 'long';
 
 // https://github.com/hymbz/ComicReadScript/issues/174#issuecomment-2252114640

@@ -15,7 +15,6 @@ import {
   focus,
   getImgDisplaySize,
   getImgType,
-  placeholderSize,
   resetImgState,
   resumeReadProgress,
   scrollTo,
@@ -145,13 +144,11 @@ export const useInit = (props: MangaProps) => {
         const imgItem: ComicImgData =
           typeof img === 'string' ? { src: url } : img;
         imgItem.loadType ??= 'wait';
-        if (imgItem.width && imgItem.height) {
-          imgItem.size = getImgDisplaySize(state, imgItem);
+        if (imgItem.width && imgItem.height)
           imgItem.type = getImgType(
             imgItem as SetRequired<ComicImg, 'width' | 'height'>,
           );
-        }
-        imgItem.size ??= { ...placeholderSize() };
+        imgItem.size = getImgDisplaySize(state, imgItem);
         if (!imgItem.blobUrl && url.startsWith('blob:'))
           imgItem.blobUrl = imgItem.src;
 

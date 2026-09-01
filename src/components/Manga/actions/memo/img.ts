@@ -2,7 +2,6 @@ import { createRootMemo, createThrottleMemo, exposeToGlobal } from 'helper';
 
 import { store } from '../../store';
 import { type ComicImg, type FillEffect } from '../../store/image';
-import { isUseAutoScale } from './options';
 
 export const imgList = createRootMemo(() =>
   store.imgList.map((url) => store.imgMap[url]),
@@ -66,15 +65,5 @@ export const placeholderSize = createThrottleMemo(
   }),
   500,
 );
-
-/** 卷轴模式下的图片缩放比例 */
-export const scrollModeScale = createRootMemo(() => {
-  if (!isUseAutoScale()) return store.option.scrollMode.imgScale;
-
-  // 能让大多数图片的宽度接近指定值的图片缩放比例
-  return (
-    (store.option.scrollMode.adjustToWidth as number) / placeholderSize().width
-  );
-});
 
 if (isDevMode) exposeToGlobal({ mangaImgList: imgList });
