@@ -47,6 +47,9 @@ export const DownloadButton = () => {
       else if (img.upscaleUrl && isUpscale()) url = img.upscaleUrl;
       else url = img.src;
 
+      // 跳过空 url，保持原有图片序号不变
+      if (!url?.trim()) continue;
+
       let data: Blob | undefined;
       let fileName: string;
       const index = `${i}`.padStart(imgIndexNum, '0');
@@ -57,7 +60,11 @@ export const DownloadButton = () => {
         fileName = `${index} - ${t('alert.download_failed')}`;
         setState('errorNum', (num) => num + 1);
       }
-      fileData[fileName] = new Uint8Array((await data?.arrayBuffer()) ?? []);
+      // 当文件名重复时自动加上后缀
+      let name = fileName;
+      for (let duplicate = 1; fileData[name]; duplicate += 1)
+        name = `${fileName} (${duplicate})`;
+      fileData[name] = new Uint8Array((await data?.arrayBuffer()) ?? []);
     }
 
     if (Object.keys(fileData).length === 0) {
