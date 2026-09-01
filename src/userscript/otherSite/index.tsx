@@ -1,5 +1,11 @@
 import { toast, useInit } from 'core';
-import { createEffectOn, onUrlChange, t, throttle } from 'helper';
+import {
+  createEffectOn,
+  exposeToGlobal,
+  onUrlChange,
+  t,
+  throttle,
+} from 'helper';
 import { AutoImageScanner } from 'userscript/autoImageScanner';
 
 // 测试案例
@@ -67,6 +73,7 @@ export const otherSite = async () => {
       store.manga.show || (!timeout && store.manga.imgList.length === 0),
     sortImageByTop: true,
   });
+  exposeToGlobal({ scanner });
 
   setState('comicMap', '', {
     async getImgList() {

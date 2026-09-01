@@ -1,40 +1,15 @@
-import {
-  getMostItem,
-  isImageElement,
-  plimit,
-  querySelectorAll,
-  t,
-  throttle,
-  wait,
-} from 'helper';
+import { getMostItem, querySelectorAll, t, throttle, wait } from 'helper';
 import { type Promisable } from 'type-fest';
 
 import { type ChapterSwitch, getChapterSwitch } from './chapterSwitch';
-import { getEleSelector, isEleSelector } from './eleSelector';
-import {
-  BlobUrlResolver,
-  PlaceholderImgList,
-  sortElementsByDomOrder,
-  sortElementsByTop,
-} from './helper';
-import {
-  type ImageSlotGroup,
-  buildSlotElementsFromGroup,
-  findImageSlotGroups,
-  pickBestGroup,
-} from './imageSlot';
-import { type ImageInfo, ImageWatcher } from './ImageWatcher';
-import { getDatasetUrl, needTrigged, triggerLazyLoad } from './triggerLazyLoad';
+import { getEleSelector } from './eleSelector';
+import { ImageListBuilder } from './imageListBuilder';
+import { type ImageSlotGroup, getImageSlotGroupResult } from './imageSlot';
+import { type ImageInfo } from './ImageWatcher';
+import { LazyLoadController } from './lazyLoadController';
+import { QualifiedImageWatcher } from './qualifiedImageWatcher';
 
 const SELECTOR_FALLBACK_TIMEOUT = 3000;
-
-const IMG_BLACK_LIST_SELECTOR = [
-  // 东方永夜机的预加载图片
-  '#pagetual-preload',
-  // 177picyy 上会在图片下加一个 noscript，本来只是图片元素的 html 代码
-  // 但经过东方永夜机加载后就会变成真的图片元素，导致重复
-  'noscript',
-].join(',');
 
 /** 自动发现网页上的所有漫画图片的通用扫描器 */
 export class AutoImageScanner {
@@ -70,31 +45,15 @@ export class AutoImageScanner {
   private imgSelector: string;
   /** 显式 selector 回退定时器 */
   private selectorFallbackTimer: number | undefined;
-  /** 懒加载触发 promise，用于避免重复触发 */
-  private triggerPromise: Promise<void> | undefined;
   /** 代际标记，用于忽略 stop 后过期的 handleChanged 回调 */
   private generation = 0;
 
-  /** 处理 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片 */
-  private readonly blobUrlResolver = new BlobUrlResolver();
+  private readonly imageWatcher: QualifiedImageWatcher;
+  private readonly imageListBuilder: ImageListBuilder;
+  private readonly lazyLoadController: LazyLoadController;
 
-  private readonly placeholderImgList = new PlaceholderImgList();
-  /** 检测重复的加载占位图，用真实地址进行替换 */
-  private readonly updatePlaceholderImgList = throttle((imgList: string[]) => {
-    this.placeholderImgList.update(imgList);
-  });
-
-  /** 图片监听器 */
-  private readonly imageWatcher: ImageWatcher;
-
-  /** 找到的所有符合条件的图片元素 */
-  imgEleList: HTMLImageElement[] = [];
-  /** 过滤后真正用于展示的图片槽位列表 */
-  slotElements: HTMLElement[] = [];
-  /** 最近一次计算出的图片槽位组 */
+  /** 所有「相似、成组」的图片槽位组 */
   private imageSlotGroups: ImageSlotGroup[] = [];
-  /** 找到的所有符合条件的图片 url */
-  imgList: string[] = [];
   /** 当前识别到的章节切换按钮 */
   chapterSwitch: ChapterSwitch = {};
 
@@ -123,10 +82,36 @@ export class AutoImageScanner {
     this.enableSortImageByTop = options.sortImageByTop ?? false;
     this.filterByContainer = options.filterByContainer ?? true;
 
-    this.imageWatcher = new ImageWatcher({
-      filterImg: (info, img) => this.filterImage(info, img),
+    this.imageWatcher = new QualifiedImageWatcher({
+      getImgSelector: () => this.imgSelector,
+      filterImg: this.filterImg,
       onChanged: (map) => this.handleChanged(map, this.generation),
     });
+
+    this.imageListBuilder = new ImageListBuilder({
+      enableSortImageByTop: this.enableSortImageByTop,
+      filterByContainer: this.filterByContainer,
+      onImgListChange: (imgList) => this.onImgListChange?.(imgList),
+      onEmpty: () => this.onEmpty?.(),
+    });
+
+    this.lazyLoadController = new LazyLoadController({
+      getImgSelector: () => this.imgSelector,
+      getImageSlotGroups: () => this.imageSlotGroups,
+      getAllImg: () => this.imageWatcher.getAllImg(),
+      runCondition: () => this.shouldTriggerLazyLoad?.() ?? true,
+      onLazyLoadFailed: () => this.imageListBuilder.onLazyLoadFailed(),
+    });
+  }
+
+  /** 最终选中的图片 url */
+  get imgList() {
+    return this.imageListBuilder.imgList;
+  }
+
+  /** 最终选中的图片槽位 */
+  get slotElements() {
+    return this.imageListBuilder.slotElements;
   }
 
   /** 开始寻找页面图片 */
@@ -141,7 +126,7 @@ export class AutoImageScanner {
       this.selectorFallbackTimer = window.setTimeout(() => {
         if (querySelectorAll(this.imgSelector).length > 0) return;
         this.imgSelector = '';
-        void this.triggerAllLazyLoad();
+        void this.lazyLoadController.trigger();
       }, SELECTOR_FALLBACK_TIMEOUT);
     }
   }
@@ -152,16 +137,12 @@ export class AutoImageScanner {
     this.generation++;
     this.handleChanged.clear();
     this.imageWatcher.stop();
+    this.imageListBuilder.clear();
     if (this.selectorFallbackTimer !== undefined)
       window.clearTimeout(this.selectorFallbackTimer);
     this.selectorFallbackTimer = undefined;
-    this.triggerPromise = undefined;
-    this.blobUrlResolver.clear();
-    this.placeholderImgList.clear();
-    this.imgEleList = [];
-    this.slotElements = [];
+    this.lazyLoadController.clear();
     this.imageSlotGroups = [];
-    this.imgList = [];
     this.chapterSwitch = {};
   }
 
@@ -178,62 +159,8 @@ export class AutoImageScanner {
   /** 手动触发一轮懒加载 */
   triggerLazyLoad() {
     this.start();
-    return this.triggerAllLazyLoad();
+    return this.lazyLoadController.trigger();
   }
-
-  /** 获取页面上所有不在黑名单中的图片元素 */
-  private readonly getAllImg = () =>
-    querySelectorAll<HTMLImageElement>(
-      `:not(${IMG_BLACK_LIST_SELECTOR}) > img`,
-    );
-
-  /** 判断当前是否应该触发懒加载 */
-  private readonly runCondition = () => this.shouldTriggerLazyLoad?.() ?? true;
-
-  /** 触发大概率是漫画图片且还未成功触发懒加载的元素的懒加载 */
-  private readonly triggerExpectImg = (num?: number, time?: number) =>
-    wait(async () => {
-      let expectImgList = querySelectorAll<HTMLImageElement>(
-        this.imgSelector,
-      ).filter(needTrigged);
-      if (num) expectImgList = expectImgList.slice(0, num);
-      await triggerLazyLoad(expectImgList, this.runCondition);
-      return expectImgList.every((e) => !needTrigged(e));
-    }, time);
-
-  /** 触发一轮完整的懒加载，并对重复调用去重 */
-  private readonly triggerAllLazyLoad = () => {
-    if (this.triggerPromise) return this.triggerPromise;
-
-    this.triggerPromise = (async () => {
-      try {
-        // 优先触发大概率是漫画图片的懒加载
-        if (this.imgSelector) {
-          await this.triggerExpectImg(3, 1000 * 5);
-          await this.triggerExpectImg();
-        }
-        await triggerLazyLoad(
-          this.getAllImg().filter(needTrigged),
-          this.runCondition,
-        );
-
-        // 针对不使用 img 来触发懒加载的网站，要找到图片容器元素再尝试触发懒加载
-        // https://www.twmanga.com/comic/chapter/sanjiaoguanxirumen-founai/0_0.html
-        // https://klz9.com/love-live-flowers-hasunosora-jogakuin-school-idol-club-chapter-1.html
-        if (this.imageSlotGroups.length > 0) {
-          const targets = this.imageSlotGroups
-            .flatMap((group) => [...group.slots])
-            .filter((slot) => !isImageElement(slot) && needTrigged(slot));
-          if (targets.length > 0)
-            await triggerLazyLoad(targets, this.runCondition);
-        }
-      } finally {
-        this.triggerPromise = undefined;
-      }
-    })();
-
-    return this.triggerPromise;
-  };
 
   /** 记录传入的图片元素中最常见的那个 selector（仅 initSelector 失效时） */
   private readonly saveImgEleSelector = (list: HTMLElement[]) => {
@@ -251,20 +178,6 @@ export class AutoImageScanner {
     }
   };
 
-  /** 判断图片是否符合扫描条件 */
-  private readonly filterImage = (info: ImageInfo, img: HTMLImageElement) => {
-    // 排除黑名单里的
-    if (img.closest(IMG_BLACK_LIST_SELECTOR)) return false;
-    // 记录在案的直接通过
-    if (this.imgSelector && isEleSelector(img, this.imgSelector)) return true;
-    // 定义了过滤规则的按定义的来
-    if (this.filterImg) return this.filterImg(info, img);
-    // 排除显示尺寸小的
-    if (info.display.height <= 100 || info.display.width <= 100) return false;
-    // 原图尺寸必须足够大
-    return info.natural.height > 500 && info.natural.width > 500;
-  };
-
   /** 图片集合变化时更新图片列表、章节按钮并触发懒加载 */
   private readonly handleChanged = throttle(
     async (map: Map<HTMLImageElement, ImageInfo>, generation: number) => {
@@ -272,69 +185,29 @@ export class AutoImageScanner {
 
       if (map.size === 0) {
         this.imageSlotGroups = [];
+        this.imageListBuilder.clearListState();
         return this.onEmpty?.();
       }
-      this.imageSlotGroups = findImageSlotGroups(map);
 
-      // 开启了容器过滤时，只保留最优图片槽位组内的图片
-      const selectedSlots =
-        this.filterByContainer && this.imageSlotGroups.length > 0
-          ? buildSlotElementsFromGroup(pickBestGroup(this.imageSlotGroups))
-          : [...map.keys()];
-      this.slotElements = this.enableSortImageByTop
-        ? sortElementsByTop(selectedSlots)
-        : sortElementsByDomOrder(selectedSlots);
-      this.imgEleList = [...map.keys()];
+      const { groups, bestGroup } = getImageSlotGroupResult(map);
+      this.imageSlotGroups = groups;
 
-      if (this.slotElements.length === 0) return this.onEmpty?.();
-
-      // 随着图片的增加，需要补上空缺位置，避免变成稀疏数组
-      if (this.imgList.length < this.slotElements.length)
-        this.imgList = [
-          ...this.imgList,
-          ...Array.from(
-            { length: this.slotElements.length - this.imgList.length },
-            () => '',
-          ),
-        ];
-      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
-      else if (this.imgList.length > this.slotElements.length)
-        this.imgList = this.imgList.slice(0, this.slotElements.length);
-
-      this.onImgListChange?.([...this.imgList]);
-      this.updatePlaceholderImgList(this.imgList);
-
-      let isEdited = false;
-      await plimit(
-        this.slotElements.map((e, i) => async () => {
-          // 占位元素保持空字符串，等待懒加载成功后再替换
-          if (!isImageElement(e)) {
-            if (this.imgList[i] === '') return;
-            isEdited ||= true;
-            this.imgList[i] = '';
-            return;
-          }
-
-          let newUrl = await this.blobUrlResolver.resolve(e);
-          if (this.placeholderImgList.has(newUrl))
-            newUrl = getDatasetUrl(e) ?? '';
-          if (newUrl === this.imgList[i]) return;
-
-          isEdited ||= true;
-          this.imgList[i] = newUrl;
-        }),
+      const imgEleList = [...map.keys()];
+      const { isEdited, isEmpty } = await this.imageListBuilder.update(
+        map,
+        bestGroup,
+        generation,
       );
       if (generation !== this.generation) return;
-      if (isEdited) this.saveImgEleSelector(this.imgEleList);
+      if (isEmpty) return;
 
-      void this.triggerAllLazyLoad();
+      if (isEdited) this.saveImgEleSelector(imgEleList);
+
+      void this.lazyLoadController.trigger();
       this.chapterSwitch = getChapterSwitch();
       await this.onChapterSwitchChange?.({ ...this.chapterSwitch });
       if (generation !== this.generation) return;
-      if (isEdited) {
-        this.onImgListChange?.([...this.imgList]);
-        this.updatePlaceholderImgList(this.imgList);
-      }
+      this.imageListBuilder.notifyFinalImgListChange(isEdited);
     },
     500,
   );

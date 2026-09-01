@@ -105,7 +105,7 @@ export const createBundleConfigs = (
             name: 'clean-indirect',
             renderChunk(code: string) {
               return code.replaceAll(
-                /\(0,\s*(?<name>\w+(?:\.\w+)+)\)/gu,
+                /\(0,\s*(?<name>\w+(?:\.\w+)+)\)(?=\s*\()/gu,
                 '$<name>',
               );
             },

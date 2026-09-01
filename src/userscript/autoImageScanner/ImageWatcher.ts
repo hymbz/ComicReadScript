@@ -1,4 +1,4 @@
-import { isHTMLElement, isImageElement } from 'helper';
+import { ReactiveMap, isHTMLElement, isImageElement } from 'helper';
 
 export type ImageInfo = {
   display: { width: number; height: number };
@@ -39,8 +39,11 @@ export class ImageWatcher {
   private readonly mo: MutationObserver;
 
   // 记录已经符合条件的图片元素及其尺寸信息
-  // 注意：如果图片的 src 发生改变，会将其从这里移除，重新进行检查
-  private readonly qualifiedMap = new Map<HTMLImageElement, ImageInfo>();
+  // 如果图片的 src 发生改变，会将其从这里移除，重新进行检查
+  private readonly qualifiedMap = new ReactiveMap<
+    HTMLImageElement,
+    ImageInfo
+  >();
 
   // 需要监听的属性列表
   private readonly targetAttributes = [
@@ -189,13 +192,13 @@ export class ImageWatcher {
     for (const mutation of mutations) {
       switch (mutation.type) {
         case 'childList': {
-          changed ||= this.handleAddedNodes(mutation.addedNodes);
-          changed ||= this.handleRemovedNodes(mutation.removedNodes);
+          changed = this.handleAddedNodes(mutation.addedNodes) || changed;
+          changed = this.handleRemovedNodes(mutation.removedNodes) || changed;
           break;
         }
 
         case 'attributes': {
-          changed ||= this.handleAttributeMutation(mutation.target);
+          changed = this.handleAttributeMutation(mutation.target) || changed;
           break;
         }
       }

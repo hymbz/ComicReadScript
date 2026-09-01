@@ -158,6 +158,24 @@ export const pickBestGroup = (groups: ImageSlotGroup[]): ImageSlotGroup =>
     return current.medianArea > best.medianArea ? current : best;
   });
 
+export type ImageSlotGroupResult = {
+  /** 找到的所有图片槽位组 */
+  groups: ImageSlotGroup[];
+  /** 当前最可能属于正文的图片槽位组；没有任何组时为 undefined */
+  bestGroup?: ImageSlotGroup;
+};
+
+/** 计算所有图片槽位组，并同时返回当前最优组 */
+export const getImageSlotGroupResult = (
+  map: Map<HTMLImageElement, ImageInfo>,
+): ImageSlotGroupResult => {
+  const groups = findImageSlotGroups(map);
+  return {
+    groups,
+    bestGroup: groups.length > 0 ? pickBestGroup(groups) : undefined,
+  };
+};
+
 /** 计算组内图片显示面积的中位数 */
 const getGroupMedianArea = (
   group: ImageSlotGroup,

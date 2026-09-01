@@ -262,7 +262,8 @@ export const useInit = async <T extends Record<string, unknown>>(
     }),
   );
 
-  if (isDevMode) exposeToGlobal({ coreCtx, toast, coreStore: store });
+  if (isDevMode)
+    exposeToGlobal({ coreCtx, toast, coreStore: store, siteOptions: options });
 
   return coreCtx;
 };
