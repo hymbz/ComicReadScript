@@ -77,9 +77,12 @@ createEffectOn(
 // 在关闭工具栏的同时关掉滚动条的强制显示
 createEffectOn(
   () => store.show.toolbar,
-  () =>
-    store.show.scrollbar &&
-    !store.show.toolbar &&
-    setState('show', 'scrollbar', false),
+  () => {
+    if (store.show.toolbar) return;
+    setState((state) => {
+      state.show.scrollbar = false;
+      state.show.pageTip = false;
+    });
+  },
   { defer: true },
 );

@@ -73,6 +73,7 @@ export const resetUI = (state: State) => {
   state.show.toolbar = false;
   state.show.scrollbar = false;
   state.show.touchArea = false;
+  state.show.pageTip = false;
 };
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
