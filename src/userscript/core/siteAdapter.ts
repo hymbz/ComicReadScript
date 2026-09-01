@@ -99,7 +99,10 @@ export const setup = async <
 };
 
 /** 用于适配 SPA 站点的页面上下文类型 */
-export type SpaPageContext = { type: string } & Record<string, unknown>;
+export type SpaPageContext = {
+  type: string;
+  isManga?: boolean;
+} & Record<string, unknown>;
 
 type CleanupFn<PageContext> = (nextPageCtx?: PageContext) => Promisable<void>;
 
@@ -176,7 +179,7 @@ export const setupSiteAdapter = async <
     for (const cleanup of cleanupFns) await cleanup(newPageCtx);
     cleanupFns.length = 0;
     pageCtx = newPageCtx;
-    const isMangePage = newPageCtx?.type === 'manga';
+    const isMangePage = newPageCtx?.isManga ?? newPageCtx?.type === 'manga';
 
     setState((state) => {
       state.flag.hasPageHandler =

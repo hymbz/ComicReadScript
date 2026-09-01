@@ -43,7 +43,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
 export const getPageContext = async () => {
   if (location.pathname === '/mytags') return { type: 'mytags' } as const;
-  if (Reflect.has(unsafeWindow, 'mpvkey')) return { type: 'mpv' } as const;
+  if (Reflect.has(unsafeWindow, 'mpvkey'))
+    return { type: 'mpv', isManga: true } as const;
 
   // 目录页
   if (!Reflect.has(unsafeWindow, 'display_comment_field')) {
@@ -70,6 +71,7 @@ export const getPageContext = async () => {
 
   const pageCtx: GalleryPageContext = {
     type: 'gallery',
+    isManga: true,
     galleryId: location.pathname.split('/')[2],
     galleryTitle: querySelector('#gn')?.textContent || undefined,
     japanTitle: querySelector('#gj')?.textContent || undefined,
@@ -90,6 +92,7 @@ export const getPageContext = async () => {
 
 export type GalleryPageContext = {
   type: 'gallery';
+  isManga: true;
   galleryId: string;
   galleryTitle?: string;
   japanTitle?: string;

@@ -57,8 +57,8 @@ setupSiteAdapter({
           querySelector<HTMLAnchorElement>('h2 > a, .bm.cl a[href*="fid="]')
             ?.href,
         );
-      const isMangaForum = fid === 30 || fid === 37;
-      const pageContext = { type: 'thread', tid, fid, isMangaForum } as const;
+      const isManga = fid === 30 || fid === 37;
+      const pageContext = { type: 'thread', tid, fid, isManga } as const;
       return pageContext;
     }
 
@@ -118,7 +118,7 @@ setupSiteAdapter({
     },
 
     // 漫画阅读模式
-    thread: ({ setState, options, showComic, loadComic }, { isMangaForum }) => {
+    thread: ({ setState, options, showComic, loadComic }, { isManga }) => {
       // 修复微博图床的链接
       for (const e of querySelectorAll('img[file*="sinaimg.cn"]'))
         e.setAttribute('referrerpolicy', 'no-referrer');
@@ -235,7 +235,7 @@ setupSiteAdapter({
       };
 
       // 限定板块启用
-      if (isMangaForum) readMode();
+      if (isManga) readMode();
       else {
         querySelector('div.pti > div.authi')!.insertAdjacentHTML(
           'beforeend',
