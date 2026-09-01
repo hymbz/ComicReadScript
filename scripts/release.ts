@@ -86,5 +86,4 @@ exec(
   `git commit -m "chore: :bookmark: Release ${version}"`,
   `git tag --annotate v${version} --message="Release ${version}"`,
   'git push --follow-tags',
-  'npm publish',
 );

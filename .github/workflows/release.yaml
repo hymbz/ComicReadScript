@@ -6,6 +6,9 @@ on:
       - v*.*.*
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   release:
     name: Release
@@ -16,6 +19,7 @@ jobs:
         with:
           ref: 'master'
           fetch-depth: 1
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
