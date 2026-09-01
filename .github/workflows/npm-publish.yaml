@@ -27,4 +27,4 @@ jobs:
           cache: false
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: pnpm publish --provenance --access public --no-git-checks
