@@ -24,6 +24,8 @@
   </a>
 </p>
 
+**中文** | [English](https://github.com/hymbz/ComicReadScript/blob/master/docs/readme.en.md)
+
 ## 简介
 
 这是一个因为目前大部分漫画站都不支持双页显示，所以每次遇到 **漫画中的跨页大图被分割成两页** 就很不爽的人为了有更好的漫画阅读体验而写的油猴脚本，为主流漫画站增加了**双页阅读模式**和各种优化体验的增强功能。
@@ -413,7 +415,6 @@ nhentai 只给被屏蔽漫画加上了一层半透明遮罩而没有隐藏，被
 同时非常感谢以下已经为脚本提供了翻译的贡献者
 
 - русский - [@EnergoStalin](https://github.com/EnergoStalin)
-- தமிழ் - [@TamilNeram](https://github.com/TamilNeram)
 
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="left"><img src="https://hosted.weblate.org/widget/comic_read_script/main/287x66-grey.png" alt="翻译状态" /></a>
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="right"><img src="https://hosted.weblate.org/widget/comic_read_script/main/multi-auto.svg" alt="翻译状态" /></a>
