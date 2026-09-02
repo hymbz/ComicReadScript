@@ -26,7 +26,7 @@
     "zoom_in": "Nagyítás",
     "zoom_out": "Kicsinyítés"
   },
-  "description": "Adj hozzá fejlesztett funkciókat a manga oldalhoz, mint a kétoldalas olvasás és a fordítás, hogy javítsd az élményt",
+  "description": "Adj hozzá fejlesztett funkciókat a manga oldalhoz, mint a kétoldalas olvasás és a fordítás, hogy javítsd az élményt.",
   "eh_tag_lint": {
     "combo": "Ha [tag] létezik, általában [tag] is létezik",
     "conflict": "Ha [tag] létezik, nem kellene léteznie [tag]-nak",
@@ -107,7 +107,7 @@
       "not_valid_url": "Nem érvényes URL",
       "parse_error": "Elemzési hiba",
       "password_error": "Hibás jelszó",
-      "repeat_load": "Más fájl betöltése folyamatban...",
+      "repeat_load": "Más fájl betöltése folyamatban…",
       "userscript_not_installed": "A ComicRead szkript nincs telepítve"
     },
     "button": {
@@ -288,7 +288,7 @@
       "colorizing": "Színezés",
       "default": "Ismeretlen állapot",
       "detection": "Szöveg észlelése",
-      "downloading": "Letöltés",
+      "downloading": "letölt",
       "downscaling": "Kép kicsinyítése",
       "error": "Fordítási hiba",
       "error-disconnect": "Kapcsolat megszakadt a szerverrel",
@@ -305,7 +305,7 @@
       "pending": "Várakozás",
       "pending-pos": "Várakozás",
       "preparing": "Várakozás szabad ablakra",
-      "rendering": "Megjelenítés",
+      "rendering": "renderel",
       "running_pre_translation_hooks": "Fordítás előtti feldolgozás futtatása",
       "saved": "Eredmény mentése",
       "saving": "Mentés",
