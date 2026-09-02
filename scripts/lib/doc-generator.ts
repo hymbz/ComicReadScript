@@ -24,7 +24,7 @@ const noteEn: Record<string, string> = {
 
 const README_PATH = 'README.md';
 const INDEX_MD_PATH = 'docs/index.md';
-const EN_MD_PATH = 'docs/readme.en.md';
+const EN_MD_PATH = 'docs/index.en.md';
 
 /** 生成带 favicon 图标的 img 标签 */
 const buildFavicon = (url: string): string => {
@@ -39,7 +39,11 @@ const renderList = (lang: 'zh' | 'en'): string =>
     .map(([category, links]) => {
       const categoryName =
         lang === 'en' ? (categoryEn[category] ?? category) : category;
-      if (lang === 'en' && categoryName === category) {
+      if (
+        lang === 'en' &&
+        categoryName === category &&
+        !/^[A-Za-z0-9\s]+$/u.test(category)
+      ) {
         console.warn(
           chalk.yellow(
             `  ⚠ supportSiteList 缺英译分类「${category}」，已回退为中文`,
@@ -68,8 +72,8 @@ const renderList = (lang: 'zh' | 'en'): string =>
 /** 把 md 中 supportSiteList 区块替换为指定语言列表 */
 const replaceList = (md: string, list: string): string =>
   md.replace(
-    /(?<=<!-- supportSiteList -->\n\n).*(?=\n\n<!-- supportSiteList -->)/su,
-    list,
+    /<!-- supportSiteList -->[\s\S]*?<!-- supportSiteList -->/u,
+    `<!-- supportSiteList -->\n\n${list}\n\n<!-- supportSiteList -->`,
   );
 
 /** 把相对链接改成文档外链，以便在 greasyfork 等外站正常显示图片 */

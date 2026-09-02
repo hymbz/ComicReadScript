@@ -24,7 +24,7 @@
   </a>
 </p>
 
-**中文** | [English](https://github.com/hymbz/ComicReadScript/blob/master/docs/readme.en.md)
+**中文** | [English](https://github.com/hymbz/ComicReadScript/blob/master/docs/index.en.md)
 
 ## 简介
 

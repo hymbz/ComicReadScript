@@ -1,8 +1,8 @@
 # ComicRead
 
-> The English README body should be translated from `docs/index.md`, keeping its
-> external links unchanged. Only the supported-site list block below is
-> auto-updated from `src/index.ts`.
+<!-- The English README body should be translated from `docs/index.md`, keeping its
+external links unchanged. Only the supported-site list block below is
+auto-updated from `src/index.ts`. -->
 
 ![Page fill example](https://comic-read-docs.pages.dev/页面填充示例.webp)
 
@@ -32,7 +32,7 @@
 
 ## Introduction
 
-This is a userscript written by someone who was constantly annoyed that most comic sites don't support two-page spread display, and that **large two-page spreads in comics get split into two pages**. To achieve a better reading experience, it adds a **two-page reading mode** and various enhancement features to mainstream comic sites.
+This is a userscript written by someone who was constantly annoyed that most comic sites don't support two-page display, and that large two-page spreads in comics get split into two pages**. To achieve a better reading experience, it adds a **two-page reading mode** and various enhancement features to mainstream comic sites.
 
 In two-page mode, the script automatically detects spreads and puts each spread on its own page, and automatically inserts blank pages to keep the left/right page positions of the other images correct. You can also manually toggle page fill on/off via the sidebar button.
 
@@ -72,7 +72,7 @@ The script has two kinds of configuration:
 
 All configuration changes (except keyboard shortcuts) only take effect and are saved for the current site, so you can use different configurations on different sites.
 
-Once you've settled on a site's preferred configuration, you can lock the current configuration. Once locked, any changes you make won't be saved, so you don't have to revert temporary tweaks afterwards.
+Once you've settled on a site's commonly used configuration, you can lock the current configuration. Once locked, any changes you make won't be saved, so you don't have to revert temporary tweaks afterwards.
 
 ## Keyboard Shortcuts
 
@@ -89,13 +89,13 @@ Once you've settled on a site's preferred configuration, you can lock the curren
 
 ## Page Fill
 
-> **TL;DR: if a large two-page spread isn't displayed correctly merged, just toggle page fill on/off.**
+> **TL;DR: if a large two-page spread isn't merged correctly, just toggle page fill on/off.**
 
 This feature inserts or removes blank pages in the image flow to adjust the left/right page positions of images in two-page mode.
 
 If you read comics in two-page mode without any sense of wrongness and don't care about correct left/right page positions, it's totally fine to skip the details here. In fact, learning about it might make you notice the awkwardness and feel uneasy reading a few comics where no amount of adjusting ever seems right.
 
-But if you're after an experience close to flipping through a physical book, and you're **not the perfectionist-sensitive type**, it's still highly recommended to read [How to tell if the left/right page positions are correct?](https://comic-read-docs.pages.dev/判断左右页位置.html).
+But if you're after an experience close to flipping through a physical book, and you're **not the OCD type**, it's still highly recommended to read [How to tell if the left/right page positions are correct?](https://comic-read-docs.pages.dev/判断左右页位置.html).
 
 ## Scroll Mode
 
@@ -187,7 +187,7 @@ The default shortcut is `Shift + v`. After pressing it you enter multi-select mo
 
 You can also enter multi-select mode and confirm via the floating button's menu.
 
-Sites supporting multi-select are marked with superscripts in the [Supported Sites](#supported-sites) list below: <sup>merged</sup> means multiple works can be merge-loaded, and <sup>select pages</sup> means specific pages can be selected to load.
+Sites supporting multi-select are marked with superscripts in the [Supported Sites](#supported-sites) list below: <sup>merged</sup> means multiple works can be merged together, and <sup>select pages</sup> means specific pages can be selected to load.
 
 ## Supported Sites
 
@@ -218,7 +218,36 @@ Besides the reading mode, some sites also have extra enhancement features. Click
   - Unlock hidden comics
 
 <!-- Auto-generated from src/index.ts -->
+
 <!-- supportSiteList -->
+
+### Manga Sites (Chinese)
+
+<a href="https://www.manhuagui.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.manhuagui.com&size=16" style="width:1em;height:1em;" loading="lazy"> 漫画柜(manhuagui)</a> · <a href="https://www.dm5.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.dm5.com&size=16" style="width:1em;height:1em;" loading="lazy"> 动漫屋(dm5)</a> · <a href="https://mangabz.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://mangabz.com&size=16" style="width:1em;height:1em;" loading="lazy"> mangabz</a> · <a href="https://komiic.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://komiic.com&size=16" style="width:1em;height:1em;" loading="lazy"> komiic</a> · <a href="https://www.8comic.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.8comic.com&size=16" style="width:1em;height:1em;" loading="lazy"> 無限動漫</a>
+
+### R18 (Chinese)
+
+<a href="https://www.wnacg.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.wnacg.com&size=16" style="width:1em;height:1em;" loading="lazy"> 绅士漫画(wnacg)</a> · <a href="https://18comic.vip"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://18comic.vip&size=16" style="width:1em;height:1em;" loading="lazy"> 禁漫天堂</a> · <a href="https://noy1.top"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://noy1.top&size=16" style="width:1em;height:1em;" loading="lazy"> NoyAcg</a> · <a href="https://www.relamanhua.org/"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.relamanhua.org&size=16" style="width:1em;height:1em;" loading="lazy"> 熱辣漫畫</a> · <a href="https://hanime1.me"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hanime1.me&size=16" style="width:1em;height:1em;" loading="lazy"> hanime1</a>
+
+### R18
+
+<a href="https://hitomi.la"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hitomi.la&size=16" style="width:1em;height:1em;" loading="lazy"> hitomi</a> · <a href="https://hdoujin.org"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hdoujin.org&size=16" style="width:1em;height:1em;" loading="lazy"> hdoujin</a> · <a href="https://schale.network/"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://schale.network&size=16" style="width:1em;height:1em;" loading="lazy"> SchaleNetwork</a> · <a href="https://nude-moon.org"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nude-moon.org&size=16" style="width:1em;height:1em;" loading="lazy"> nude-moon</a> · <a href="https://hentaizap.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hentaizap.com&size=16" style="width:1em;height:1em;" loading="lazy"> HentaiZap</a> · <a href="https://imhentai.xxx"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://imhentai.xxx&size=16" style="width:1em;height:1em;" loading="lazy"> IMHentai</a> · <a href="https://hentaiera.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hentaiera.com&size=16" style="width:1em;height:1em;" loading="lazy"> HentaiEra</a> · <a href="https://hentaienvy.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://hentaienvy.com&size=16" style="width:1em;height:1em;" loading="lazy"> HentaiEnvy</a>
+
+### Manga Sites
+
+<a href="https://mangadex.org"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://mangadex.org&size=16" style="width:1em;height:1em;" loading="lazy"> MangaDex</a> · <a href="https://nicomanga.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nicomanga.com&size=16" style="width:1em;height:1em;" loading="lazy"> welovemanga</a> · <a href="https://klz9.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://klz9.com&size=16" style="width:1em;height:1em;" loading="lazy"> kisslove(klz9)</a>
+
+### Fanbox
+
+<a href="https://pawchive.pw"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://pawchive.pw&size=16" style="width:1em;height:1em;" loading="lazy"> Pawchive</a> <sup>merged</sup> · <a href="https://kemono.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://kemono.su&size=16" style="width:1em;height:1em;" loading="lazy"> kemono</a> <sup>merged</sup> · <a href="https://nekohouse.su"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://nekohouse.su&size=16" style="width:1em;height:1em;" loading="lazy"> nekohouse</a>
+
+### Others
+
+<a href="https://www.pixiv.net"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.pixiv.net&size=16" style="width:1em;height:1em;" loading="lazy"> Pixiv</a> <sup>merged</sup> · <a href="https://comic.hypergryph.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://comic.hypergryph.com&size=16" style="width:1em;height:1em;" loading="lazy"> 明日方舟泰拉记事社</a> · <a href="https://postimages.org/"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://postimages.org&size=16" style="width:1em;height:1em;" loading="lazy"> Postimages</a> · <a href="https://sai-zen-sen.jp"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://sai-zen-sen.jp&size=16" style="width:1em;height:1em;" loading="lazy"> 最前線</a> · <a href="https://geinou-nude.com"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://geinou-nude.com&size=16" style="width:1em;height:1em;" loading="lazy"> 芸能ヌード</a>
+
+### Self-hosted
+
+<a href="https://github.com/Suwayomi/Tachidesk-Sorayomi"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://github.com&size=16" style="width:1em;height:1em;" loading="lazy"> Tachidesk</a> · <a href="https://github.com/Difegue/LANraragi"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://github.com&size=16" style="width:1em;height:1em;" loading="lazy"> LANraragi</a>
 
 <!-- supportSiteList -->
 
@@ -312,7 +341,7 @@ Since the [E-Hentai tag translation helper - TagEditor](https://github.com/EhTag
 
 Compared to the original script, it adds the shortcut `q` to summon the list in reading mode (modifiable in settings), can also display tag descriptions from [EhSyringe](https://github.com/EhTagTranslation/EhSyringe), and uses `Shift + mouse wheel` to adjust opacity.
 
-In floating mode, after finishing a tag the input box automatically loses focus so you can immediately close the window with a shortcut, and the input box auto-focuses when the mouse moves over it, saving a click.
+In floating mode, after you finish tagging the input box automatically loses focus so you can immediately close the window with a shortcut, and the input box auto-focuses when the mouse moves over it, saving a click.
 
 Tags can be dragged directly into the input box. The detection area is generous — you don't have to drop exactly on the input box, just within the panel.
 
