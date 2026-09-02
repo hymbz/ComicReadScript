@@ -289,7 +289,7 @@ export const defaultSettingList: () => SettingList = () => [
           {...bindOption('showComment')}
         />
         <SettingsItemSwitch
-          name={t('setting.option.autoHiddenMouse')}
+          name={t('setting.option.auto_hidden_mouse')}
           {...bindOption('autoHiddenMouse')}
         />
 
@@ -544,7 +544,7 @@ export const defaultSettingList: () => SettingList = () => [
           {...bindOption('swapPageTurnKey')}
         />
         <SettingsItemSwitch
-          name={t('setting.option.autoFullscreen')}
+          name={t('setting.option.auto_fullscreen')}
           {...bindOption('autoFullscreen')}
         />
 

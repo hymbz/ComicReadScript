@@ -31,7 +31,7 @@ export type Option = {
   preloadPageNum: number;
   /** 显示页数。0 表示 auto */
   pageNum: 1 | 2 | 0;
-  /** 页数提示显示方式 */
+  /** 页码提示显示方式 */
   pageTip: 'hide' | 'auto' | 'always';
   /** 翻页动画时长（毫秒） */
   turnPageDuration: number;

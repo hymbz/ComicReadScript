@@ -16,7 +16,7 @@ type ShowState = {
     toolbar: boolean;
     /** 是否强制显示滚动条 */
     scrollbar: boolean;
-    /** 是否强制显示页数提示 */
+    /** 是否强制显示页码提示 */
     pageTip: boolean;
     /** 是否显示点击区域 */
     touchArea: boolean;

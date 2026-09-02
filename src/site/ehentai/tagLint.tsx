@@ -163,6 +163,9 @@ export const tagLint: EhFeatureHandler = (_, pageCtx) => {
     // 涉及到图库类型的，比较复杂的检查
     if (isInCategories('Doujinshi') && isMissingNamespace(tagList, 'parody'))
       addOtherWarn(t('eh_tag_lint.miss_parody'), ['parody:original']);
+
+    // 如果画廊里没有「男性」/「混合性别」标签组的标签，但有「女性」标签组的标签
+    // 说明这个画廊应该是「纯女性」的
     if (
       isManga &&
       isMissingTags(
