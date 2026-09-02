@@ -55,6 +55,7 @@ const getKeys = async (url?: string): Promise<[string, string]> => {
 };
 
 // by: https://github.com/MapoMagpie/comic-looms/blob/7799f87fdd5a8ac73c878f338b7ae6aa5c0b2d18/src/platform/matchers/mangacopy.ts#L96-L125
+// 通过在目录页找 `/chapters` api 请求的启动器，可以顺着调用堆栈找到官方的解析代码
 export const decryptData = async (raw: string, key?: string) => {
   key ||= (await getKeys())[1]; // oxlint-disable-line no-await-expression-member
 

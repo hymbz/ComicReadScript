@@ -133,7 +133,10 @@ export type SpaInitOptions<
   /** 根据 PageContext 自动调用匹配的 handler */
   handlers: {
     /** 在匹配到的 handler 执行前调用，用于放置在所有页面上都要执行的逻辑 */
-    all?: PageHandler<PageContext, Options>;
+    all?: (
+      coreCtx: CoreContext<Options>,
+      pageCtx: PageContext | undefined,
+    ) => Promisable<void | CleanupFn<PageContext>>;
   } & {
     [K in PageContext['type']]?: (
       coreCtx: CoreContext<Options>,
@@ -144,6 +147,8 @@ export type SpaInitOptions<
    * 类似 handlers.all，但只会在对应的 options 启用时执行
    *
    * 在匹配的 handlers 执行前调用
+   *
+   * 如果没有使用 `pageCtx` 参数，会在所有页面执行
    */
   features?: {
     [FeatureName in keyof Options]?: PageHandler<PageContext, Options>;
@@ -163,7 +168,10 @@ export const setupSiteAdapter = async <
   let pageCtx: PageContext | undefined;
   const cleanupFns: CleanupFn<PageContext>[] = [];
 
-  pageCtx = await waitUrlChange(() => getPageContext(pageCtx));
+  // 没有 handlers.all 时，等到进入可识别页面再继续
+  pageCtx = handlers.all
+    ? await getPageContext(pageCtx)
+    : await waitUrlChange(() => getPageContext(pageCtx));
 
   if (isDevMode) exposeToGlobal({ pageCtx });
 
@@ -193,12 +201,26 @@ export const setupSiteAdapter = async <
       };
     });
 
+    // handlers.all 需要在所有页面运行，包括 pageCtx 为 undefined 的页面
+    const allCleanup = await handlers.all?.(coreCtx, newPageCtx);
+    if (allCleanup) cleanupFns.push(allCleanup);
+
+    if (features) {
+      for (const [featureName, handler] of Object.entries(features)) {
+        if (!options[featureName as keyof Options] || !handler) continue;
+        // 接收 pageCtx 参数的 feature 依赖页面类型，在页面无法识别时跳过
+        if (handler.length >= 2 && !newPageCtx) continue;
+        // oxlint-disable-next-line no-loop-func
+        requestIdleCallback(async () => {
+          const cleanup = await handler(coreCtx, newPageCtx!);
+          if (cleanup && pageCtx === newPageCtx) cleanupFns.push(cleanup);
+        }, 1000);
+      }
+    }
+
     if (!newPageCtx) return;
 
     init(isMangePage);
-
-    const allCleanup = await handlers.all?.(coreCtx, newPageCtx);
-    if (allCleanup) cleanupFns.push(allCleanup);
 
     const handlerCleanup = await handlers[
       newPageCtx.type as PageContext['type']
@@ -207,17 +229,6 @@ export const setupSiteAdapter = async <
       newPageCtx as Extract<PageContext, { type: PageContext['type'] }>,
     );
     if (handlerCleanup) cleanupFns.push(handlerCleanup);
-
-    if (features) {
-      for (const [featureName, handler] of Object.entries(features)) {
-        if (!options[featureName as keyof Options] || !handler) continue;
-        // oxlint-disable-next-line no-loop-func
-        requestIdleCallback(async () => {
-          const cleanup = await handler(coreCtx, newPageCtx);
-          if (cleanup && pageCtx === newPageCtx) cleanupFns.push(cleanup);
-        }, 1000);
-      }
-    }
 
     if (!isMangePage || !store.options.autoShow) return;
 

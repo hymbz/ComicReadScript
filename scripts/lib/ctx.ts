@@ -88,6 +88,8 @@ const enSupportSite = [
 ];
 export const meta = {
   name: 'ComicRead',
+  'name:en': 'ComicRead',
+  'name:ru': 'ComicRead',
   namespace: 'ComicRead',
   version: pkg.version,
   description: `${zh.description}${getSupportSiteList()
