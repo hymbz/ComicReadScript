@@ -149,7 +149,7 @@ type Option$1 = {
 	preloadPageNum: number;
 	/** 显示页数。0 表示 auto */
 	pageNum: 1 | 2 | 0;
-	/** 页数提示显示方式 */
+	/** 页码提示显示方式 */
 	pageTip: "hide" | "auto" | "always";
 	/** 翻页动画时长（毫秒） */
 	turnPageDuration: number;
@@ -362,7 +362,7 @@ export type ShowState = {
 		toolbar: boolean;
 		/** 是否强制显示滚动条 */
 		scrollbar: boolean;
-		/** 是否强制显示页数提示 */
+		/** 是否强制显示页码提示 */
 		pageTip: boolean;
 		/** 是否显示点击区域 */
 		touchArea: boolean;
@@ -482,6 +482,7 @@ declare const waitImgLoad: (target: HTMLImageElement | string, timeout?: number)
 declare const boolDataVal: (val: boolean | undefined) => "" | undefined;
 declare const testImgUrl: (url: string) => Promise<unknown>;
 declare const canvasToBlob: (canvas: HTMLCanvasElement | OffscreenCanvas, type?: string, quality?: number) => Promise<Blob>;
+declare const canvasToBlobUrl: (canvas: HTMLCanvasElement | OffscreenCanvas, type?: string, quality?: number) => Promise<string>;
 declare const difference: <T extends object>(a: T, b: T) => Partial<T>;
 declare const assign: <T extends object>(target: T, ...sources: (Partial<T> | undefined)[]) => T;
 declare const byPath: <T = object>(obj: object, path: string | string[], handleVal?: (parentObj: object, key: string) => unknown) => T | null;
@@ -827,7 +828,7 @@ export declare const initComicReader: {
 export declare const defaultConfig: () => InitConfig;
 
 declare namespace helper {
-	export { AnimationFrame, FaviconProgress, PQueue, PointerState, ReactiveMap, ReactiveSet, SetStateFunction, StyleMap, UseDrag, UseStore, WakeLock$1 as WakeLock, approx, assign, boolDataVal, byPath, canvasToBlob, clamp, createEffectOn, createEqualsSignal, createMemoMap, createRootEffect, createRootMemo, createScheduled, createThrottleMemo, css, debounce, descRange, difference, domParse, ensureGmValue, exposeToGlobal, extractRange, fileType, getFileName, getImageData, getKeyboardCode, getMostItem, hijackFn, inRange, isArray, isEqual, isHTMLElement, isImageElement, isNumber, isString, isUrl, keyboardCodeToText, lang, log, mountComponents, needDarkMode, onAutoMount, onUrlChange, once, plimit, promisifyRequest, querySelector, querySelectorAll, querySelectorClick, range, requestIdleCallback$1 as requestIdleCallback, saveAs, scrollIntoView, setInitLang, setLang, singleThreaded, sleep, t, testImgUrl, throttle, useCache, useDrag, useFaviconProgress, useStore, versionLt, wait, waitDom, waitImgLoad, waitUrlChange, withEventStop };
+	export { AnimationFrame, FaviconProgress, PQueue, PointerState, ReactiveMap, ReactiveSet, SetStateFunction, StyleMap, UseDrag, UseStore, WakeLock$1 as WakeLock, approx, assign, boolDataVal, byPath, canvasToBlob, canvasToBlobUrl, clamp, createEffectOn, createEqualsSignal, createMemoMap, createRootEffect, createRootMemo, createScheduled, createThrottleMemo, css, debounce, descRange, difference, domParse, ensureGmValue, exposeToGlobal, extractRange, fileType, getFileName, getImageData, getKeyboardCode, getMostItem, hijackFn, inRange, isArray, isEqual, isHTMLElement, isImageElement, isNumber, isString, isUrl, keyboardCodeToText, lang, log, mountComponents, needDarkMode, onAutoMount, onUrlChange, once, plimit, promisifyRequest, querySelector, querySelectorAll, querySelectorClick, range, requestIdleCallback$1 as requestIdleCallback, saveAs, scrollIntoView, setInitLang, setLang, singleThreaded, sleep, t, testImgUrl, throttle, useCache, useDrag, useFaviconProgress, useStore, versionLt, wait, waitDom, waitImgLoad, waitUrlChange, withEventStop };
 }
 
 export {
