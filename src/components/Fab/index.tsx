@@ -1,5 +1,5 @@
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
-import { css, throttle } from 'helper';
+import { createEffectOn, css, throttle } from 'helper';
 import {
   type Component,
   For,
@@ -34,6 +34,12 @@ export type FabProps = {
   placement?: 'left' | 'right';
   /** 快速拨号按钮位置 */
   speedDialPlacement?: 'top' | 'bottom';
+  /**
+   * 根元素引用
+   *
+   * 传入时会在显隐变化的同时切换根元素的 pointer-events，避免在隐藏后仍拦截点击
+   */
+  rootRef?: () => HTMLElement;
 
   children?: JSX.Element;
   style?: JSX.CSSProperties;
@@ -54,6 +60,14 @@ export const Fab: Component<FabProps> = (_props) => {
   // 上次滚动位置
   let lastY = window.scrollY;
   const [show, setShow] = createSignal(props.initialShow);
+
+  // 显隐变化时同步根元素的 pointer-events，仅在传入 rootRef 时生效，避免隐藏后拦截点击
+  createEffectOn(
+    [() => props.rootRef?.(), () => props.show ?? show()],
+    ([rootRef, isShow]) => {
+      if (rootRef) rootRef.style.pointerEvents = isShow ? '' : 'none';
+    },
+  );
 
   // 绑定滚动事件
   const handleScroll = throttle((e: Event) => {

@@ -165,7 +165,9 @@ export const useFab = <T extends Record<string, any>>(
     observer.observe(ref);
   };
 
-  const dom = mountComponents('fab', () => {
+  // oxlint-disable-next-line prefer-const
+  let dom: HTMLDivElement;
+  dom = mountComponents('fab', () => {
     createEffect(() => {
       setState('fab', {
         placement:
@@ -175,7 +177,7 @@ export const useFab = <T extends Record<string, any>>(
       });
     });
 
-    return <Fab ref={handleMount} {...store.fab} />;
+    return <Fab ref={handleMount} rootRef={() => dom} {...store.fab} />;
   });
   dom.style.setProperty('z-index', '2147483646', 'important');
 
