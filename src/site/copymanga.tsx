@@ -1,4 +1,4 @@
-import { request, setupSiteAdapter, toast } from 'core';
+import { setupSiteAdapter, toast } from 'core';
 import {
   css,
   log,
@@ -7,10 +7,17 @@ import {
   querySelectorClick,
   wait,
 } from 'helper';
-import { type RequestDetails, eachApi } from 'request';
 import { type Component, For, Match, Show, Switch } from 'solid-js';
 import { render } from 'solid-js/web';
-import { decryptData, getImglistByHtml } from 'userscript/copyApi';
+import {
+  type ChaptersGroup,
+  getChapterData,
+  getChapters,
+  getComments,
+  getImglistByHtml,
+  getLastChapter,
+  token,
+} from 'userscript/copyApi';
 
 // API 参考：https://github.com/fumiama/copymanga/blob/279e08b06a70307bf20162900103ec1fdcb97751/app/src/main/res/values/strings.xml
 
@@ -21,65 +28,6 @@ import { decryptData, getImglistByHtml } from 'userscript/copyApi';
 //  404 - https://www.mangacopy.com/comic/Hyakkasou
 
 type HiddenType = 'web' | 'mobile' | '404';
-
-const token = document.cookie
-  .split('; ')
-  .find((cookie) => cookie.startsWith('token='))
-  ?.replace('token=', '');
-
-const mobileApi = new (class {
-  // 静态字段需与构建插件 APP_HEADERS（scripts/plugin/copyMangaApi/hosts.ts）保持一致
-  headers = {
-    webp: '1',
-    region: '1',
-    'User-Agent': 'COPY/3.0.0',
-    // 版本号由 copyApi 插件在构建时自动注入官方最新值
-    version: 'appVersion#copyManga',
-    source: 'copyApp',
-    referer: 'com.copymanga.app-3.0.0',
-    Authorization: token ? `Token ${token}` : '',
-  };
-
-  get: typeof request = (url, details, ...args) =>
-    request(
-      url,
-      { responseType: 'json', headers: this.headers, ...details },
-      ...args,
-    );
-
-  // 官方 APP 专有功能（评论、阅读记录等）只由官方 API 域名提供，且要求新版 APP 请求头
-  // 主机列表由 copyApi 插件在构建时注入
-  eachGet = <T = any,>(url: string, details?: RequestDetails<T>) =>
-    eachApi<T>(url, ['apiList#copyMangaMobile'], {
-      responseType: 'json',
-      headers: { ...this.headers, accept: 'application/json' },
-      fetch: false,
-      ...details,
-    });
-})();
-
-const pcApi = new (class {
-  // 静态字段需与构建插件 HEADERS（scripts/plugin/copyMangaApi/hosts.ts）保持一致
-  headers = {
-    'User-Agent':
-      'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36 Edg/141.0.0.0',
-    'x-requested-with': 'com.manga2020.app',
-    platform: '3',
-    version: '2024.4.28',
-    webp: '1',
-    accept: 'application/json',
-    referer: location.href,
-    Authorization: token ? `Token ${token}` : '',
-  };
-
-  eachGet = <T = any,>(url: string, details?: RequestDetails<T>) =>
-    eachApi<T>(url, ['apiList#copyManga'], {
-      responseType: 'json',
-      headers: this.headers,
-      fetch: false,
-      ...details,
-    });
-})();
 
 // 在目录页显示上次阅读记录
 const handleLastChapter = (comicName: string) => {
@@ -106,10 +54,7 @@ const handleLastChapter = (comicName: string) => {
     a.textContent = '獲取中';
     a.removeAttribute('href');
     try {
-      const res = await mobileApi.eachGet(
-        `/api/v3/comic2/${comicName}/query?platform=3`,
-        { errorText: '獲取閱讀記錄失敗' },
-      );
+      const res = await getLastChapter(comicName);
 
       const data = res.response?.results?.browse;
       if (!data) {
@@ -129,7 +74,7 @@ const handleLastChapter = (comicName: string) => {
       }`);
 
       a.href = `${location.pathname}/chapter/${lastChapterId}`;
-      a.textContent = data.chapter_name as string;
+      a.textContent = data.chapter_name;
     } catch {
       a.textContent = '獲取閱讀記錄失敗';
     }
@@ -141,30 +86,7 @@ const handleLastChapter = (comicName: string) => {
 
 // 生成目录
 const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
-  const {
-    response: { results },
-  } = await mobileApi.get<{ results: string }>(
-    `/comicdetail/${comicName}/chapters`,
-    { errorText: '加載漫畫目錄失敗' },
-  );
-
-  type ChaptersGroup = {
-    name: string;
-    path_word: string;
-    chapters: { type: number; name: string; id: string }[];
-    last_chapter: {
-      comic_id: string;
-      name: string;
-      datetime_created: string;
-      uuid: string;
-    };
-  };
-  type Chapters = {
-    build: { type: { id: number; name: string }[] };
-    groups: Record<string, ChaptersGroup>;
-  };
-
-  const data: Chapters = await decryptData(results);
+  const data = await getChapters(comicName);
   log(data);
   const {
     build: { type },
@@ -359,6 +281,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
       break;
     case 'web':
       root = querySelector('.upLoop')!;
+      root.textContent = '';
       break;
     default:
       root = querySelector('main')!;
@@ -433,8 +356,13 @@ setupSiteAdapter({
         Boolean(
           querySelector('.wargin')?.textContent?.includes('不提供閱覽'),
         ) ||
-        // 再等一秒看目录有没有加载出来
-        !(await wait(() => querySelector('.upLoop .table-default-title'), 1000))
+        // 再等目录标题容器加载出来
+        !(await wait(
+          () => querySelector('.upLoop .table-default-title'),
+          1000,
+        )) ||
+        // 有标题容器，但没有章节列表项（<a><li>），说明是触发了反爬机制
+        !(await wait(() => querySelector('main .upLoop ul a li'), 2000))
       ) {
         // 检查漫画介绍是否正常显示
         hiddenType = querySelector('.comicParticulars-title') ? 'web' : '404';
@@ -451,45 +379,23 @@ setupSiteAdapter({
       if (titleDom)
         titleDom.textContent =
           'ComicRead 提示您：你訪問的內容暫不存在，請點選右下角按鈕嘗試加載漫畫';
-
       /** 通过网页 API 加载漫画（可以获取隐藏漫画） */
-      const getImglistByApi = async () => {
-        type ResData = {
-          message: string;
-          results: {
-            chapter: {
-              contents: { url: string }[];
-              name: string;
-              next: string | null;
-              prev: string | null;
-            };
-            comic: { name: string };
-          };
-        };
-        const res = await pcApi.eachGet<ResData>(
-          `/api/v3/comic/${comicName}/chapter/${id}?platform=3`,
-          { noCheckCode: true },
-        );
+      const getImgListByApi = async () => {
+        const data = await getChapterData(comicName, id);
 
-        if (res.status !== 200) {
-          const message = `漫畫加載失敗：${res.response.message || res.status}`;
+        if (data.status !== 200) {
+          const message = `漫畫加載失敗：${data.message || data.status}`;
           if (titleDom) titleDom.textContent = message;
           throw new Error(message);
         }
 
         if (titleDom) {
           titleDom.textContent = '漫畫加載成功🥳';
-          const {
-            chapter: { name: chapterName },
-            comic: { name },
-          } = res.response.results;
-          document.title = `${name} - ${chapterName} - 拷貝漫畫 拷贝漫画`;
+          document.title = `${data.comicName} - ${data.chapter.name} - 拷貝漫畫 拷贝漫画`;
         }
 
         if (titleDom ?? !querySelector('.comicContent-next')) {
-          const {
-            chapter: { next, prev },
-          } = res.response.results;
+          const { next, prev } = data.chapter;
 
           setState('manga', {
             onNext: next
@@ -501,9 +407,7 @@ setupSiteAdapter({
           });
         }
 
-        return res.response.results.chapter.contents.map(({ url }) =>
-          url.replace(/(?<=(?<sep>\/|\.))c800x/u, 'c1500x'),
-        );
+        return data.urls;
       };
 
       setState('comicMap', '', {
@@ -519,7 +423,7 @@ setupSiteAdapter({
             });
 
           // 隐藏漫画只能通过 api 加载，不能的话就没办法了
-          if (titleDom) return getImglistByApi();
+          if (titleDom) return getImgListByApi();
           // 其他普通漫画优先通过解析网页变量加载，避免触发 api 的限制
           try {
             const imgList = await getImglistByHtml(
@@ -529,26 +433,15 @@ setupSiteAdapter({
             return imgList;
           } catch (error) {
             log.error(error);
-            return getImglistByApi();
+            return getImgListByApi();
           }
         },
       });
 
-      const getCommentList = async (commentList: string[] = []) => {
-        const chapter_id = location.pathname.split('/').at(-1);
-        const res = await mobileApi.eachGet<Blob>(
-          `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=${commentList.length}&_update=true`,
-          { errorText: '獲取漫畫評論失敗', responseType: 'blob' },
-        );
-        const { list, total } = JSON.parse(await res.response.text()).results;
-        for (const { comment } of list) commentList.push(comment);
-        if (commentList.length < total) return getCommentList(commentList);
-        return commentList;
-      };
-
       // 评论异步获取，不影响其他功能
       void (async () => {
-        const comments = await getCommentList();
+        const chapter_id = location.pathname.split('/').at(-1)!;
+        const comments = await getComments(chapter_id);
         if (comments.length > 0) setState('manga', 'commentList', comments);
       })();
     },

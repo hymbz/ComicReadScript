@@ -2,7 +2,11 @@ import { toast } from 'core';
 import { querySelector, t } from 'helper';
 import { request } from 'request';
 
-let contentKey: string | undefined;
+// ===== 解密 =====
+
+/** 加密后的图片列表数据 */
+let contentKey = '';
+/** 解密用的 key */
 let decryptKey: string | undefined;
 
 const getKeys = async (url?: string): Promise<[string, string]> => {
@@ -21,10 +25,13 @@ const getKeys = async (url?: string): Promise<[string, string]> => {
   }
 
   // 拷贝 PC 端直接放在网页变量里，不过另一个变量的名字会变
-  if (unsafeWindow.contentKey !== undefined && unsafeWindow.cct !== undefined) {
+  if (
+    (unsafeWindow.contentKey !== undefined && unsafeWindow.cct !== undefined) ||
+    unsafeWindow.ccz !== undefined
+  ) {
     contentKey = unsafeWindow.contentKey; // oxlint-disable-line prefer-destructuring
-    decryptKey = unsafeWindow.cct;
-    return [contentKey!, decryptKey!];
+    decryptKey = unsafeWindow.cct || unsafeWindow.ccz;
+    return [contentKey, decryptKey!];
   }
 
   // 如果另一个变量的名字变了，或者是在拷贝的移动端，就得从 PC 端的网页里解析获取了
@@ -55,9 +62,14 @@ const getKeys = async (url?: string): Promise<[string, string]> => {
 };
 
 // by: https://github.com/MapoMagpie/comic-looms/blob/7799f87fdd5a8ac73c878f338b7ae6aa5c0b2d18/src/platform/matchers/mangacopy.ts#L96-L125
-// 通过在目录页找 `/chapters` api 请求的启动器，可以顺着调用堆栈找到官方的解析代码
-export const decryptData = async (raw: string, key?: string) => {
+// 通过在漫画目录页上用 devltool 找 `/chapters` api 请求的启动器，
+// 可以顺着调用堆栈找到官方的解析代码
+export const decryptData = async <T = any>(
+  raw: string,
+  key?: string,
+): Promise<T> => {
   key ||= (await getKeys())[1]; // oxlint-disable-line no-await-expression-member
+  if (!raw) throw new Error('raw is empty');
 
   const cipher = raw.slice(16);
   const iv = raw.slice(0, 16);
@@ -78,9 +90,13 @@ export const decryptData = async (raw: string, key?: string) => {
   return JSON.parse(new TextDecoder().decode(decryptedBuffer));
 };
 
+/** 统一替换图片链接的分辨率 */
+export const mapImgUrl = (url: string) =>
+  url.replaceAll(/c\d+x\.\w+/gu, 'c1500x.webp');
+
 /** 通过解析网页变量获取图片列表 */
 export const getImglistByHtml = async (pageUrl?: string) => {
   const keys = await getKeys(pageUrl);
-  const res: { url: string }[] = await decryptData(...keys);
-  return res.map(({ url }) => url.replace(/(?<=[/.])c800x/u, 'c1500x'));
+  const res = await decryptData<{ url: string }[]>(...keys);
+  return res.map(({ url }) => mapImgUrl(url));
 };
