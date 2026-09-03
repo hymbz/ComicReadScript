@@ -101,6 +101,10 @@ export const setup = async <
 /** 用于适配 SPA 站点的页面上下文类型 */
 export type SpaPageContext = {
   type: string;
+  /**
+   * 当站点有多个不同 type 的页面都是漫画页时，需要显式设为 true 来标识，
+   * 否则只会把 type === 'manga' 的页面当作漫画页
+   */
   isManga?: boolean;
 } & Record<string, unknown>;
 

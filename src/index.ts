@@ -1,5 +1,12 @@
 import { type MangaProps, listenHotkey } from 'components/Manga';
-import { type SetupOptions, request, setup, setupSimple, toast } from 'core';
+import {
+  type SetupOptions,
+  request,
+  setup,
+  setupSimple,
+  setupSiteAdapter,
+  toast,
+} from 'core';
 import {
   css,
   fileType,
@@ -1040,6 +1047,63 @@ try {
     // test: https://www.pixiv.net/artworks/128841242
     case 'www.pixiv.net': {
       selfImport('site/pixiv');
+      break;
+    }
+
+    // #其他[微博](https://weibo.com/)
+    // test: https://weibo.com/6047238248/KpoVRCSvB
+    // https://weibo.com/ttarticle/p/show?id=2309404781436946481164
+    case 'weibo.com': {
+      let current = 0;
+      // 轮流使用不同服务器来分流
+      const domain = () => {
+        current = (current % 4) + 1;
+        return `wx${current}.sinaimg.cn`;
+      };
+      /** 通过 pid 构建图片 url */
+      const imgUrl = (pid: string | null | undefined) =>
+        pid && `https://${domain()}/large/${pid}.jpg`;
+
+      setupSiteAdapter({
+        name: 'weibo',
+        options: { autoShow: false },
+        getPageContext: () => {
+          const match =
+            /^(?:\/(?<isTarticle>ttarticle\/p\/show)|\/(?<isDetail>\d+\/[A-Za-z0-9]+))$/u.exec(
+              location.pathname,
+            )?.groups;
+
+          if (match?.isTarticle)
+            return {
+              type: 'tarticle',
+              isManga: true,
+              id: new URLSearchParams(location.search).get('id'),
+            };
+          else if (match?.isDetail)
+            return { type: 'detail', isManga: true, id: location.pathname };
+        },
+        handlers: {
+          tarticle: ({ setState }) => {
+            const getImgList = () =>
+              querySelectorAll<HTMLImageElement>(
+                '[node-type="articleContent"] figure img',
+              ).map((e) => imgUrl(e.getAttribute('pid')) || e.src);
+            setState('comicMap', '', { getImgList });
+          },
+          detail: ({ setState }) => {
+            const getImgList = () =>
+              querySelectorAll<HTMLImageElement>(
+                '.woo-box-wrap .woo-picture-img',
+              ).map(
+                (e) =>
+                  imgUrl(/(?<pid>[^/]+)\.jpg$/u.exec(e.src)?.groups?.pid) ||
+                  e.src,
+              );
+            setState('comicMap', '', { getImgList });
+          },
+        },
+      });
+
       break;
     }
 
