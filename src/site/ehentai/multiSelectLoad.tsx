@@ -1,3 +1,4 @@
+import { askInput } from 'components/InputDialog';
 import {
   css,
   descRange,
@@ -82,14 +83,15 @@ export const multiSelectLoad: GalleryHandler<
       if (!e.shiftKey) return;
       e.stopPropagation();
 
-      const defaultText = coreCtx.multiSelect
+      const defaultValue = coreCtx.multiSelect
         ? descRange(
             coreCtx.multiSelect.selectedIds().map(Number),
             pageCtx.imgNum,
           )
         : '';
 
-      const pageRange = prompt(t('other.page_range'), defaultText);
+      const [message, tip] = t('other.page_range').split('\n');
+      const pageRange = await askInput({ message, tip, defaultValue });
       if (!pageRange) return;
 
       coreCtx.multiSelect?.setSelectedIds(

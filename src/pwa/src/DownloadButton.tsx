@@ -1,3 +1,4 @@
+import { askInput } from 'components/InputDialog';
 import { toast } from 'components/Toast';
 import { request } from 'core';
 import { boolDataVal, isUrl, t, wait } from 'helper';
@@ -56,11 +57,10 @@ export const DownloadButton: Component = () => (
   <button
     type="button"
     data-loading={boolDataVal(progress() !== null)}
-    on:click={() => {
+    on:click={async () => {
       if (progress() !== null) return toast.warn(t('button.downloading'));
 
-      // oxlint-disable-next-line no-alert
-      const downUrl = prompt(t('pwa.tip_enter_url'));
+      const downUrl = await askInput({ message: t('pwa.tip_enter_url') });
       if (!downUrl) return;
 
       const url = new URL(location.href);

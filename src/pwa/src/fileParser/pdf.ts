@@ -1,3 +1,4 @@
+import { askInput } from 'components/InputDialog';
 import { toast } from 'components/Toast';
 import { canvasToBlobUrl, t } from 'helper';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -24,9 +25,10 @@ export const handlePdf = async (file: File): Promise<ImgFile[]> => {
       wasmUrl: '/pdfJsWasm/',
       enableHWA: true,
     });
-    task.onPassword = (updatePassword: (password: string) => void) => {
-      // oxlint-disable-next-line no-alert
-      const password = prompt(t('pwa.message.enter_password'));
+    task.onPassword = async (updatePassword: (password: string) => void) => {
+      const password = await askInput({
+        message: t('pwa.message.enter_password'),
+      });
       if (!password) throw new Error(t('pwa.alert.password_error'));
       updatePassword(password);
     };

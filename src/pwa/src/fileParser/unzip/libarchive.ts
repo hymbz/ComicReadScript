@@ -1,3 +1,4 @@
+import { askInput } from 'components/InputDialog';
 import { toast } from 'components/Toast';
 import { fileTypeFromBuffer } from 'file-type';
 import { plimit, t } from 'helper';
@@ -33,8 +34,7 @@ export const libarchive = async ({
 
   let password: string | null;
   if (await archive.hasEncryptedData()) {
-    // oxlint-disable-next-line no-alert
-    password = prompt(t('pwa.message.enter_password'));
+    password = await askInput({ tip: zipFile.name });
     if (!password) return [];
     await archive.usePassword(password);
   }

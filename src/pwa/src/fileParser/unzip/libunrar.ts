@@ -1,3 +1,4 @@
+import { askInput } from 'components/InputDialog';
 import { toast } from 'components/Toast';
 import { fileTypeFromBuffer } from 'file-type';
 import { plimit, t, wait } from 'helper';
@@ -97,8 +98,9 @@ export const libunrar = async (
           });
         }
 
-        // oxlint-disable-next-line no-alert
-        const newPassword = prompt(t('pwa.message.enter_password'));
+        const newPassword = await askInput({
+          tip: zipData.zipFile.name,
+        });
         if (!newPassword) return [];
         return libunrar(zipData, newPassword);
       }

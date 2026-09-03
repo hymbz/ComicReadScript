@@ -1,4 +1,5 @@
 import { directoryOpen, fileOpen } from 'browser-fs-access';
+import { InputDialog } from 'components/InputDialog';
 import { Manga, type MangaProps, store as MangeStore } from 'components/Manga';
 import { Toaster, toast } from 'components/Toast';
 import { boolDataVal, createEffectOn, setInitLang, t } from 'helper';
@@ -110,6 +111,7 @@ export const Root: Component = () => {
       />
 
       <Toaster />
+      <InputDialog />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { log } from 'helper';
+import { exposeToGlobal, log } from 'helper';
 
 import { type Message, type Toast } from '.';
 import { creatId, dismiss, setState, store } from './store';
@@ -55,3 +55,5 @@ toast.warn = (msg: string, options?: Partial<Toast>) =>
   toast(msg, { ...options, exit: undefined, type: 'warn' });
 toast.error = (msg: string, options?: Partial<Toast>) =>
   toast(msg, { ...options, exit: undefined, type: 'error' });
+
+exposeToGlobal({ toast });
