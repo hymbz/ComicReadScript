@@ -4,7 +4,7 @@
  * 使用 cotrans.touhou.ai 公共服务进行图片翻译。
  * 通过 WebSocket 或轮询获取翻译状态，最终合并原图和翻译蒙版。
  */
-import { canvasToBlob, log, sleep, t, waitImgLoad } from 'helper';
+import { canvasToBlobUrl, log, sleep, t, waitImgLoad } from 'helper';
 import { request } from 'request';
 
 import { store } from '../../../../store';
@@ -169,7 +169,7 @@ export class Cotrans extends TranslationTask {
     );
     canvasCtx.drawImage(mask, 0, 0);
 
-    return await canvasToBlob(canvas);
+    return await canvasToBlobUrl(canvas);
   }
 
   async work(blob: Blob) {
@@ -181,7 +181,6 @@ export class Cotrans extends TranslationTask {
     const translation_mask =
       data.result?.translation_mask || (await this.wait(data.id));
 
-    const result = await this.mergeImage(blob, translation_mask);
-    return URL.createObjectURL(result);
+    return await this.mergeImage(blob, translation_mask);
   }
 }

@@ -1,4 +1,4 @@
-import { canvasToBlob, testImgUrl } from 'helper';
+import { canvasToBlobUrl, testImgUrl } from 'helper';
 
 /** 按照元素的显示高度来排序元素 */
 export const sortElementsByTop = <T extends HTMLElement>(
@@ -36,7 +36,7 @@ export class BlobUrlResolver {
     const canvasCtx = canvas.getContext('2d')!;
     canvasCtx.drawImage(e, 0, 0);
 
-    const url = URL.createObjectURL(await canvasToBlob(canvas));
+    const url = await canvasToBlobUrl(canvas);
     this.blobUrlMap.set(e.src, url);
     return url;
   }

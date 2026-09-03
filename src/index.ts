@@ -1096,6 +1096,43 @@ try {
       break;
     }
 
+    // #其他[ニコニコ漫画](https://manga.nicovideo.jp/)
+    // test: https://manga.nicovideo.jp/watch/mg472312
+    case 'manga.nicovideo.jp': {
+      type Page = { url: string; width: number; height: number };
+      const pages: Page[] = unsafeWindow.args.pages;
+      if (!pages?.length) break;
+
+      const getImgUrl = (url: string) =>
+        new Promise<string>((resolve) => {
+          unsafeWindow.ImageLoader.getInstance(
+            unsafeWindow.jQuery,
+            window,
+          ).loadImage(url, (img: string) => resolve(img));
+        });
+
+      setup({
+        name: 'nico',
+        getImgList: ({ dynamicLazyLoad }) =>
+          dynamicLazyLoad({
+            loadImg: async (i) => {
+              const { url, width, height } = pages[i];
+              return { src: await getImgUrl(url), width, height };
+            },
+            length: pages.length,
+          }),
+        onPrev: () =>
+          querySelectorClick(
+            '#full_episode_control_bar .prev a:not(.disabled)',
+          ),
+        onNext: () =>
+          querySelectorClick(
+            '#full_episode_control_bar .next a:not(.disabled)',
+          ),
+      });
+      break;
+    }
+
     // #其他[最前線](https://sai-zen-sen.jp)
     // test: https://sai-zen-sen.jp/works/comics/karanokyoukai/01/01.html
     case 'sai-zen-sen.jp': {

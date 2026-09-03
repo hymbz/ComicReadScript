@@ -1,4 +1,5 @@
 import * as Comlink from 'comlink';
+import { canvasToBlobUrl } from 'helper';
 import { type ImgContext } from 'worker/ImageRecognition';
 
 import { init } from './DebugPopup';
@@ -22,13 +23,6 @@ const createCanvas = (
   const imgData = ctx.createImageData(width, height);
   return { canvas, ctx, imgData };
 };
-
-const canvasToBlobUrl = (canvas: HTMLCanvasElement) =>
-  new Promise<string | undefined>((resolve) => {
-    canvas.toBlob((blob) => {
-      resolve(blob ? URL.createObjectURL(blob) : undefined);
-    }, 'image/png');
-  });
 
 const renderRawImage = (
   rawImgData: Uint8ClampedArray,

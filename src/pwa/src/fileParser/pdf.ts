@@ -1,5 +1,5 @@
 import { toast } from 'components/Toast';
-import { canvasToBlob, t } from 'helper';
+import { canvasToBlobUrl, t } from 'helper';
 import * as pdfjsLib from 'pdfjs-dist';
 // oxlint-disable-next-line default
 import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -47,7 +47,7 @@ export const handlePdf = async (file: File): Promise<ImgFile[]> => {
         Math.floor(viewport.height * outputScale),
       );
       await page.render({ canvas: canvas as any, viewport, transform }).promise;
-      const src = URL.createObjectURL(await canvasToBlob(canvas));
+      const src = await canvasToBlobUrl(canvas);
       return { src, name: `${i + 1}` };
     }, pdf.numPages);
   } catch (error) {

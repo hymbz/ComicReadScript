@@ -456,6 +456,15 @@ export const canvasToBlob = (
   });
 };
 
+export const canvasToBlobUrl = async (
+  canvas: HTMLCanvasElement | OffscreenCanvas,
+  type?: string,
+  quality = 1,
+) => {
+  const blob = await canvasToBlob(canvas, type, quality);
+  return URL.createObjectURL(blob);
+};
+
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
  *
