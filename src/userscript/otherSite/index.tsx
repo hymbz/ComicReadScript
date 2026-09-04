@@ -6,6 +6,7 @@ import {
   onUrlChange,
   t,
   throttle,
+  waitDom,
 } from 'helper';
 import { AutoImageScanner } from 'userscript/autoImageScanner';
 
@@ -90,6 +91,14 @@ export const otherSite = async () => {
 
   setState('comicMap', '', {
     async getImgList() {
+      // 在有 selector 的初次扫描时如果没有匹配的图片就判定为非漫画页
+      if (
+        options.selector &&
+        scanner.imgList.length === 0 &&
+        !(await waitDom(options.selector, 2, 1000))
+      )
+        return [];
+
       if (scanner.imgList.length === 0) {
         scanner.start();
         void scanner.triggerLazyLoad();
