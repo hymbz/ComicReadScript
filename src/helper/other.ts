@@ -74,7 +74,36 @@ export const once = <T extends (...args: any[]) => any>(
   return (...args: Parameters<T>) => wrapper(...args);
 };
 
-/** 创建顺序递增的数组 */
+/**
+ * 创建顺序递增的数组，支持多种调用方式
+ *
+ * 根据传入参数的不同，`range` 有以下几种用法：
+ *
+ * 1. `range(a)`：创建 `[0, 1, ..., a - 1]`
+ *    ```ts
+ *    range(5); // [0, 1, 2, 3, 4]
+ *    ```
+ *
+ * 2. `range(a, b)`：创建 `[a, a + 1, ..., b - 1]`（不含 `b`）
+ *    ```ts
+ *    range(3, 7); // [3, 4, 5, 6]
+ *    ```
+ *
+ * 3. `range(a, b, c)`：遍历 `a` 到 `b - 1`，每个元素经映射函数 `c` 转换
+ *    ```ts
+ *    range(3, 7, (i) => i * 10); // [30, 40, 50, 60]
+ *    ```
+ *
+ * 4. `range(a, c)`：遍历 `0` 到 `a - 1`，每个元素经映射函数 `c` 转换
+ *    ```ts
+ *    range(4, (i) => `item-${i}`); // ['item-0', 'item-1', 'item-2', 'item-3']
+ *    ```
+ *
+ * 5. `range(a, value)`：创建长度为 `a`、元素全部为 `value`（字符串）的数组
+ *    ```ts
+ *    range(3, 'x'); // ['x', 'x', 'x']
+ *    ```
+ */
 export function range(a: number, b?: number): number[];
 export function range<T = number>(a: number, b: (K: number) => T): T[];
 // oxlint-disable-next-line typescript/unified-signatures
@@ -134,7 +163,25 @@ export const querySelectorAll = <T extends HTMLElement = HTMLElement>(
   selector: string,
 ) => [...document.querySelectorAll<T>(selector)];
 
-/** 返回 Dom 的点击函数 */
+/**
+ * 根据选择器查找元素，若存在则返回点击该元素的函数
+ *
+ * 调用时（而非返回的点击函数被调用时）立即查找一次元素；
+ * 若元素不存在则返回 `undefined`
+ *
+ * `selector` 支持两种形式：
+ * - 字符串：作为 CSS 选择器查找
+ * - 函数：延迟返回元素（适合元素尚未渲染、需要动态获取的场景）
+ *   ```ts
+ *   querySelectorClick(() => document.querySelector('.page')?.querySelector('a'));
+ *   ```
+ *
+ * 传入字符串选择器时，还可通过 `textContent` 匹配文本内容，会从所有匹配元素中
+ * 找出文本包含 `textContent` 的第一个元素（相当于 `:has-text()`）：
+ * ```ts
+ * querySelectorClick('.tab', '我的收藏')?.();
+ * ```
+ */
 export const querySelectorClick = (
   selector: string | (() => HTMLElement | undefined | null),
   textContent?: string,

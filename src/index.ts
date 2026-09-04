@@ -612,6 +612,38 @@ try {
       });
       break;
     }
+    case 'noymanga.com': {
+      setup({
+        name: 'NoyAcg',
+        isMangaPage: () =>
+          /reader\/(?<bookId>\d+)\/(?<chapterId>\d+)/u.exec(location.pathname)
+            ?.groups as { bookId: string; chapterId: string },
+        getImgList: async (_, { bookId, chapterId }) => {
+          type ChapterData = { id: number; count: number };
+          type ResData = { chapter: { this: ChapterData } };
+          const {
+            response: { chapter },
+          } = await request<ResData>(
+            `/api/v4/book/detail/${bookId}/${chapterId}`,
+            { responseType: 'json' },
+          );
+          return range(
+            chapter.this.count,
+            (i) =>
+              `https://img.noymanga.com/${bookId}/${chapterId}/${i + 1}.webp`,
+          );
+        },
+        onPrev: () =>
+          querySelectorClick(() =>
+            querySelector('path[d="m15 18-6-6 6-6"]')?.closest('button'),
+          ),
+        onNext: () =>
+          querySelectorClick(() =>
+            querySelector('path[d="m9 18 6-6-6-6"]')?.closest('button'),
+          ),
+      });
+      break;
+    }
 
     // #R18（中文）[熱辣漫畫](https://www.relamanhua.org/)
     // test: https://www.relamanhua.org/comic/lianggrendeetaobixianshi/chapter/33cde95c-c8ea-11ea-a67e-00163e0ca5bd
