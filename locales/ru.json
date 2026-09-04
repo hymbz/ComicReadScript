@@ -245,7 +245,7 @@
       "quick_favorite": "Быстрый фаворит",
       "quick_rating": "Быстрый рейтинг",
       "quick_tag_define": "Определение тега быстрого просмотра",
-      "remember_current_site": "Запомнить текущий сайт",
+      "remember_current_site": "Не запоминать этот сайт",
       "tag_lint": "Тэг Линт"
     },
     "changed_load_failed": "Страница изменилась, невозможно загрузить комикс",

@@ -245,7 +245,7 @@
       "quick_favorite": "Favorito rápido",
       "quick_rating": "Valoración rápida",
       "quick_tag_define": "Ver rápidamente la definición de la etiqueta",
-      "remember_current_site": "Recordar el sitio actual",
+      "remember_current_site": "No recordar este sitio",
       "tag_lint": "Comprobación de etiquetas"
     },
     "changed_load_failed": "El sitio ha cambiado, no se pudo cargar el cómic",

@@ -1,3 +1,4 @@
+import MdDelete from '@material-design-icons/svg/round/delete.svg';
 import { toast, useInit } from 'core';
 import {
   createEffectOn,
@@ -24,6 +25,18 @@ export const otherSite = async () => {
     location.hostname,
     { remember_current_site: true, selector: '' },
   );
+
+  // 将「不再记住当前站点」作为一次性动作按钮加入菜单，使用显眼的图标标识
+  setState('fab', {
+    optionsSpeedDial: [],
+    extraSpeedDial: [
+      {
+        name: t('site.add_feature.remember_current_site'),
+        onClick: () => setOptions({ remember_current_site: false }),
+        icon: MdDelete,
+      },
+    ],
+  });
 
   // 点击按钮后立刻删掉记住当前站点的配置
   createEffectOn(
