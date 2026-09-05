@@ -9,6 +9,7 @@ import {
 } from 'core';
 import {
   css,
+  domParse,
   fileType,
   gql,
   isUrl,
@@ -939,6 +940,168 @@ try {
             };
           }
           return imgList;
+        },
+      });
+      break;
+    }
+
+    // #R18[EAHentai](https://eahentai.com)
+    // test: https://eahentai.com/a/73673
+    case 'eahentai.com': {
+      const isMangaPage = () =>
+        /^\/a\/(?<albumId>\d+)(?:\/(?<page>\d+))?/u.exec(location.pathname)
+          ?.groups as { albumId: string; page?: string };
+      if (!isMangaPage()) break;
+
+      setup({
+        name: 'EAHentai',
+        isMangaPage,
+        initOptions: { autoShow: false },
+        async getImgList(_coreCtx, { albumId, page }) {
+          const root = page
+            ? document
+            : domParse((await request(`/a/${albumId}/0`)).responseText);
+          return Array.from(
+            root.querySelectorAll<HTMLImageElement>(
+              'main img[src*="i.eahentai.com/file/ea-gallery"]',
+            ),
+            (e) => e.src,
+          );
+        },
+      });
+      break;
+    }
+
+    // #R18[HentaiNexus](https://hentainexus.com)
+    // test: https://hentainexus.com/read/20349#001
+    case 'hentainexus.com': {
+      const isMangaPage = () =>
+        /^\/(?:read|view)\/\d+/u.test(location.pathname);
+      if (!isMangaPage()) break;
+
+      // hentainexus 会将 `pageData` 数组通过 RC4 加密后由注入为全局变量
+      // 元素类型为 `image`（单图）或 `spread`（左右双图）
+
+      type ImagePageData = {
+        label: string;
+        /** 页面在地址栏 hash 中的标识，如 `001` */
+        url_label: string;
+        type: 'image';
+        image_source?: string;
+        image_avif?: string;
+        image_fallback?: string;
+      };
+
+      type SpreadPageData = {
+        label: string;
+        url_label: string;
+        type: 'spread';
+        left_source?: string;
+        left_avif?: string;
+        left_fallback?: string;
+        right_source?: string;
+        right_avif?: string;
+        right_fallback?: string;
+      };
+
+      const getImgList = () => {
+        const data = unsafeWindow.pageData as
+          | (ImagePageData | SpreadPageData)[]
+          | undefined;
+        if (!data) throw new Error(t('site.changed_load_failed'));
+        const imgList: string[] = [];
+        for (const item of data) {
+          if (item.type === 'spread') {
+            const left =
+              item.left_avif ?? item.left_fallback ?? item.left_source;
+            if (left) imgList.push(left);
+            const right =
+              item.right_avif ?? item.right_fallback ?? item.right_source;
+            if (right) imgList.push(right);
+          } else {
+            const src =
+              item.image_avif ?? item.image_fallback ?? item.image_source;
+            if (src) imgList.push(src);
+          }
+        }
+        if (imgList.length === 0)
+          throw new Error(t('site.changed_load_failed'));
+        return imgList;
+      };
+
+      setup({
+        name: 'HentaiNexus',
+        isMangaPage,
+        getImgList,
+        initOptions: { autoShow: false },
+      });
+      break;
+    }
+
+    // #R18[AsmHentai](https://asmhentai.com)
+    // test: https://asmhentai.com/g/558140/
+    case 'asmhentai.com': {
+      const isMangaPage = () =>
+        /^\/(?:g\/\d+\/|gallery\/\d+\/\d+\/)/u.test(location.pathname);
+      if (!isMangaPage()) break;
+
+      const getImgList = () => {
+        const loadId = querySelector<HTMLInputElement>(
+          '#load_id, #gallery_id',
+        )?.value;
+        const loadDir = querySelector<HTMLInputElement>(
+          '#load_dir, #image_dir',
+        )?.value;
+        const pageCount = Number(
+          querySelector<HTMLInputElement>('#t_pages, #pages')?.value,
+        );
+        if (
+          !loadId ||
+          !loadDir ||
+          !Number.isFinite(pageCount) ||
+          pageCount <= 0
+        )
+          throw new Error(t('site.changed_load_failed'));
+        return range(
+          pageCount,
+          (i) =>
+            `https://images.asmhentai.com/${loadDir}/${loadId}/${i + 1}.jpg`,
+        );
+      };
+
+      setup({
+        name: 'AsmHentai',
+        isMangaPage,
+        getImgList,
+        initOptions: { autoShow: false },
+      });
+      break;
+    }
+
+    // #R18[3Hentai](https://3hentai.net)
+    // test: https://3hentai.net/d/693817
+    case '3hentai.net': {
+      const isMangaPage = () =>
+        /^\/d\/(?<gid>\d+)(?:\/(?<page>\d+))?\/?/u.exec(location.pathname)
+          ?.groups as { gid: string; page?: string } | undefined;
+      if (!isMangaPage()) break;
+
+      setup({
+        name: '3hentai',
+        isMangaPage,
+        initOptions: { autoShow: false },
+        async getImgList(_coreCtx, { gid, page }) {
+          const root = page
+            ? domParse((await request(`/d/${gid}`)).responseText)
+            : document;
+          return Array.from(
+            root.querySelectorAll<HTMLImageElement>('img[data-src$="t.jpg"]'),
+            (img) =>
+              img.dataset.src!.replace(
+                /(?<path>\/[^/]*)t(?<ext>\.[^/]+)$/u,
+                '$<path>$<ext>',
+              ),
+          );
         },
       });
       break;
