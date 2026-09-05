@@ -242,7 +242,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ### 自部署
 
-<a href="https://github.com/Suwayomi/Tachidesk-Sorayomi"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://github.com&size=16" style="width:1em;height:1em;" loading="lazy"> Tachidesk</a> · <a href="https://github.com/Difegue/LANraragi"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://github.com&size=16" style="width:1em;height:1em;" loading="lazy"> LANraragi</a>
+<a href="https://github.com/Suwayomi/Suwayomi-Server"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://github.com&size=16" style="width:1em;height:1em;" loading="lazy"> Suwayomi</a> · <a href="https://github.com/Difegue/LANraragi"><img src="https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://github.com&size=16" style="width:1em;height:1em;" loading="lazy"> LANraragi</a>
 
 <!-- supportSiteList -->
 

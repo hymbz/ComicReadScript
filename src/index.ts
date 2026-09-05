@@ -10,6 +10,7 @@ import {
 import {
   css,
   fileType,
+  gql,
   isUrl,
   log,
   querySelector,
@@ -460,7 +461,7 @@ try {
     // test: https://komiic.com/comic/2299/chapter/66668/images/all
     case 'komiic.com':
     case 'komiic.cc': {
-      const query = `
+      const query = gql`
         query imagesByChapterId($chapterId: ID!) {
           imagesByChapterId(chapterId: $chapterId) {
             id
@@ -469,7 +470,8 @@ try {
             width
             __typename
           }
-        }`;
+        }
+      `;
 
       const getChapterNav = (text: string) =>
         querySelectorClick(
@@ -1294,9 +1296,21 @@ try {
     }
 
     default: {
-      // #自部署[Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
+      // #自部署[Suwayomi](https://github.com/Suwayomi/Suwayomi-Server)
+      if (
+        document.querySelector(
+          `head > meta[content="A manga reader that runs tachiyomi's extensions"]`,
+        )
+      )
+        selfImport('site/suwayomi');
       // #自部署[LANraragi](https://github.com/Difegue/LANraragi)
-      selfImport('site/selfhosted');
+      else if (
+        location.pathname === '/reader' &&
+        document
+          .querySelector('.ip > a[href="https://github.com/Difegue/LANraragi"]')
+          ?.textContent.trim() === 'LANraragi.'
+      )
+        selfImport('site/lanraragi');
 
       (async () => {
         if ((await GM.getValue(location.hostname)) !== undefined)

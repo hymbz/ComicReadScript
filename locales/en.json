@@ -92,6 +92,7 @@
     "img_loading": "Image loading",
     "interval": "Interval",
     "loading_img": "Fetching image",
+    "login_expired": "Login expired, please log in again",
     "multi_select_mode": "Multi-select mode",
     "none": "None",
     "or": "or",

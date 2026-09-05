@@ -92,6 +92,7 @@
     "img_loading": "图片加载中",
     "interval": "间隔",
     "loading_img": "获取图片中",
+    "login_expired": "登录状态失效，请重新登录",
     "multi_select_mode": "多选模式",
     "none": "无",
     "or": "或",

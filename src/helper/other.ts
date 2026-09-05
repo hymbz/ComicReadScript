@@ -860,3 +860,11 @@ export const versionLt = (version1: string, version2: string) => {
   }
   return false;
 };
+
+/**
+ * 用于书写 GraphQL 查询的模板标签函数
+ *
+ * 变量值应通过 GraphQL 变量语法（$varName）与 variables 传递
+ */
+export const gql = (strings: TemplateStringsArray, ...values: string[]) =>
+  strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), '');

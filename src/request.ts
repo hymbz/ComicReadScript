@@ -209,7 +209,12 @@ export const eachApi = async <T = any>(
   throw new Error(errorText);
 };
 
-export const downloadImgHeaders = {
+export const downloadImgHeaders: {
+  Accept: string;
+  'User-Agent': string;
+  Referer: string;
+  Authorization?: string;
+} = {
   Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
   'User-Agent': navigator.userAgent,
   Referer: location.href,
