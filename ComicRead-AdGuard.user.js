@@ -3,9 +3,9 @@
 // @name:en         ComicRead
 // @name:ru         ComicRead
 // @namespace       ComicRead
-// @version         12.11.0
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、再漫画、漫画柜(manhuagui)、动漫屋(dm5)、mangabz、komiic、無限動漫、绅士漫画(wnacg)、禁漫天堂、NoyAcg、熱辣漫畫、hanime1、hitomi、hdoujin、SchaleNetwork、nude-moon、HentaiZap、IMHentai、HentaiEra、HentaiEnvy、MangaDex、welovemanga、kisslove(klz9)、Pawchive、kemono、nekohouse、Pixiv、微博、明日方舟泰拉记事社、Postimages、ニコニコ漫画、最前線、芸能ヌード、Tachidesk、LANraragi
-// @description:en  Add dual-page reading, translation and other enhancements to comic sites. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | hdoujin | SchaleNetwork | nude-moon | HentaiZap | IMHentai | HentaiEra | HentaiEnvy | Pawchive | kemono | nekohouse | MangaDex | welovemanga | kisslove(klz9)
+// @version         12.12.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、再漫画、漫画柜(manhuagui)、动漫屋(dm5)、mangabz、komiic、無限動漫、绅士漫画(wnacg)、禁漫天堂、NoyAcg、熱辣漫畫、hanime1、hitomi、hdoujin、SchaleNetwork、nude-moon、HentaiZap、IMHentai、HentaiEra、HentaiEnvy、EAHentai、HentaiNexus、AsmHentai、3Hentai、MangaDex、welovemanga、kisslove(klz9)、Pawchive、kemono、nekohouse、Pixiv、微博、明日方舟泰拉记事社、Postimages、ニコニコ漫画、最前線、芸能ヌード、Suwayomi、LANraragi
+// @description:en  Add dual-page reading, translation and other enhancements to comic sites. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | hdoujin | SchaleNetwork | nude-moon | HentaiZap | IMHentai | HentaiEra | HentaiEnvy | EAHentai | HentaiNexus | AsmHentai | 3Hentai | Pawchive | kemono | nekohouse | MangaDex | welovemanga | kisslove(klz9)
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
 // @license         AGPL-3.0-or-later
@@ -46,6 +46,7 @@
 // @match           *://18comic.org/*
 // @match           *://18comic.vip/*
 // @match           *://noy1.top/*
+// @match           *://noymanga.com/*
 // @match           *://www.relamanhua.org/*
 // @match           *://www.manga2024.com/*
 // @match           *://www.2024manga.com/*
@@ -60,6 +61,10 @@
 // @match           *://imhentai.xxx/*
 // @match           *://hentaiera.com/*
 // @match           *://hentaienvy.com/*
+// @match           *://eahentai.com/*
+// @match           *://hentainexus.com/*
+// @match           *://asmhentai.com/*
+// @match           *://3hentai.net/*
 // @match           *://mangadex.org/*
 // @match           *://nicomanga.com/*
 // @match           *://weloma.art/*
@@ -93,22 +98,22 @@
 // @connect         self
 // @connect         127.0.0.1
 // @connect         *
-// @connect         mapi.elfgjfghkk.club
-// @connect         api.2024manga.com
-// @connect         mapi.fgjfghkk.club
 // @connect         mapi.hotmangasg.com
-// @connect         mapi.fgjfghkkcenter.club
 // @connect         www.manga2026.xyz
-// @connect         mapi.hotmangasf.com
-// @connect         mapi.hotmangasd.com
+// @connect         api.2024manga.com
 // @connect         www.manga2025.com
 // @connect         api.manga2025.com
+// @connect         mapi.fgjfghkkcenter.club
+// @connect         mapi.elfgjfghkk.club
+// @connect         mapi.hotmangasd.com
+// @connect         mapi.fgjfghkk.club
 // @connect         m.manga2025.com
-// @connect         api.copy4000.com
+// @connect         mapi.hotmangasf.com
 // @connect         api.2026copy.com
+// @connect         mapi.copy20.com
+// @connect         api.copy4000.com
 // @connect         api.mangacopy.com
 // @connect         api.copy3000.com
-// @connect         mapi.copy20.com
 // @grant           GM_getValue
 // @grant           GM_setValue
 // @grant           GM_addElement
@@ -338,6 +343,7 @@ var en_default = {
 		"img_loading": "Image loading",
 		"interval": "Interval",
 		"loading_img": "Fetching image",
+		"login_expired": "Login expired, please log in again",
 		"multi_select_mode": "Multi-select mode",
 		"none": "None",
 		"or": "or",
@@ -491,7 +497,7 @@ var en_default = {
 			"quick_favorite": "Quick favorite",
 			"quick_rating": "Quick rating",
 			"quick_tag_define": "Quick view tag definition",
-			"remember_current_site": "Remember the current site",
+			"remember_current_site": "Don't remember this site",
 			"tag_lint": "Tag lint"
 		},
 		"changed_load_failed": "The website has undergone changes, unable to load comics",
@@ -700,6 +706,7 @@ var ru_default = {
 		"img_loading": "Изображение загружается",
 		"interval": "Интервал",
 		"loading_img": "Получение изображения",
+		"login_expired": "Сеанс истёк, войдите снова",
 		"multi_select_mode": "Режим множественного выбора",
 		"none": "Отсутствует",
 		"or": "или",
@@ -853,7 +860,7 @@ var ru_default = {
 			"quick_favorite": "Быстрый фаворит",
 			"quick_rating": "Быстрый рейтинг",
 			"quick_tag_define": "Определение тега быстрого просмотра",
-			"remember_current_site": "Запомнить текущий сайт",
+			"remember_current_site": "Не запоминать этот сайт",
 			"tag_lint": "Тэг Линт"
 		},
 		"changed_load_failed": "Страница изменилась, невозможно загрузить комикс",
@@ -1062,6 +1069,7 @@ var zh_default = {
 		"img_loading": "图片加载中",
 		"interval": "间隔",
 		"loading_img": "获取图片中",
+		"login_expired": "登录状态失效，请重新登录",
 		"multi_select_mode": "多选模式",
 		"none": "无",
 		"or": "或",
@@ -1215,7 +1223,7 @@ var zh_default = {
 			"quick_favorite": "快捷收藏",
 			"quick_rating": "快捷评分",
 			"quick_tag_define": "快捷查看标签定义",
-			"remember_current_site": "记住当前站点",
+			"remember_current_site": "不再记住当前站点",
 			"tag_lint": "标签检查"
 		},
 		"changed_load_failed": "网站发生变化，无法加载漫画",
@@ -1615,7 +1623,25 @@ const querySelector = (selector) => document.querySelector(selector);
 * 将默认返回类型改为 HTMLElement
 */
 const querySelectorAll = (selector) => [...document.querySelectorAll(selector)];
-/** 返回 Dom 的点击函数 */
+/**
+* 根据选择器查找元素，若存在则返回点击该元素的函数
+*
+* 调用时（而非返回的点击函数被调用时）立即查找一次元素；
+* 若元素不存在则返回 \`undefined\`
+*
+* \`selector\` 支持两种形式：
+* - 字符串：作为 CSS 选择器查找
+* - 函数：延迟返回元素（适合元素尚未渲染、需要动态获取的场景）
+*   \`\`\`ts
+*   querySelectorClick(() => document.querySelector('.page')?.querySelector('a'));
+*   \`\`\`
+*
+* 传入字符串选择器时，还可通过 \`textContent\` 匹配文本内容，会从所有匹配元素中
+* 找出文本包含 \`textContent\` 的第一个元素（相当于 \`:has-text()\`）：
+* \`\`\`ts
+* querySelectorClick('.tab', '我的收藏')?.();
+* \`\`\`
+*/
 const querySelectorClick = (selector, textContent) => {
 	let getDom;
 	if (typeof selector === "function") getDom = selector;
@@ -2062,6 +2088,12 @@ const versionLt = (version1, version2) => {
 	}
 	return false;
 };
+/**
+* 用于书写 GraphQL 查询的模板标签函数
+*
+* 变量值应通过 GraphQL 变量语法（$varName）与 variables 传递
+*/
+const gql = (strings, ...values) => strings.reduce((acc, str, i) => acc + str + (values[i] ?? ""), "");
 //#endregion
 //#region src/helper/i18n.ts
 const [lang, setLang] = solid_js.createSignal("zh");
@@ -2601,6 +2633,7 @@ exports.getFileName = getFileName;
 exports.getImageData = getImageData;
 exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
+exports.gql = gql;
 exports.hijackFn = hijackFn;
 exports.inRange = inRange;
 exports.isArray = isArray;
@@ -10075,11 +10108,11 @@ const mobileApi = new class {
 		...details
 	}, ...args);
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://api.copy4000.com",
 		"https://api.2026copy.com",
+		"https://mapi.copy20.com",
+		"https://api.copy4000.com",
 		"https://api.mangacopy.com",
-		"https://api.copy3000.com",
-		"https://mapi.copy20.com"
+		"https://api.copy3000.com"
 	], {
 		responseType: "json",
 		headers: {
@@ -10108,17 +10141,17 @@ const pcApi = new class {
 		...details
 	}, ...args);
 	eachGet = (url, details) => request.eachApi(url, [
-		"https://mapi.elfgjfghkk.club",
-		"https://api.2024manga.com",
-		"https://mapi.fgjfghkk.club",
 		"https://mapi.hotmangasg.com",
-		"https://mapi.fgjfghkkcenter.club",
 		"https://www.manga2026.xyz",
-		"https://mapi.hotmangasf.com",
-		"https://mapi.hotmangasd.com",
+		"https://api.2024manga.com",
 		"https://www.manga2025.com",
 		"https://api.manga2025.com",
-		"https://m.manga2025.com"
+		"https://mapi.fgjfghkkcenter.club",
+		"https://mapi.elfgjfghkk.club",
+		"https://mapi.hotmangasd.com",
+		"https://mapi.fgjfghkk.club",
+		"https://m.manga2025.com",
+		"https://mapi.hotmangasf.com"
 	], {
 		responseType: "json",
 		headers: this.headers,
@@ -11059,6 +11092,10 @@ const handleVersionUpdate = async () => {
 	if (helper.lang() === "zh") {
 		components_Toast.toast(() => {
 			const changes = Object.entries({
+				"12.12.0": {
+					"date": "2026-09-06",
+					"feat": ["支持 EAHentai、HentaiNexus、AsmHentai、3Hentai", "支持 NoyAcg 新站点"]
+				},
 				"12.11.0": {
 					"date": "2026-09-04",
 					"feat": ["支持微博", "支持ニコニコ漫画"],
@@ -14441,6 +14478,14 @@ exports.upscaleImage = upscaleImage;
 let core = require("core");
 let helper = require("helper");
 let userscript_autoImageScanner = require("userscript/autoImageScanner");
+//#region node_modules/.pnpm/@material-design-icons+svg@0.14.15/node_modules/@material-design-icons/svg/round/delete.svg
+var _tmpl$$1 = /*#__PURE__*/ solid_js_web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2zM18 4h-2.5l-.71-.71c-.18-.18-.44-.29-.7-.29H9.91c-.26 0-.52.11-.7.29L8.5 4H6c-.55 0-1 .45-1 1s.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1">\`);
+var delete_default = (props = {}) => (() => {
+	var _el$ = _tmpl$$1();
+	solid_js_web.spread(_el$, props, true, true);
+	return _el$;
+})();
+//#endregion
 //#region src/userscript/otherSite/index.tsx
 var _tmpl$ = /*#__PURE__*/ solid_js_web.template(\`<div><button>\`);
 /** 执行脚本操作。如果中途中断，将返回 true */
@@ -14449,6 +14494,14 @@ const otherSite = async () => {
 	const { store, setState, options, setOptions } = await core.useInit(location.hostname, {
 		remember_current_site: true,
 		selector: ""
+	});
+	setState("fab", {
+		optionsSpeedDial: [],
+		extraSpeedDial: [{
+			name: helper.t("site.add_feature.remember_current_site"),
+			onClick: () => setOptions({ remember_current_site: false }),
+			icon: delete_default
+		}]
 	});
 	helper.createEffectOn(() => options.remember_current_site, async (remember) => {
 		if (remember) return;
@@ -14482,6 +14535,7 @@ const otherSite = async () => {
 	});
 	helper.exposeToGlobal({ scanner });
 	setState("comicMap", "", { async getImgList() {
+		if (options.selector && scanner.imgList.length === 0 && !await helper.waitDom(options.selector, 2, 1e3)) return [];
 		if (scanner.imgList.length === 0) {
 			scanner.start();
 			scanner.triggerLazyLoad();
@@ -17478,6 +17532,72 @@ core.setupSiteAdapter({
 });
 //#endregion
 `,
+	"site/lanraragi": `\nlet components_Manga = require("components/Manga");
+let core = require("core");
+let helper = require("helper");
+let request = require("request");
+//#region src/site/lanraragi.tsx
+let initFlag = true;
+/** 是否由服务器来跟踪进度 */
+let isServerTracksProgress;
+const checkServerTracksProgress = async () => {
+	if (isServerTracksProgress !== void 0) return;
+	isServerTracksProgress = (await request.request("/api/info", {
+		responseType: "json",
+		fetch: true,
+		noTip: true
+	})).response.server_tracks_progress;
+};
+const getProgress = async (id) => {
+	await checkServerTracksProgress();
+	if (!isServerTracksProgress) return Number(localStorage.getItem(\`\${id}-reader\`)) - 1 || 0;
+	return (await request.request(\`/api/archives/\${id}/metadata\`, {
+		responseType: "json",
+		errorText: "Error fetching progress",
+		fetch: true
+	})).response.progress - 1;
+};
+const updateProgress = async (id, pageNum) => {
+	await checkServerTracksProgress();
+	if (isServerTracksProgress) await request.request(\`/api/archives/\${id}/progress/\${pageNum + 1}\`, {
+		method: "PUT",
+		fetch: true,
+		noTip: true
+	});
+	else localStorage.setItem(\`\${id}-reader\`, \`\${pageNum + 1}\`);
+};
+core.setup({
+	name: "LANraragi",
+	isMangaPage: () => {
+		if (location.pathname !== "/reader") return;
+		const id = new URLSearchParams(location.search).get("id");
+		if (id) return { id };
+	},
+	getImgList: async (_, { id }) => {
+		await checkServerTracksProgress();
+		return (await request.request(\`/api/archives/\${id}/files\`, {
+			responseType: "json",
+			errorText: "Error fetching image list"
+		})).response.pages;
+	},
+	handler: ({ setState }, { id }) => {
+		setState("manga", { onShowImgsChange: helper.debounce((showImgs, imgList) => {
+			if (imgList.length > 0 && initFlag) {
+				initFlag = false;
+				(async () => {
+					const progress = await getProgress(id);
+					components_Manga.setState((state) => {
+						state.activePageIndex = state.pageList.findIndex((page) => page.includes(progress));
+					});
+				})();
+				return;
+			}
+			updateProgress(id, [...showImgs].at(-1));
+		}, 200) });
+	}
+});
+//#endregion
+`,
 	"site/nhentai": `\nlet solid_js_web = require("solid-js/web");
 let core = require("core");
 let helper = require("helper");
@@ -17582,7 +17702,6 @@ core.setupSiteAdapter({
 			if (pageCtx.type !== "list") return;
 			await waitHydrated();
 			let nextUrl = helper.querySelector("a.next")?.href;
-			let lastUrl = location.href;
 			if (!nextUrl) return;
 			helper.css\`
         hr {
@@ -17609,6 +17728,30 @@ core.setupSiteAdapter({
             transform: scaleX(0);
           }
         }
+
+        /* 被 Cloudflare challenge 反爬影响时用最后一个 hr 提示 */
+        hr.crs-scroll-error {
+          display: flex;
+          gap: 0.75em;
+          align-items: center;
+
+          margin: 1em auto 2em;
+          border: none;
+
+          font-size: 13px;
+          color: rgb(240 240 240 / 60%);
+          white-space: nowrap;
+
+          animation: none;
+        }
+
+        hr.crs-scroll-error::before,
+        hr.crs-scroll-error::after {
+          content: '';
+          flex: 1;
+          height: 1px;
+          background: rgb(255 255 255 / 35%);
+        }
       \`;
 			const contentDom = document.getElementById("content");
 			const getObserveDom = () => contentDom.querySelector(":is(.index-container, #favcontainer):last-of-type");
@@ -17620,10 +17763,24 @@ core.setupSiteAdapter({
 				});
 				const html = helper.domParse(res.responseText);
 				const pagination = html.querySelector(".pagination");
-				history.pushState(null, "", lastUrl);
-				lastUrl = nextUrl;
+				if (!pagination) {
+					nextUrl = void 0;
+					const hrList = contentDom.querySelectorAll("hr");
+					const lastHr = hrList.item(hrList.length - 1);
+					if (lastHr) {
+						lastHr.classList.add("crs-scroll-error");
+						const tip = document.createElement("span");
+						tip.textContent = "Loading blocked — please pass the Cloudflare verification, then refresh.";
+						lastHr.replaceChildren(tip);
+					}
+					return;
+				}
+				const container = html.querySelector(".index-container, #favcontainer");
+				const currentPageUrl = nextUrl;
 				nextUrl = pagination.querySelector("a.next")?.href;
-				contentDom.append(html.querySelector(".index-container, #favcontainer"), pagination);
+				contentDom.append(container, pagination);
+				pages.set(container, currentPageUrl);
+				urlObserver.observe(container);
 				const hr = document.createElement("hr");
 				contentDom.append(hr);
 				observer.disconnect();
@@ -17632,8 +17789,21 @@ core.setupSiteAdapter({
 			}, { abandon: true });
 			const observer = new IntersectionObserver((entries) => entries[0].isIntersecting && loadNextPage(), { threshold: .5 });
 			observer.observe(getObserveDom());
+			const pages = /* @__PURE__ */ new Map();
+			const urlObserver = new IntersectionObserver((entries) => {
+				let visibleUrl;
+				for (const { isIntersecting, target, intersectionRatio } of entries) if (isIntersecting && intersectionRatio >= .5 && pages.has(target)) visibleUrl = pages.get(target);
+				if (visibleUrl && visibleUrl !== location.href) history.replaceState(null, "", visibleUrl);
+			}, { threshold: .5 });
+			for (const el of helper.querySelectorAll(".index-container, #favcontainer")) {
+				pages.set(el, location.href);
+				urlObserver.observe(el);
+			}
 			if (helper.querySelector("section.pagination")) contentDom.append(document.createElement("hr"));
-			return () => observer.disconnect();
+			return () => {
+				observer.disconnect();
+				urlObserver.disconnect();
+			};
 		}
 	}
 });
@@ -17710,129 +17880,136 @@ core.setupSiteAdapter({
 });
 //#endregion
 `,
-	"site/selfhosted": `\nlet components_Manga = require("components/Manga");
+	"site/suwayomi": `\nlet components_Toast = require("components/Toast");
 let core = require("core");
 let helper = require("helper");
 let request = require("request");
-//#region src/site/selfhosted.tsx
-if (document.querySelector(\`head > meta[content="A manga reader that runs tachiyomi's extensions"]\`)) {
-	const jump = (mangaId, chapterId) => {
-		location.pathname = \`/manga/\${mangaId}/chapter/\${chapterId}\`;
-	};
-	const getChapters = async (mangaId, chapterId) => {
+//#region src/site/suwayomi.tsx
+const auth = new class Auth {
+	token = "";
+	/** 是否处于需要认证的 ui_login 模式 */
+	get needAuth() {
+		return Boolean(localStorage.getItem("auth-refresh-token"));
+	}
+	get authorization() {
+		return this.token ? \`Bearer \${this.token}\` : "";
+	}
+	/** 确保已有 access token，换取失败时提示并中断 */
+	async ensureToken() {
+		if (!this.needAuth || this.token) return;
+		if (!await this.refresh()) components_Toast.toast.error(helper.t("other.login_expired"), { throw: true });
+	}
+	/** 用 refresh token 换取 access token，返回是否成功 */
+	async refresh() {
+		const refreshToken = localStorage.getItem("auth-refresh-token");
+		if (!refreshToken) return false;
 		const res = await request.request("/api/graphql", {
 			method: "POST",
 			data: JSON.stringify({
-				operationName: "GET_CHAPTERS",
-				query: \`query GET_CHAPTERS($mangaId: Int!, $chapterId: Int!) {
-                chapters(condition: {
-                  mangaId: $mangaId, sourceOrder: $chapterId}
-                ) { nodes { pageCount } }
-                manga(id: $mangaId) { chapters { totalCount } }
-              }\`,
-				variables: {
-					mangaId,
-					chapterId
-				}
+				query: \`mutation USER_REFRESH($refreshToken: String!) { refreshToken(input: { refreshToken: $refreshToken }) { accessToken } }\`,
+				variables: { refreshToken }
 			}),
-			responseType: "json"
-		});
-		if (res.response.data.chapters.nodes[0].pageCount <= 0) {
-			await helper.sleep(200);
-			return getChapters(mangaId, chapterId);
-		}
-		return res.response.data;
-	};
-	core.setup({
-		name: "Tachidesk",
-		isMangaPage: () => {
-			const match = /\\/manga\\/(?<mangaId>\\d+)\\/chapter\\/(?<chapterId>\\d+)/u.exec(location.pathname)?.groups;
-			if (!match) return false;
-			return {
-				mangaId: Number(match.mangaId),
-				chapterId: Number(match.chapterId)
-			};
-		},
-		async getImgList({ setState }, { mangaId, chapterId }) {
-			const data = await getChapters(mangaId, chapterId);
-			const [{ pageCount }] = data.chapters.nodes;
-			const chapterCount = data.manga.chapters.totalCount;
-			setState("manga", {
-				onPrev: chapterId > 0 ? () => jump(mangaId, chapterId - 1) : void 0,
-				onNext: chapterId < chapterCount ? () => jump(mangaId, chapterId + 1) : void 0
-			});
-			return helper.range(pageCount, (i) => \`/api/v1/manga/\${mangaId}/chapter/\${chapterId}/page/\${i}\`);
-		},
-		handler: ({ setState }) => setState("manga", { onShowImgsChange: helper.debounce((showImgs, imgList) => {
-			const lastImgUrl = imgList[[...showImgs].at(-1)].src;
-			helper.querySelector(\`img[src$="\${lastImgUrl}"]\`)?.scrollIntoView({
-				behavior: "instant",
-				block: "end"
-			});
-		}, 500) })
-	});
-}
-if (location.pathname === "/reader" && document.querySelector(".ip > a[href=\\"https://github.com/Difegue/LANraragi\\"]")?.textContent.trim() === "LANraragi.") {
-	let initFlag = true;
-	/** 是否由服务器来跟踪进度 */
-	let isServerTracksProgress;
-	const checkServerTracksProgress = async () => {
-		if (isServerTracksProgress !== void 0) return;
-		isServerTracksProgress = (await request.request("/api/info", {
 			responseType: "json",
-			fetch: true,
-			noTip: true
-		})).response.server_tracks_progress;
-	};
-	const getProgress = async (id) => {
-		await checkServerTracksProgress();
-		if (!isServerTracksProgress) return Number(localStorage.getItem(\`\${id}-reader\`)) - 1 || 0;
-		return (await request.request(\`/api/archives/\${id}/metadata\`, {
-			responseType: "json",
-			errorText: "Error fetching progress",
-			fetch: true
-		})).response.progress - 1;
-	};
-	const updateProgress = async (id, pageNum) => {
-		await checkServerTracksProgress();
-		if (isServerTracksProgress) await request.request(\`/api/archives/\${id}/progress/\${pageNum + 1}\`, {
-			method: "PUT",
-			fetch: true,
+			noCheckCode: true,
 			noTip: true
 		});
-		else localStorage.setItem(\`\${id}-reader\`, \`\${pageNum + 1}\`);
-	};
-	core.setup({
-		name: "LANraragi",
-		isMangaPage: () => {
-			if (location.pathname !== "/reader") return;
-			const id = new URLSearchParams(location.search).get("id");
-			if (id) return { id };
-		},
-		getImgList: async (_, { id }) => {
-			await checkServerTracksProgress();
-			return (await request.request(\`/api/archives/\${id}/files\`, {
-				responseType: "json",
-				errorText: "Error fetching image list"
-			})).response.pages;
-		},
-		handler: ({ setState }, { id }) => {
-			setState("manga", { onShowImgsChange: helper.debounce((showImgs, imgList) => {
-				if (imgList.length > 0 && initFlag) {
-					initFlag = false;
-					(async () => {
-						const progress = await getProgress(id);
-						components_Manga.setState((state) => {
-							state.activePageIndex = state.pageList.findIndex((page) => page.includes(progress));
-						});
-					})();
-					return;
-				}
-				updateProgress(id, [...showImgs].at(-1));
-			}, 200) });
+		const token = res.response.data?.refreshToken.accessToken;
+		if (res.status !== 200 || !token) {
+			this.clear();
+			return false;
 		}
+		this.token = token;
+		request.downloadImgHeaders.Authorization = \`Bearer \${token}\`;
+		return true;
+	}
+	clear() {
+		this.token = "";
+		delete request.downloadImgHeaders.Authorization;
+	}
+}();
+const graphql = async (query, variables = {}, retry = true) => {
+	await auth.ensureToken();
+	const { status, response: { data, errors } } = await request.request("/api/graphql", {
+		method: "POST",
+		data: JSON.stringify({
+			query,
+			variables
+		}),
+		responseType: "json",
+		noCheckCode: true,
+		headers: auth.authorization ? { Authorization: auth.authorization } : void 0
 	});
-}
+	if (retry && auth.needAuth && (status === 401 || errors?.some(({ message }) => /unauthorized/iu.test(message)))) {
+		auth.clear();
+		await auth.ensureToken();
+		return graphql(query, variables, false);
+	}
+	if (errors?.length) {
+		components_Toast.toast.error(errors[0].message.split(/\\r?\\n/u)[0]);
+		throw new Error(errors[0].message);
+	}
+	return data;
+};
+const getChapters = async (mangaId, chapterId) => {
+	const data = await graphql(helper.gql\`
+      query GET_CHAPTERS($mangaId: Int!, $chapterId: Int!) {
+        chapters(condition: { mangaId: $mangaId, sourceOrder: $chapterId }) {
+          nodes {
+            pageCount
+          }
+        }
+        manga(id: $mangaId) {
+          chapters {
+            totalCount
+          }
+        }
+      }
+    \`, {
+		mangaId,
+		chapterId
+	});
+	if (data.chapters.nodes[0].pageCount <= 0) {
+		await helper.sleep(200);
+		return getChapters(mangaId, chapterId);
+	}
+	return data;
+};
+const jump = (mangaId, chapterId) => {
+	location.pathname = \`/manga/\${mangaId}/chapter/\${chapterId}\`;
+};
+core.setup({
+	name: "Suwayomi",
+	isMangaPage: () => {
+		const match = /\\/manga\\/(?<mangaId>\\d+)\\/chapter\\/(?<chapterId>\\d+)/u.exec(location.pathname)?.groups;
+		if (!match) return false;
+		return {
+			mangaId: Number(match.mangaId),
+			chapterId: Number(match.chapterId)
+		};
+	},
+	async getImgList({ setState, dynamicLazyLoad }, { mangaId, chapterId }) {
+		const data = await getChapters(mangaId, chapterId);
+		const [{ pageCount }] = data.chapters.nodes;
+		const chapterCount = data.manga.chapters.totalCount;
+		setState("manga", {
+			onPrev: chapterId > 0 ? () => jump(mangaId, chapterId - 1) : void 0,
+			onNext: chapterId < chapterCount ? () => jump(mangaId, chapterId + 1) : void 0
+		});
+		const getImgUrl = (i) => \`/api/v1/manga/\${mangaId}/chapter/\${chapterId}/page/\${i}\`;
+		if (!auth.needAuth) return helper.range(pageCount, getImgUrl);
+		return dynamicLazyLoad({
+			length: pageCount,
+			loadImg: async (i) => URL.createObjectURL(await request.downloadImg(getImgUrl(i)))
+		});
+	},
+	handler: ({ setState }) => setState("manga", { onShowImgsChange: helper.debounce((showImgs, imgList) => {
+		const lastImgUrl = imgList[[...showImgs].at(-1)].src;
+		helper.querySelector(\`img[src$="\${lastImgUrl}"]\`)?.scrollIntoView({
+			behavior: "instant",
+			block: "end"
+		});
+	}, 500) })
+});
 //#endregion
 `,
 	"site/yamibo": `\nlet solid_js_web = require("solid-js/web");
@@ -18651,7 +18828,7 @@ try {
 		}
 		case "komiic.com":
 		case "komiic.cc": {
-			const query = `
+			const query = helper.gql`
         query imagesByChapterId($chapterId: ID!) {
           imagesByChapterId(chapterId: $chapterId) {
             id
@@ -18660,7 +18837,8 @@ try {
             width
             __typename
           }
-        }`;
+        }
+      `;
 			const getChapterNav = (text) => helper.querySelectorClick(".v-bottom-navigation__content button:not([disabled])", text);
 			core.setup({
 				name: "komiic",
@@ -18699,8 +18877,8 @@ try {
 			});
 			break;
 		}
-		case "www.wn09.cfd":
-		case "www.wn09.shop":
+		case "www.wn10.cfd":
+		case "www.wn10.shop":
 		case "www.wnacg.com":
 		case "wnacg.com": {
 			const buttonDom = helper.querySelector("#bodywrap a.btn");
@@ -18742,6 +18920,18 @@ try {
 					const imgNum = await helper.wait(() => helper.querySelectorAll(".lazy-load-image-background").length);
 					return helper.range(imgNum, (i) => `${cdn}${id}/${i + 1}.webp`);
 				}
+			});
+			break;
+		case "noymanga.com":
+			core.setup({
+				name: "NoyAcg",
+				isMangaPage: () => /reader\/(?<bookId>\d+)\/(?<chapterId>\d+)/u.exec(location.pathname)?.groups,
+				getImgList: async (_, { bookId, chapterId }) => {
+					const { response: { chapter } } = await core.request(`/api/v4/book/detail/${bookId}/${chapterId}`, { responseType: "json" });
+					return helper.range(chapter.this.count, (i) => `https://img.noymanga.com/${bookId}/${chapterId}/${i + 1}.webp`);
+				},
+				onPrev: () => helper.querySelectorClick(() => helper.querySelector("path[d=\"m15 18-6-6 6-6\"]")?.closest("button")),
+				onNext: () => helper.querySelectorClick(() => helper.querySelector("path[d=\"m9 18 6-6-6-6\"]")?.closest("button"))
 			});
 			break;
 		case "www.relamanhua.org":
@@ -18920,6 +19110,79 @@ try {
 						};
 					}
 					return imgList;
+				}
+			});
+			break;
+		}
+		case "eahentai.com": {
+			const isMangaPage = () => /^\/a\/(?<albumId>\d+)(?:\/(?<page>\d+))?/u.exec(location.pathname)?.groups;
+			if (!isMangaPage()) break;
+			core.setup({
+				name: "EAHentai",
+				isMangaPage,
+				initOptions: { autoShow: false },
+				async getImgList(_coreCtx, { albumId, page }) {
+					const root = page ? document : helper.domParse((await core.request(`/a/${albumId}/0`)).responseText);
+					return Array.from(root.querySelectorAll("main img[src*=\"i.eahentai.com/file/ea-gallery\"]"), (e) => e.src);
+				}
+			});
+			break;
+		}
+		case "hentainexus.com": {
+			const isMangaPage = () => /^\/(?:read|view)\/\d+/u.test(location.pathname);
+			if (!isMangaPage()) break;
+			const getImgList = () => {
+				const data = unsafeWindow.pageData;
+				if (!data) throw new Error(helper.t("site.changed_load_failed"));
+				const imgList = [];
+				for (const item of data) if (item.type === "spread") {
+					const left = item.left_avif ?? item.left_fallback ?? item.left_source;
+					if (left) imgList.push(left);
+					const right = item.right_avif ?? item.right_fallback ?? item.right_source;
+					if (right) imgList.push(right);
+				} else {
+					const src = item.image_avif ?? item.image_fallback ?? item.image_source;
+					if (src) imgList.push(src);
+				}
+				if (imgList.length === 0) throw new Error(helper.t("site.changed_load_failed"));
+				return imgList;
+			};
+			core.setup({
+				name: "HentaiNexus",
+				isMangaPage,
+				getImgList,
+				initOptions: { autoShow: false }
+			});
+			break;
+		}
+		case "asmhentai.com": {
+			const isMangaPage = () => /^\/(?:g\/\d+\/|gallery\/\d+\/\d+\/)/u.test(location.pathname);
+			if (!isMangaPage()) break;
+			const getImgList = () => {
+				const loadId = helper.querySelector("#load_id, #gallery_id")?.value;
+				const loadDir = helper.querySelector("#load_dir, #image_dir")?.value;
+				const pageCount = Number(helper.querySelector("#t_pages, #pages")?.value);
+				if (!loadId || !loadDir || !Number.isFinite(pageCount) || pageCount <= 0) throw new Error(helper.t("site.changed_load_failed"));
+				return helper.range(pageCount, (i) => `https://images.asmhentai.com/${loadDir}/${loadId}/${i + 1}.jpg`);
+			};
+			core.setup({
+				name: "AsmHentai",
+				isMangaPage,
+				getImgList,
+				initOptions: { autoShow: false }
+			});
+			break;
+		}
+		case "3hentai.net": {
+			const isMangaPage = () => /^\/d\/(?<gid>\d+)(?:\/(?<page>\d+))?\/?/u.exec(location.pathname)?.groups;
+			if (!isMangaPage()) break;
+			core.setup({
+				name: "3hentai",
+				isMangaPage,
+				initOptions: { autoShow: false },
+				async getImgList(_coreCtx, { gid, page }) {
+					const root = page ? helper.domParse((await core.request(`/d/${gid}`)).responseText) : document;
+					return Array.from(root.querySelectorAll("img[data-src$=\"t.jpg\"]"), (img) => img.dataset.src.replace(/(?<path>\/[^/]*)t(?<ext>\.[^/]+)$/u, "$<path>$<ext>"));
 				}
 			});
 			break;
@@ -19140,7 +19403,8 @@ try {
 			unsafeWindow.toast = core.toast;
 			break;
 		default:
-			selfImport("site/selfhosted");
+			if (document.querySelector(`head > meta[content="A manga reader that runs tachiyomi's extensions"]`)) selfImport("site/suwayomi");
+			else if (location.pathname === "/reader" && document.querySelector(".ip > a[href=\"https://github.com/Difegue/LANraragi\"]")?.textContent.trim() === "LANraragi.") selfImport("site/lanraragi");
 			(async () => {
 				if (await GM.getValue(location.hostname) !== void 0) return helper.requestIdleCallback(userscript_otherSite.otherSite);
 				console.debug(((lang) => {

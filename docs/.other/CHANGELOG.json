@@ -1,4 +1,11 @@
 {
+  "12.12.0": {
+    "date": "2026-09-06",
+    "feat": [
+      "支持 EAHentai、HentaiNexus、AsmHentai、3Hentai",
+      "支持 NoyAcg 新站点"
+    ]
+  },
   "12.11.0": {
     "date": "2026-09-04",
     "feat": ["支持微博", "支持ニコニコ漫画"],
