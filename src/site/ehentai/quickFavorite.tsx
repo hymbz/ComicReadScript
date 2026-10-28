@@ -123,17 +123,20 @@ const addQuickFavorite = ({
 
         setShow(false);
 
-        const formData = new FormData();
-        formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
-        formData.append('apply', 'Apply Changes');
-        formData.append('favnote', favnote());
-        formData.append('update', '1');
+        const isDel = index() === 10;
+        const formData = new URLSearchParams({
+          favcat: isDel ? 'favdel' : `${index()}`,
+          apply: 'Apply Changes',
+          favnote: favnote(),
+          update: '1',
+        });
 
         // 请求期间让收藏按钮缓慢闪烁
         favoriteButton.classList.add('comidread-blink');
         const res = await request(apiUrl, {
           method: 'POST',
-          data: formData,
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          data: formData.toString(),
           errorText: t('site.ehentai.change_favorite_failed'),
         }).finally(() => favoriteButton.classList.remove('comidread-blink'));
 
