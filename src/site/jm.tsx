@@ -13,6 +13,15 @@ setupSiteAdapter({
   name: 'jm',
   getPageContext: () => {
     // 只在漫画页内运行
+    // Cloudflare 验证页和漫画页同 URL（pathname 仍含 /photo/），需先排除验证页，
+    // 否则脚本在验证页上注入悬浮球/CSS 并轮询 DOM，会干扰人机验证导致无限转圈
+    if (document.title.includes('Just a moment')) return;
+    if (
+      document.querySelector(
+        "#challenge-stage,#cf-stage,input[name='cf-turnstile-response']",
+      )
+    )
+      return;
     if (!location.pathname.includes('/photo/')) return;
     return { type: 'manga' };
   },
